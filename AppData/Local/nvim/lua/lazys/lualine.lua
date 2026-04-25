@@ -44,7 +44,7 @@ return {
                 symbols = { error = " ", warn = " ", info = " ", hint = " " },
               },
               --"encoding",
-              { "filtype", color = { bg = "" } },
+              { "filetype", color = { bg = "" } },
             },
             lualine_z = {
               {
