@@ -1,8 +1,7 @@
-
 require("dashboard").setup({
 	theme = "doom",
 	config = {
-    week_header = { enable = true },   -- 显示当前星期
+		week_header = { enable = true }, -- 显示当前星期
 		center = {
 			{
 				icon = "  ",
@@ -18,7 +17,9 @@ require("dashboard").setup({
 				desc = "current                            ",
 				action = function()
 					vim.cmd([[NvimTreeClose]])
-					require("telescope").extensions.my_file_find.find_files({})
+					vim.keymap.set("n", "<C-p>", function()
+						vim.cmd([[Telescope find_files]])
+					end, {})
 				end,
 			},
 			{
@@ -62,4 +63,3 @@ require("dashboard").setup({
 		},
 	},
 })
-

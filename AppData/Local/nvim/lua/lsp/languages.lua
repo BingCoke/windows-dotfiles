@@ -24,6 +24,7 @@ end
 local simpleLsps = {
 	"bashls",
 	"lemminx",
+	"powershell_es",
 	--"prismals",
 	"arduino_language_server",
 	"lemminx",
@@ -47,4 +48,3 @@ for _, value in ipairs(simpleLsps) do
 		on_attach = on_attach,
 	})
 end
-
