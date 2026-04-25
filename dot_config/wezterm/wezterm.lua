@@ -55,9 +55,12 @@ config.colors.tab_bar = {
 	},
 }
 
-config.disable_default_key_bindings = false
+config.disable_default_key_bindings = true
 
 config.keys = {
+	{ key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
+	{ key = "q", mods = "CTRL", action = act.CloseCurrentTab({ confirm = true }) },
+
 	{
 		key = "v",
 		mods = "CTRL",
@@ -68,6 +71,29 @@ config.keys = {
 		mods = "CTRL|SHIFT",
 		action = wezterm.action.PasteFrom("Clipboard"),
 	},
+
+	-- new OS window (launch --type=os-window)
+	{ key = "Enter", mods = "CTRL|SHIFT", action = act.SpawnWindow },
+	-- new tab (launch --type=tab)
+	{ key = "Enter", mods = "CTRL", action = act.SpawnTab("CurrentPaneDomain") },
+	-- new_tab (ctrl+alt+enter, kitty 原本无cwd)
+	{ key = "Enter", mods = "CTRL|ALT", action = act.SpawnTab("DefaultDomain") },
+	-- next_tab / previous_tab
+	{ key = "l", mods = "CTRL|ALT", action = act.ActivateTabRelative(1) },
+	{ key = "h", mods = "CTRL|ALT", action = act.ActivateTabRelative(-1) },
+	-- move_tab_forward / move_tab_backward
+	{ key = "j", mods = "CTRL|ALT", action = act.MoveTabRelative(1) },
+	{ key = "k", mods = "CTRL|ALT", action = act.MoveTabRelative(-1) },
+	-- goto_tab 1~9
+	{ key = "1", mods = "CTRL", action = act.ActivateTab(0) },
+	{ key = "2", mods = "CTRL", action = act.ActivateTab(1) },
+	{ key = "3", mods = "CTRL", action = act.ActivateTab(2) },
+	{ key = "4", mods = "CTRL", action = act.ActivateTab(3) },
+	{ key = "5", mods = "CTRL", action = act.ActivateTab(4) },
+	{ key = "6", mods = "CTRL", action = act.ActivateTab(5) },
+	{ key = "7", mods = "CTRL", action = act.ActivateTab(6) },
+	{ key = "8", mods = "CTRL", action = act.ActivateTab(7) },
+	{ key = "9", mods = "CTRL", action = act.ActivateTab(8) },
 }
 
 config.mouse_bindings = {

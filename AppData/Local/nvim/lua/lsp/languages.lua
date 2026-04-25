@@ -48,3 +48,6 @@ for _, value in ipairs(simpleLsps) do
 		on_attach = on_attach,
 	})
 end
+
+local bundle_path = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services"
+vim.lsp.config.powershell_es.bundle_path = bundle_path
