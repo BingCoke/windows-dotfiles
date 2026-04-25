@@ -17,10 +17,7 @@ require("dashboard").setup({
 				desc = "current                            ",
 				action = function()
 					vim.cmd([[NvimTreeClose]])
-					local opt = { noremap = true, silent = true }
-					vim.keymap.set("n", "<C-p>", function()
-						vim.cmd([[Telescope find_files]])
-					end, opt)
+					vim.cmd([[Telescope find_files]])
 				end,
 			},
 			{

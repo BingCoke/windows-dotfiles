@@ -1,4 +1,3 @@
-
 local M = {}
 
 local language = {
@@ -41,6 +40,7 @@ local language = {
 	"graphql",
 	"graphqls",
 	"typespec",
+	"ps1",
 	"svelte",
 }
 local ts = {
@@ -53,9 +53,7 @@ local ts = {
 	"svelte",
 	"vue",
 }
-local needHi = {
-
-}
+local needHi = {}
 
 M.language = language
 M.ts = ts
