@@ -1,0 +1,125 @@
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+--local map = vim.api.nvim_set_keymap
+local map = vim.keymap.set
+-- 复用 opt 参数
+local opt = { noremap = true, silent = true }
+
+map("i", "<c-`>", "`", opt)
+
+-- 取消 s 默认功能
+map("n", "s", "", opt)
+
+-- 插入模式
+vim.keymap.set({ "i" }, "<C-v>", "<C-r>+", { noremap = true, silent = true })
+vim.keymap.set("c", "<C-v>", function()
+	local text = vim.fn.getreg("+")
+	vim.api.nvim_feedkeys(text, "n", true)
+end, { noremap = true, silent = true })
+
+vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
+
+
+map({ "n", "v", "i" }, "<c-a>", "<esc>ggVG", opt)
+
+-- 关闭当前
+map("n", "<leader>sc", "<C-w>c", opt)
+
+map("n", "<M-d>", "<C-w>c", opt)
+map("i", "<M-d>", "<C-w>c", opt)
+
+-- 关闭其他
+map("n", "<leader>so", "<C-w>o", opt)
+
+vim.s = 12
+-- 左右比例控制
+
+map("n", "<esc>", "<cmd>noh<cr><esc>", opt)
+map("i", "<esc>", "<cmd>noh<cr><esc>", opt)
+
+map("n", "<leader>w", "<cmd>w<cr><esc>", opt)
+
+-- 上下比例控制
+map("n", "<C-Down>", "<cmd>resize -2<CR>", opt)
+map("n", "<C-Up>", "<cmd>resize +2<CR>", opt)
+map("n", "<C-Right>", "<cmd>vertical resize +2<CR>", opts)
+map("n", "<C-Left>", "<cmd>vertical resize -2<CR>", opts)
+-- Terminal相关
+-- 打开terminal
+map("n", "<leader>h", "<cmd>sp | terminal<CR>", opt)
+map("n", "<leader>v", "<cmd>vsp | terminal<CR>", opt)
+map("t", "<esc>", "<C-\\><C-n>", opt)
+map("t", "<M-h>", [[ <C-\><C-N><C-w>h ]], opt)
+map("t", "<M-j>", [[ <C-\><C-N><C-w>j ]], opt)
+map("t", "<M-k>", [[ <C-\><C-N><C-w>k ]], opt)
+map("t", "<M-l>", [[ <C-\><C-N><C-w>l ]], opt)
+
+map("v", "<c-c>", '"+y', opt)
+map("v", "<D-c>", '"+y', opt)
+
+-- visual模式下缩进代码
+map("v", "<", "<gv", opt)
+map("v", ">", ">gv", opt)
+
+-- 上下移动选中文本
+map("v", "<M-j>", "<cmd>move '>+1<CR>gv-gv", opt)
+map("v", "<M-k>", "<cmd>move '<-2<CR>gv-gv", opt)
+
+-- 上下滚动浏览
+map("n", "<C-j>", "5j", opt)
+map("n", "<C-k>", "5k", opt)
+map("v", "<C-j>", "5j", opt)
+map("v", "<C-k>", "5k", opt)
+
+-- ctrl u / ctrl + d  只移动9行，默认移动半屏
+map("n", "<C-u>", "10k", opt)
+map("n", "<C-d>", "10j", opt)
+map("v", "<C-u>", "10k", opt)
+map("v", "<C-d>", "10j", opt)
+-- 设置退出并,保存
+
+map("n", "<leader>q", "<cmd>qa<CR>", opt)
+map("n", "<leader>i", "<cmd>qa<CR>", opt)
+map("n", "<leader>W", "<cmd>w !sudo tee %<CR>", {})
+
+-- 设置插件快捷键
+local pluginKeys = {}
+--translate
+
+-- 设置文件搜索
+-- Telescope
+-- 查找文件
+-- dap
+
+map("n", "<c-w>", "<c-w>w", opt)
+
+-- 跳转到下一个错误
+vim.keymap.set("n", "]e", function()
+	vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR, float = false })
+end, { desc = "Next Error" })
+
+-- 跳转到上一个错误
+vim.keymap.set("n", "[e", function()
+	vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR, float = false })
+end, { desc = "Previous Error" })
+
+-- 使用 Lua 配置
+vim.keymap.set("n", "[g", function()
+	vim.diagnostic.goto_prev({ float = false })
+end, { desc = "Go to previous diagnostic" })
+vim.keymap.set("n", "]g", function()
+	vim.diagnostic.goto_next({ float = false })
+end, { desc = "Go to next diagnostic" })
+
+-- 使用vscode打开当前文件
+vim.keymap.set("n", "<leader>cc", function()
+	vim.fn.jobstart({ "code", "-a", vim.loop.cwd(), vim.fn.expand("%:p") })
+end, {
+	desc = "open vscode in current buffer file",
+	noremap = true,
+	silent = true,
+})
+
+
+return pluginKeys

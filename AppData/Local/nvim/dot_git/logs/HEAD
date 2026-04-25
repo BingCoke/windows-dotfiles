@@ -1,0 +1,13 @@
+0000000000000000000000000000000000000000 0011bc0b329ef0f9a2678a255bc3cdccc9e59b18 unknown <Administrator@WIN-ADH2AL19I8A.(none)> 1776357296 +0800	clone: from github.com:BingCoke/nvim-conf.git
+0011bc0b329ef0f9a2678a255bc3cdccc9e59b18 0011bc0b329ef0f9a2678a255bc3cdccc9e59b18 unknown <Administrator@WIN-ADH2AL19I8A.(none)> 1776357354 +0800	checkout: moving from master to 0.12
+0011bc0b329ef0f9a2678a255bc3cdccc9e59b18 025f45e81f1fb0464b39eee1fc4453c16320a1cf kryond <kryond@163.com> 1776612465 +0800	commit: v1
+025f45e81f1fb0464b39eee1fc4453c16320a1cf ec1fd3e8cc36e84e6470b4ebf4b1d3fdfc6ac1cd kryond <kryond@163.com> 1776612809 +0800	commit: fix: gitsign
+ec1fd3e8cc36e84e6470b4ebf4b1d3fdfc6ac1cd 64ed4c510b09c97ea9438facb2c0fd10fe1e547b kryond <kryond@163.com> 1776644033 +0800	commit: saga
+64ed4c510b09c97ea9438facb2c0fd10fe1e547b 393bc1860e3018ad7c915c671bd9bce300918e67 kryond <kryond@163.com> 1776644094 +0800	commit: onattch
+393bc1860e3018ad7c915c671bd9bce300918e67 b7ae921cddd10ccd7035c143059fd280c333d8d1 kryond <kryond@163.com> 1776818775 +0800	commit: v2
+b7ae921cddd10ccd7035c143059fd280c333d8d1 e6250c42275dafb6c1dd2bbb2e04b45c80057dec kryond <kryond@163.com> 1777050520 +0800	commit: add oil and tabby
+e6250c42275dafb6c1dd2bbb2e04b45c80057dec fcb476bc8bb02f1d42861c00f88612ed8d5cdf5d kryond <kryond@163.com> 1777085683 +0800	commit: use yazi as file explorer
+fcb476bc8bb02f1d42861c00f88612ed8d5cdf5d a2c6e88fc02ce5ab6c53d71f0c7393638f59d46a kryond <kryond@163.com> 1777102317 +0800	commit: use oil
+a2c6e88fc02ce5ab6c53d71f0c7393638f59d46a f6965104e385c650811aa23bd9fb7481657bdda0 kryond <kryond@163.com> 1777106674 +0800	commit: tabby theme
+f6965104e385c650811aa23bd9fb7481657bdda0 096a06d360f67475db3fd3d44f1af78192bbf73e kryond <kryond@163.com> 1777112704 +0800	commit: tabby name
+096a06d360f67475db3fd3d44f1af78192bbf73e 9f552fddc1db7d5507ac6dee4e679b4ebd876b40 kryond <kryond@163.com> 1777117883 +0800	commit: add oil keymap
