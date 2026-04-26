@@ -27,11 +27,14 @@ GetDesktopCount() {
     return count
 }
 
-MoveCurrentWindowToDesktop(number) {
+MoveWindowUnderMouseToDesktop(number) {
     global MoveWindowToDesktopNumberProc, GoToDesktopNumberProc
-    activeHwnd := WinGetID("A")
-    DllCall(MoveWindowToDesktopNumberProc, "Ptr", activeHwnd, "Int", number, "Int")
-    DllCall(GoToDesktopNumberProc, "Int", number, "Int")
+    MouseGetPos(, , &hwnd)
+
+    if hwnd {
+        DllCall(MoveWindowToDesktopNumberProc, "Ptr", hwnd, "Int", number, "Int")
+        DllCall(GoToDesktopNumberProc, "Int", number, "Int")
+    }
 }
 
 GoToPrevDesktop() {
@@ -67,9 +70,9 @@ GoToDesktopNumber(num) {
 }
 
 MoveOrGotoDesktopNumber(num) {
-    ; If user is holding down Mouse left button, move the current window also
-    if (GetKeyState("LButton")) {
-        MoveCurrentWindowToDesktop(num)
+    ; If user is holding down Mouse left button, move the window under mouse also
+    if (GetKeyState("LButton","P")) {
+        MoveWindowUnderMouseToDesktop(num)
     } else {
         GoToDesktopNumber(num)
           Sleep 50

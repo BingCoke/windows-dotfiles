@@ -3,7 +3,9 @@
 
 #Include "VirtualDesktopAccessor.ahk"
 
+isMovingWindow := false
 
+SetWinDelay(0)
 
 
 ~F13 & w::{
@@ -34,24 +36,55 @@
 
 
 ; 鼠标拖动窗口和resize窗口
-~F13 & LButton:: {
-    CoordMode("Mouse", "Screen")
-    MouseGetPos(&startX, &startY, &hwnd)
-    WinGetPos(&winX, &winY,,, hwnd)
-    SetWinDelay(3)
+~F13 & LButton::DragWindow()
+~F13 & RButton::ResizeWindow()
 
-    while GetKeyState("LButton", "P") {
+~F13:: {
+    global isMovingWindow
+
+    if isMovingWindow
+        return
+
+    if GetKeyState("LButton", "P")
+        DragWindow()
+    else if GetKeyState("RButton", "P")
+        ResizeWindow()
+}
+
+DragWindow() {
+    global isMovingWindow
+
+    CoordMode("Mouse", "Screen")
+
+    if isMovingWindow
+        return
+
+
+
+    isMovingWindow := true
+    MouseGetPos(&startX, &startY, &hwnd)
+    WinActivate("ahk_id " hwnd)
+    WinGetPos(&winX, &winY,,, hwnd)
+
+    while GetKeyState("LButton", "P")  {
         MouseGetPos(&currX, &currY)
         WinMove(winX + currX - startX, winY + currY - startY,,, hwnd)
     }
+
+    isMovingWindow := false
 }
 
+ResizeWindow() {
+    global isMovingWindow
 
-~F13 & RButton:: {
     CoordMode("Mouse", "Screen")
+    if isMovingWindow
+        return
+
+    isMovingWindow := true
+
     MouseGetPos(&startX, &startY, &hwnd)
     WinGetPos(&winX, &winY, &winW, &winH, hwnd)
-    SetWinDelay(3)
 
     ; 根据鼠标在窗口中的位置决定拖拽方向
     resizeRight  := (startX >= winX + winW / 2)
@@ -84,6 +117,8 @@
 
         WinMove(newX, newY, newW, newH, hwnd)
     }
+
+    isMovingWindow := false
 }
 
 ~F13 & 1:: MoveOrGotoDesktopNumber(0)
