@@ -42,6 +42,8 @@ register_plugin!(State);
 
 impl ZellijPlugin for State {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
+        let t = Instant::now();
+        eprintln!("[navigator][timing] load() called — plugin (re)initializing");
         self.parse_configuration(configuration);
 
         request_permission(&[
@@ -53,6 +55,10 @@ impl ZellijPlugin for State {
         if self.permissions_granted {
             hide_self();
         }
+        eprintln!(
+            "[navigator][timing] load() finished in {:.3} ms",
+            t.elapsed().as_micros() as f64 / 1000.0
+        );
     }
 
     fn update(&mut self, event: Event) -> bool {
