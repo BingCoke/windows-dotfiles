@@ -1,0 +1,45 @@
+if ($Env:OS -ne "Windows_NT") { exit 0 }
+
+$AhkScript = Join-Path $Env:USERPROFILE ".config\ahk\keybind.ahk"
+$TaskName = "chezmoi_AHK_keybind"
+
+$AhkCmd = Get-Command "AutoHotkey.exe" -ErrorAction SilentlyContinue
+if ($AhkCmd) {
+    $Ahk = $AhkCmd.Source
+} else {
+    $Ahk = "C:\Program Files\AutoHotkey\AutoHotkey.exe"
+}
+
+if (-not (Test-Path $Ahk)) {
+    Write-Warning "AutoHotkey.exe not found: $Ahk"
+    exit 1
+}
+
+if (-not (Test-Path $AhkScript)) {
+    Write-Warning "AHK script not found: $AhkScript"
+    exit 1
+}
+
+$existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+if ($existing) {
+    Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+}
+
+$trigger   = New-ScheduledTaskTrigger -AtLogOn
+$action    = New-ScheduledTaskAction -Execute $Ahk -Argument "`"$AhkScript`""
+$settings  = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 0) -MultipleInstances IgnoreNew
+$principal = New-ScheduledTaskPrincipal -UserId "$Env:USERDOMAIN\$Env:USERNAME" -LogonType Interactive -RunLevel Highest
+
+Register-ScheduledTask `
+    -TaskName   $TaskName `
+    -Trigger    $trigger `
+    -Action     $action `
+    -Settings   $settings `
+    -Principal  $principal `
+    -Description "chezmoi: launch AHK keybind at logon" | Out-Null
+
+Write-Host "Task registered: $TaskName"
+
+Get-Process -Name "AutoHotkey" -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Process -FilePath $Ahk -ArgumentList "`"$AhkScript`"" -WindowStyle Hidden
+Write-Host "AHK started: $AhkScript"
