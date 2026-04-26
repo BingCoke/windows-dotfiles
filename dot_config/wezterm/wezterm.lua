@@ -13,7 +13,6 @@ config.color_scheme = "tokyonight-storm"
 
 config.window_decorations = "RESIZE"
 
-
 config.window_background_opacity = 0.9
 
 config.font = wezterm.font_with_fallback({
@@ -62,7 +61,7 @@ config.keys = {
 		action = wezterm.action.Nop,
 	},
 	{ key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
-	{ key = "q", mods = "CTRL", action = act.CloseCurrentTab({ confirm = true }) },
+	{ key = "q", mods = "CTRL", action = act.CloseCurrentTab({ confirm = false }) },
 
 	{
 		key = "v",
@@ -100,6 +99,11 @@ config.keys = {
 }
 
 config.mouse_bindings = {
+	{
+		event = { Up = { streak = 1, button = "Left" } },
+		mods = "CTRL",
+		action = wezterm.action.OpenLinkAtMouseCursor,
+	},
 	-- 左键释放时完成选择并复制到系统剪贴板
 	{
 		event = { Up = { streak = 1, button = "Left" } },
