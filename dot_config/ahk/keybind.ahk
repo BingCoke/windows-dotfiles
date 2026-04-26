@@ -5,7 +5,7 @@
 
 isMovingWindow := false
 
-SetWinDelay(0)
+SetWinDelay(1)
 
 
 ~F13 & w::{
