@@ -48,7 +48,7 @@ local function setup_code_lsp(name)
 	if loaded_code_lsps[name] then
 		return
 	end
-	local start = vim.uv.hrtime()
+	--local start = vim.uv.hrtime()
 
 	local states, mod = pcall(require, "lsp.codes." .. name)
 	if not states then
@@ -58,15 +58,15 @@ local function setup_code_lsp(name)
 
 	mod.setup()
 	loaded_code_lsps[name] = true
-	local elapsed_ms = (vim.uv.hrtime() - start) / 1e6
-	vim.notify(string.format("[require] %-24s %.3f ms", name, elapsed_ms), vim.log.levels.INFO)
+	--local elapsed_ms = (vim.uv.hrtime() - start) / 1e6
+	--vim.notify(string.format("[require] %-24s %.3f ms", name, elapsed_ms), vim.log.levels.INFO)
 end
 
 local function setup_simple_lsp(name)
 	if loaded_simple_lsps[name] then
 		return
 	end
-	local start = vim.uv.hrtime()
+	--local start = vim.uv.hrtime()
 
 	vim.lsp.config(name, {
 		capabilities = capabilities,
@@ -75,8 +75,8 @@ local function setup_simple_lsp(name)
 	vim.lsp.enable(name)
 	loaded_simple_lsps[name] = true
 
-	local elapsed_ms = (vim.uv.hrtime() - start) / 1e6
-	vim.notify(string.format("[require] %-24s %.3f ms", name, elapsed_ms), vim.log.levels.INFO)
+	--local elapsed_ms = (vim.uv.hrtime() - start) / 1e6
+	--vim.notify(string.format("[require] %-24s %.3f ms", name, elapsed_ms), vim.log.levels.INFO)
 end
 
 local function setup_filetype_lsp(filetype)
