@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:zellij.dev)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

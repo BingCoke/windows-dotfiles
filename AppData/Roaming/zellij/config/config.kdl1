@@ -1,0 +1,386 @@
+keybinds clear-defaults=true {
+    normal {
+        bind "Ctrl b" { SwitchToMode "tmux"; }
+    }
+
+
+    // ========== TMUX 模式（主力操作 + 子模式入口）==========
+    tmux {
+        // ---- 退出 tmux ----
+        bind "Ctrl b" { Write 2; SwitchToMode "normal"; }  // 发送真正的 Ctrl-b
+        bind "esc" { SwitchToMode "normal"; }
+        bind "Ctrl g" { SwitchToMode "normal"; }
+        bind "q" { SwitchToMode "normal"; }
+
+        // ---- Tab 操作 ----
+        bind "c" { NewTab; SwitchToMode "normal"; }           // 新建 tab
+        bind "n" { GoToNextTab; }                              // 下一个 tab（不退出tmux，可连续按）
+        bind "p" { GoToPreviousTab; }                          // 上一个 tab
+
+        bind "," { SwitchToMode "renametab"; TabNameInput 0; } // 重命名 tab
+        bind "&" { CloseTab; SwitchToMode "normal"; }          // 关闭 tab
+        bind "tab" { ToggleTab; }                              // 切换上一个 tab
+
+        bind "1" { GoToTab 1; SwitchToMode "normal"; }
+        bind "2" { GoToTab 2; SwitchToMode "normal"; }
+        bind "3" { GoToTab 3; SwitchToMode "normal"; }
+        bind "4" { GoToTab 4; SwitchToMode "normal"; }
+        bind "5" { GoToTab 5; SwitchToMode "normal"; }
+        bind "6" { GoToTab 6; SwitchToMode "normal"; }
+        bind "7" { GoToTab 7; SwitchToMode "normal"; }
+        bind "8" { GoToTab 8; SwitchToMode "normal"; }
+        bind "9" { GoToTab 9; SwitchToMode "normal"; }
+
+        // ---- Pane 焦点切换（方向键 + hjkl）----
+        bind "h" { MoveFocus "left"; SwitchToMode "normal"; }
+        bind "j" { MoveFocus "down"; SwitchToMode "normal"; }
+        bind "k" { MoveFocus "up"; SwitchToMode "normal"; }
+        bind "l" { MoveFocus "right"; SwitchToMode "normal"; }
+        bind "Ctrl j" { MoveTab "right"; }                     // 移动 tab 位置
+        bind "Ctrl k" { MoveTab "left"; }
+
+        // ---- Pane 操作 ----
+        bind "-" { NewPane "Down"; SwitchToMode "normal"; }    // 水平分屏
+        bind "=" { NewPane "Right"; SwitchToMode "normal"; }   // 垂直分屏
+        bind "s" { NewPane "stacked"; SwitchToMode "normal"; } // 堆叠分屏
+        bind "x" { CloseFocus; SwitchToMode "normal"; }        // 关闭当前 pane
+        bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; } // 放大/还原 pane
+        bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }   // 浮动窗口切换
+        bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; } // 嵌入/浮动切换
+        bind "i" { TogglePanePinned; SwitchToMode "normal"; }         // 固定 pane
+        bind "o" { FocusNextPane; }                            // 轮转焦点（不退出，可连续按）
+        bind "b" { BreakPane; SwitchToMode "normal"; }         // 拆出 pane 为新 tab
+        bind "[" { MovePaneBackwards; }                        // 移动 pane 位置
+        bind "]" { MovePane; }
+
+        bind "left" { MoveFocus "left"; SwitchToMode "normal"; }
+        bind "down" { MoveFocus "down"; SwitchToMode "normal"; }
+        bind "up" { MoveFocus "up"; SwitchToMode "normal"; }
+        bind "right" { MoveFocus "right"; SwitchToMode "normal"; }
+
+        // ---- 快速 Resize（在 tmux 内直接调整）----
+        bind "H" { Resize "Increase left"; }
+        bind "J" { Resize "Increase down"; }
+        bind "K" { Resize "Increase up"; }
+        bind "L" { Resize "Increase right"; }
+        bind "+" { Resize "Increase"; }
+        bind "_" { Resize "Decrease"; }
+
+        // ---- Layout ----
+        bind "space" { NextSwapLayout; }
+
+        // ---- Session ----
+        bind "d" { Detach; }                                   // 分离会话
+        bind "w" {                                             // session manager
+            LaunchOrFocusPlugin "session-manager" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+
+        // ---- 进入子模式（精细操作）----
+        bind "R" { SwitchToMode "resize"; }     // 进入 resize 模式（连续调整大小）
+        bind "M" { SwitchToMode "move"; }       // 进入 move 模式（连续移动 pane）
+        bind "S" { SwitchToMode "scroll"; }     // 进入 scroll 模式（滚动/搜索）
+        bind "T" { SwitchToMode "tab"; }        // 进入 tab 模式（批量 tab 操作）
+        bind "P" { SwitchToMode "pane"; }       // 进入 pane 模式（更多 pane 操作）
+        bind "O" { SwitchToMode "session"; }    // 进入 session 模式
+    }
+
+    // ========== 子模式（精细操作，esc/enter 返回 normal）==========
+
+    pane {
+        bind "left" { MoveFocus "left"; }
+        bind "down" { MoveFocus "down"; }
+        bind "up" { MoveFocus "up"; }
+        bind "right" { MoveFocus "right"; }
+        bind "c" { SwitchToMode "renamepane"; PaneNameInput 0; }
+        bind "d" { NewPane "down"; SwitchToMode "normal"; }
+        bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
+        bind "f" { ToggleFocusFullscreen; SwitchToMode "normal"; }
+        bind "h" { MoveFocus "left"; }
+        bind "i" { TogglePanePinned; SwitchToMode "normal"; }
+        bind "j" { MoveFocus "down"; }
+        bind "k" { MoveFocus "up"; }
+        bind "l" { MoveFocus "right"; }
+        bind "n" { NewPane; SwitchToMode "normal"; }
+        bind "p" { SwitchFocus; }
+        bind "r" { NewPane "right"; SwitchToMode "normal"; }
+        bind "s" { NewPane "stacked"; SwitchToMode "normal"; }
+        bind "w" { ToggleFloatingPanes; SwitchToMode "normal"; }
+        bind "x" { CloseFocus; SwitchToMode "normal"; }
+        bind "z" { TogglePaneFrames; SwitchToMode "normal"; }
+    }
+
+    tab {
+        bind "left" { GoToPreviousTab; }
+        bind "down" { GoToNextTab; }
+        bind "up" { GoToPreviousTab; }
+        bind "right" { GoToNextTab; }
+        bind "1" { GoToTab 1; SwitchToMode "normal"; }
+        bind "2" { GoToTab 2; SwitchToMode "normal"; }
+        bind "3" { GoToTab 3; SwitchToMode "normal"; }
+        bind "4" { GoToTab 4; SwitchToMode "normal"; }
+        bind "5" { GoToTab 5; SwitchToMode "normal"; }
+        bind "6" { GoToTab 6; SwitchToMode "normal"; }
+        bind "7" { GoToTab 7; SwitchToMode "normal"; }
+        bind "8" { GoToTab 8; SwitchToMode "normal"; }
+        bind "9" { GoToTab 9; SwitchToMode "normal"; }
+        bind "[" { BreakPaneLeft; SwitchToMode "normal"; }
+        bind "]" { BreakPaneRight; SwitchToMode "normal"; }
+        bind "b" { BreakPane; SwitchToMode "normal"; }
+        bind "h" { GoToPreviousTab; }
+        bind "j" { GoToNextTab; }
+        bind "k" { GoToPreviousTab; }
+        bind "l" { GoToNextTab; }
+        bind "n" { NewTab; SwitchToMode "normal"; }
+        bind "r" { SwitchToMode "renametab"; TabNameInput 0; }
+        bind "s" { ToggleActiveSyncTab; SwitchToMode "normal"; }
+        bind "x" { CloseTab; SwitchToMode "normal"; }
+        bind "tab" { ToggleTab; }
+    }
+
+    resize {
+        bind "left" { Resize "Increase left"; }
+        bind "down" { Resize "Increase down"; }
+        bind "up" { Resize "Increase up"; }
+        bind "right" { Resize "Increase right"; }
+        bind "+" { Resize "Increase"; }
+        bind "-" { Resize "Decrease"; }
+        bind "=" { Resize "Increase"; }
+        bind "H" { Resize "Decrease left"; }
+        bind "J" { Resize "Decrease down"; }
+        bind "K" { Resize "Decrease up"; }
+        bind "L" { Resize "Decrease right"; }
+        bind "h" { Resize "Increase left"; }
+        bind "j" { Resize "Increase down"; }
+        bind "k" { Resize "Increase up"; }
+        bind "l" { Resize "Increase right"; }
+    }
+
+    move {
+        bind "left" { MovePane "left"; }
+        bind "down" { MovePane "down"; }
+        bind "up" { MovePane "up"; }
+        bind "right" { MovePane "right"; }
+        bind "h" { MovePane "left"; }
+        bind "j" { MovePane "down"; }
+        bind "k" { MovePane "up"; }
+        bind "l" { MovePane "right"; }
+        bind "n" { MovePane; }
+        bind "p" { MovePaneBackwards; }
+        bind "tab" { MovePane; }
+    }
+
+    scroll {
+        bind "e" { EditScrollback; SwitchToMode "normal"; }
+        bind "s" { SwitchToMode "entersearch"; SearchInput 0; }
+    }
+
+    search {
+        bind "c" { SearchToggleOption "CaseSensitivity"; }
+        bind "n" { Search "down"; }
+        bind "o" { SearchToggleOption "WholeWord"; }
+        bind "p" { Search "up"; }
+        bind "w" { SearchToggleOption "Wrap"; }
+    }
+
+    session {
+        bind "a" {
+            LaunchOrFocusPlugin "zellij:about" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+        bind "c" {
+            LaunchOrFocusPlugin "configuration" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+        bind "d" { Detach; }
+        bind "l" {
+            LaunchOrFocusPlugin "zellij:layout-manager" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+        bind "p" {
+            LaunchOrFocusPlugin "plugin-manager" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+        bind "s" {
+            LaunchOrFocusPlugin "zellij:share" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+        bind "w" {
+            LaunchOrFocusPlugin "session-manager" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal"
+        }
+    }
+
+    // ========== Shared 绑定 ==========
+
+    // 全局 Alt 数字切 tab（所有模式可用）
+    shared {
+        bind "Alt 1" { GoToTab 1; SwitchToMode "normal"; }
+        bind "Alt 2" { GoToTab 2; SwitchToMode "normal"; }
+        bind "Alt 3" { GoToTab 3; SwitchToMode "normal"; }
+        bind "Alt 4" { GoToTab 4; SwitchToMode "normal"; }
+        bind "Alt 5" { GoToTab 5; SwitchToMode "normal"; }
+        bind "Alt 6" { GoToTab 6; SwitchToMode "normal"; }
+        bind "Alt 7" { GoToTab 7; SwitchToMode "normal"; }
+        bind "Alt 8" { GoToTab 8; SwitchToMode "normal"; }
+        bind "Alt 9" { GoToTab 9; SwitchToMode "normal"; }
+        // ---- Pane 焦点切换（方向键 + hjkl）----
+        //bind "Alt h" { MoveFocus "left"; SwitchToMode "normal"; }
+        //bind "Alt j" { MoveFocus "down"; SwitchToMode "normal"; }
+        //bind "Alt k" { MoveFocus "up"; SwitchToMode "normal"; }
+        //bind "Alt l" { MoveFocus "right"; SwitchToMode "normal"; }
+
+        // 替换原来的 Alt h/j/k/l 直接 MoveFocus，改为通过 navigator 插件
+        bind "Alt h" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "left"
+            };
+            SwitchToMode "normal";
+        }
+        bind "Alt j" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "down"
+            };
+            SwitchToMode "normal";
+        }
+        bind "Alt k" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "up"
+            };
+            SwitchToMode "normal";
+        }
+        bind "Alt l" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "right"
+            };
+            SwitchToMode "normal";
+        }
+
+    }
+
+    // 所有非 normal/locked 模式通用退出
+    shared_except "normal" "entersearch" {
+        bind "enter" { SwitchToMode "normal"; }
+    }
+    shared_except "normal"  "entersearch" "renametab" "renamepane" {
+        bind "esc" { SwitchToMode "normal"; }
+    }
+
+    // scroll 和 search 共享滚动操作
+    shared_among "scroll" "search" {
+        bind "PageDown" { PageScrollDown; }
+        bind "PageUp" { PageScrollUp; }
+        bind "left" { PageScrollUp; }
+        bind "down" { ScrollDown; }
+        bind "up" { ScrollUp; }
+        bind "right" { PageScrollDown; }
+        bind "Ctrl c" { ScrollToBottom; SwitchToMode "normal"; }
+        bind "d" { HalfPageScrollDown; }
+        bind "h" { PageScrollUp; }
+        bind "j" { ScrollDown; }
+        bind "k" { ScrollUp; }
+        bind "l" { PageScrollDown; }
+        bind "u" { HalfPageScrollUp; }
+    }
+
+    entersearch {
+        bind "Ctrl c" { SwitchToMode "scroll"; }
+        bind "esc" { SwitchToMode "scroll"; }
+        bind "enter" { SwitchToMode "search"; }
+    }
+
+    renametab {
+        bind "esc" { UndoRenameTab; SwitchToMode "tab"; }
+    }
+
+    shared_among "renametab" "renamepane" {
+        bind "Ctrl c" { SwitchToMode "normal"; }
+    }
+
+    renamepane {
+        bind "esc" { UndoRenamePane; SwitchToMode "pane"; }
+    }
+}
+
+// ========== 插件（移除 autolock）==========
+plugins {
+    about location="zellij:about"
+    compact-bar location="zellij:compact-bar"
+    configuration location="zellij:configuration"
+
+    // AppData\Roaming\zellij\plugins\navigator\release\navigator.wasm
+    navigator location="file:///Users/Administrator/AppData/Roaming/zellij/plugins/navigator/release/navigator.wasm" {
+        editor_commands "nvim,vim,hx,micro"
+        move_mod "Alt"
+    }
+
+    filepicker location="zellij:strider" {
+        cwd "/"
+    }
+    plugin-manager location="zellij:plugin-manager"
+    session-manager location="zellij:session-manager"
+    status-bar location="zellij:status-bar"
+    strider location="zellij:strider"
+    tab-bar location="zellij:tab-bar"
+    welcome-screen location="zellij:session-manager" {
+        welcome_screen false
+    }
+}
+
+load_plugins {
+    zellij:link
+}
+
+web_client {
+    font "monospace"
+}
+
+simplified_ui true
+
+themes {
+    tokyo-night-storm {
+        palette {
+            bg           "#24283b"
+            black        "#1f2335"
+            fg           "#c0caf5"
+            white        "#a9b1d6"
+            blue         "#7aa2f7"
+            cyan         "#7dcfff"
+            magenta      "#bb9af7"
+            orange       "#ff9e64"
+            yellow       "#e0af68"
+            red          "#f7768e"
+        }
+    }
+}
+
+theme "tokyo-night-storm"
+default_mode "normal"
+default_shell "nu"
+default_layout "compact"
+pane_frames false

@@ -1,0 +1,14 @@
+*.o
+*.pyc
+*.class
+*.so
+*.a
+__pycache__/
+__pycache__/**
+.cache/
+.cache/**
+node_modules/
+node_modules/**
+target/        # Rust/Maven 构建目录
+dist/
+build/

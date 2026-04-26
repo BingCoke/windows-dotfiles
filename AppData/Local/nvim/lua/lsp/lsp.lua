@@ -77,7 +77,7 @@ local on_attach = function(client, bufnr)
 
 	keymap.set(
 		"n",
-		"<leader>d",
+		"<leader>dd",
 		"<cmd>Trouble diagnostics toggle win.type = split win.position=bottom filter.buf=0<CR>",
 		opts
 	) -- show  diagnostics for line

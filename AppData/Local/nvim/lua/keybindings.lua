@@ -20,7 +20,6 @@ end, { noremap = true, silent = true })
 
 vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
 
-
 map({ "n", "v", "i" }, "<c-a>", "<esc>ggVG", opt)
 
 -- 关闭当前
@@ -43,8 +42,8 @@ map("n", "<leader>w", "<cmd>w<cr><esc>", opt)
 -- 上下比例控制
 map("n", "<C-Down>", "<cmd>resize -2<CR>", opt)
 map("n", "<C-Up>", "<cmd>resize +2<CR>", opt)
-map("n", "<C-Right>", "<cmd>vertical resize +2<CR>", opts)
-map("n", "<C-Left>", "<cmd>vertical resize -2<CR>", opts)
+map("n", "<C-Right>", "<cmd>vertical resize +2<CR>", opt)
+map("n", "<C-Left>", "<cmd>vertical resize -2<CR>", opt)
 -- Terminal相关
 -- 打开terminal
 map("n", "<leader>h", "<cmd>sp | terminal<CR>", opt)
@@ -94,23 +93,25 @@ local pluginKeys = {}
 
 map("n", "<c-w>", "<c-w>w", opt)
 
--- 跳转到下一个错误
+-- 跳转到下一个错误（仅 ERROR）
 vim.keymap.set("n", "]e", function()
-	vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR, float = false })
-end, { desc = "Next Error" })
+	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = false })
+end, opt)
 
--- 跳转到上一个错误
+-- 跳转到上一个错误（仅 ERROR）
 vim.keymap.set("n", "[e", function()
-	vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR, float = false })
-end, { desc = "Previous Error" })
+	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = false })
+end, opt)
 
--- 使用 Lua 配置
-vim.keymap.set("n", "[g", function()
-	vim.diagnostic.goto_prev({ float = false })
-end, { desc = "Go to previous diagnostic" })
+-- 下一个诊断（所有级别）
 vim.keymap.set("n", "]g", function()
-	vim.diagnostic.goto_next({ float = false })
-end, { desc = "Go to next diagnostic" })
+	vim.diagnostic.jump({ count = 1, float = false })
+end, opt)
+
+-- 上一个诊断（所有级别）—— 注意这里修正为 count = -1
+vim.keymap.set("n", "[g", function()
+	vim.diagnostic.jump({ count = -1, float = false })
+end, { desc = "Previous Diagnostic" })
 
 -- 使用vscode打开当前文件
 vim.keymap.set("n", "<leader>cc", function()
@@ -120,6 +121,5 @@ end, {
 	noremap = true,
 	silent = true,
 })
-
 
 return pluginKeys

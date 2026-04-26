@@ -1,0 +1,167 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.lnk
+*~
+.directory
+.fuse_hidden*
+
+# Build outputs
+build/
+dist/
+target/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Java (Maven/Gradle)
+*.class
+.gradle/
+target/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+venv/
+env/
+*.egg-info/
+
+# Node.js / frontend
+node_modules/
+package-lock.json
+yarn.lock
+dist/
+.next/
+out/
+
+# PHP
+vendor/
+composer.lock
+
+# Go
+*.test
+*.out
+vendor/
+
+# Rust
+Cargo.lock
+
+# C/C++
+*.gcda
+*.gcno
+
+# IDE and editors
+.vscode/
+*.code-workspace
+.idea/
+*.iml
+*.iws
+*.swp
+*.swo
+.netrwhist
+\#*\#
+.\#*
+.classpath
+.project
+.settings/
+xcuserdata/
+*.xccheckout
+*.moved-aside
+
+# Logs and environment
+*.log
+*.log.*
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+
+# Cache and temp
+.cache/
+*.cache
+tmp/
+temp/
+*.tmp
+.npm/
+
+# Docker
+.dockerignore
+
+# Vagrant
+.vagrant/
+
+# Ansible
+*.retry
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Kubernetes secrets
+*.secret.yaml
+*.secret.yml
+
+# Test and coverage
+test-results/
+test-reports/
+coverage/
+.nyc_output/
+*.lcov
+htmlcov/
+
+# Archives and packages
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.tar
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+
+# Editor backups
+*.bak
+*.backup
+*.old
+
+# VCS
+.svn/
+.hg/
+.bzr/
+
+# Docs generated
+docs/_build/
+apidoc/
+gh-pages/
+
+# Large binaries
+*.iso
+*.ova
+*.bin
+*.raw

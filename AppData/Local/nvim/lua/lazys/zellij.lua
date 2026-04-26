@@ -1,14 +1,17 @@
-
 return {
 
-    "swaits/zellij-nav.nvim",
-  lazy = true,
-  event = "VeryLazy",
-  keys = {
-    { "<m-h>", "<cmd>ZellijNavigateLeftTab<cr>",  { silent = true, desc = "navigate left or tab"  } },
-    { "<m-j>", "<cmd>ZellijNavigateDown<cr>",  { silent = true, desc = "navigate down"  } },
-    { "<m-k>", "<cmd>ZellijNavigateUp<cr>",    { silent = true, desc = "navigate up"    } },
-    { "<m-l>", "<cmd>ZellijNavigateRightTab<cr>", { silent = true, desc = "navigate right or tab" } },
-  },
-  opts = {},
+	"swaits/zellij-nav.nvim",
+	lazy = true,
+	event = "VeryLazy",
+	config = function()
+		require("zellij-nav").setup()
+
+		local map = vim.keymap.set
+		map({ "n" }, "<m-h>", "<cmd>ZellijNavigateLeft<cr>", { desc = "navigate left or tab" })
+		map({ "n" }, "<m-j>", "<cmd>ZellijNavigateDown<cr>", { desc = "navigate down" })
+		map({ "n" }, "<m-k>", "<cmd>ZellijNavigateUp<cr>", { desc = "navigate up" })
+		map({ "n" }, "<M-l>", "<cmd>ZellijNavigateRight<cr>", { desc = "navigate right or tab" })
+	end,
+	keys = {},
+	opts = {},
 }

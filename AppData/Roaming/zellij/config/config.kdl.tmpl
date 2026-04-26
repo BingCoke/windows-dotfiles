@@ -30,6 +30,12 @@ keybinds clear-defaults=true {
         bind "7" { GoToTab 7; SwitchToMode "normal"; }
         bind "8" { GoToTab 8; SwitchToMode "normal"; }
         bind "9" { GoToTab 9; SwitchToMode "normal"; }
+
+        // ---- Pane 焦点切换（方向键 + hjkl）----
+        bind "h" { MoveFocus "left"; SwitchToMode "normal"; }
+        bind "j" { MoveFocus "down"; SwitchToMode "normal"; }
+        bind "k" { MoveFocus "up"; SwitchToMode "normal"; }
+        bind "l" { MoveFocus "right"; SwitchToMode "normal"; }
         bind "Ctrl j" { MoveTab "right"; }                     // 移动 tab 位置
         bind "Ctrl k" { MoveTab "left"; }
 
@@ -240,10 +246,41 @@ keybinds clear-defaults=true {
         bind "Alt 8" { GoToTab 8; SwitchToMode "normal"; }
         bind "Alt 9" { GoToTab 9; SwitchToMode "normal"; }
         // ---- Pane 焦点切换（方向键 + hjkl）----
-        bind "Alt h" { MoveFocus "left"; SwitchToMode "normal"; }
-        bind "Alt j" { MoveFocus "down"; SwitchToMode "normal"; }
-        bind "Alt k" { MoveFocus "up"; SwitchToMode "normal"; }
-        bind "Alt l" { MoveFocus "right"; SwitchToMode "normal"; }
+        //bind "Alt h" { MoveFocus "left"; SwitchToMode "normal"; }
+        //bind "Alt j" { MoveFocus "down"; SwitchToMode "normal"; }
+        //bind "Alt k" { MoveFocus "up"; SwitchToMode "normal"; }
+        //bind "Alt l" { MoveFocus "right"; SwitchToMode "normal"; }
+
+        // 替换原来的 Alt h/j/k/l 直接 MoveFocus，改为通过 navigator 插件
+        bind "Alt h" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "left"
+            };
+            SwitchToMode "normal";
+        }
+        bind "Alt j" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "down"
+            };
+            SwitchToMode "normal";
+        }
+        bind "Alt k" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "up"
+            };
+            SwitchToMode "normal";
+        }
+        bind "Alt l" {
+            MessagePlugin "navigator" {
+                name "move_focus"
+                payload "right"
+            };
+            SwitchToMode "normal";
+        }
+
     }
 
     // 所有非 normal/locked 模式通用退出
@@ -295,6 +332,17 @@ plugins {
     about location="zellij:about"
     compact-bar location="zellij:compact-bar"
     configuration location="zellij:configuration"
+
+    {{- if eq .chezmoi.os "windows" }}
+    navigator location="file:{{ .chezmoi.homeDir | replace "\\" "/" }}/AppData/Roaming/zellij/plugins/navigator/release/navigator.wasm" {
+    {{- else }}
+    navigator location="file:~/.config/zellij/plugins/navigator.wasm" {
+    {{- end }}
+
+        editor_commands "nvim,vim,hx,microc"
+        move_mod "Alt"
+    }
+
     filepicker location="zellij:strider" {
         cwd "/"
     }

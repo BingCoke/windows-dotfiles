@@ -44,7 +44,7 @@ return {
 			--23:50:35 msg_show.list_cmd TabLineFill    xxx cleared
 			--23:50:44 msg_show.list_cmd TabLine      xxx guifg=#3b4261 guibg=#1f2335
 
-			--vim.cmd("highlight! TabLineFill guifg=None guibg=None")
+			vim.cmd("highlight! TabLineFill guifg=None guibg=#171b2e")
 
 			vim.cmd("highlight! TabLineSel guifg=#aab7f2 guibg=#1f2335")
 			vim.cmd("highlight! TabLineLine guifg=#96a2d6 guibg=#1f2335")
