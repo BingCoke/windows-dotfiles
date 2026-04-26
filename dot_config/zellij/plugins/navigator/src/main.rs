@@ -2,11 +2,16 @@ use zellij_tile::prelude::*;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::str::FromStr;
+use std::time::Instant;
 
 struct State {
     permissions_granted: bool,
     current_term_command: Option<String>,
     command_queue: VecDeque<Command>,
+    // Timing: when the current pending command was received via pipe().
+    pending_since: Option<Instant>,
+    // Timing: when we dispatched list_clients() for the current pending command.
+    list_clients_sent_at: Option<Instant>,
 
     // Configuration
     move_mod: Vec<Mod>,
@@ -53,11 +58,50 @@ impl ZellijPlugin for State {
     fn update(&mut self, event: Event) -> bool {
         match event {
             Event::ListClients(list) => {
+                let rx_at = Instant::now();
+                let rt_ms = self
+                    .list_clients_sent_at
+                    .map(|t| rx_at.duration_since(t).as_micros() as f64 / 1000.0);
+                match rt_ms {
+                    Some(ms) => eprintln!(
+                        "[navigator][timing] ListClients received; list_clients round-trip = {:.3} ms",
+                        ms
+                    ),
+                    None => eprintln!(
+                        "[navigator][timing] ListClients received (no pending request tracked)"
+                    ),
+                }
+
+                let parse_start = Instant::now();
                 self.current_term_command = term_command_from_client_list(list);
+                eprintln!(
+                    "[navigator][timing] term_command_from_client_list = {:.3} ms; current_term_command = {:?}",
+                    parse_start.elapsed().as_micros() as f64 / 1000.0,
+                    self.current_term_command
+                );
 
                 if !self.command_queue.is_empty() {
                     let command = self.command_queue.pop_front().unwrap();
+                    let exec_start = Instant::now();
                     self.execute_command(command);
+                    let exec_elapsed = exec_start.elapsed().as_micros() as f64 / 1000.0;
+
+                    let total_ms = self
+                        .pending_since
+                        .map(|t| t.elapsed().as_micros() as f64 / 1000.0);
+                    match total_ms {
+                        Some(ms) => eprintln!(
+                            "[navigator][timing] execute_command = {:.3} ms; TOTAL pipe->execute = {:.3} ms",
+                            exec_elapsed, ms
+                        ),
+                        None => eprintln!(
+                            "[navigator][timing] execute_command = {:.3} ms",
+                            exec_elapsed
+                        ),
+                    }
+
+                    self.pending_since = None;
+                    self.list_clients_sent_at = None;
                 }
             }
             Event::PermissionRequestResult(permission) => {
@@ -75,8 +119,25 @@ impl ZellijPlugin for State {
     }
 
     fn pipe(&mut self, pipe_message: PipeMessage) -> bool {
+        let pipe_at = Instant::now();
+        let name = pipe_message.name.clone();
+        let payload_dbg = pipe_message.payload.clone();
         if let Some(command) = parse_command(pipe_message) {
+            eprintln!(
+                "[navigator][timing] pipe() received: name={:?}, payload={:?}",
+                name, payload_dbg
+            );
+            self.pending_since = Some(pipe_at);
             self.handle_command(command);
+            eprintln!(
+                "[navigator][timing] pipe() handler returned in {:.3} ms (waiting for ListClients)",
+                pipe_at.elapsed().as_micros() as f64 / 1000.0
+            );
+        } else {
+            eprintln!(
+                "[navigator][timing] pipe() ignored message name={:?}, payload={:?}",
+                name, payload_dbg
+            );
         }
         true
     }
@@ -88,6 +149,8 @@ impl Default for State {
             permissions_granted: false,
             current_term_command: None,
             command_queue: VecDeque::new(),
+            pending_since: None,
+            list_clients_sent_at: None,
 
             move_mod: vec![Mod::Ctrl],
             resize_mod: vec![Mod::Alt],
@@ -100,15 +163,32 @@ impl Default for State {
 impl State {
     fn handle_command(&mut self, command: Command) {
         self.command_queue.push_back(command);
+        let before = Instant::now();
         list_clients();
+        self.list_clients_sent_at = Some(before);
+        eprintln!(
+            "[navigator][timing] list_clients() call returned in {:.3} ms (async, awaiting event)",
+            before.elapsed().as_micros() as f64 / 1000.0
+        );
     }
 
     fn execute_command(&mut self, command: Command) {
-        if self.current_pane_is_editor() {
+        let is_editor = self.current_pane_is_editor();
+        eprintln!(
+            "[navigator][timing] execute_command: is_editor_pane={}",
+            is_editor
+        );
+        if is_editor {
+            let t = Instant::now();
             write_chars(&self.command_to_keybind(&command));
+            eprintln!(
+                "[navigator][timing] write_chars returned in {:.3} ms",
+                t.elapsed().as_micros() as f64 / 1000.0
+            );
             return;
         }
 
+        let t = Instant::now();
         match command {
             Command::MoveFocus(direction) => move_focus(direction),
             Command::MoveFocusOrTab(direction) => move_focus_or_tab(direction),
@@ -116,6 +196,10 @@ impl State {
                 resize_focused_pane_with_direction(Resize::Increase, direction)
             }
         }
+        eprintln!(
+            "[navigator][timing] focus/resize API returned in {:.3} ms",
+            t.elapsed().as_micros() as f64 / 1000.0
+        );
     }
 
     fn current_pane_is_editor(&self) -> bool {
