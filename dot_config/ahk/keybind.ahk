@@ -31,11 +31,6 @@
 
 ~F13 & r::Send("{F5}")
 
-usedKeys := "wqhjkl,r,c,v"
-for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
-    if !InStr(usedKeys, char)
-        Hotkey("~F13 & " char, (*) => {})
-}
 
 
 ; 鼠标拖动窗口和resize窗口
@@ -91,9 +86,15 @@ for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
     }
 }
 
-F13 & 1:: MoveOrGotoDesktopNumber(0)
-F13 & 2:: MoveOrGotoDesktopNumber(1)
-F13 & 3:: MoveOrGotoDesktopNumber(2)
-F13 & 4:: MoveOrGotoDesktopNumber(3)
-F13 & 5:: MoveOrGotoDesktopNumber(4)
-F13 & 6:: MoveOrGotoDesktopNumber(5)
+~F13 & 1:: MoveOrGotoDesktopNumber(0)
+~F13 & 2:: MoveOrGotoDesktopNumber(1)
+~F13 & 3:: MoveOrGotoDesktopNumber(2)
+~F13 & 4:: MoveOrGotoDesktopNumber(3)
+~F13 & 5:: MoveOrGotoDesktopNumber(4)
+~F13 & 6:: MoveOrGotoDesktopNumber(5)
+
+usedKeys := "wqhjkl,r,c,v"
+for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
+    if !InStr(usedKeys, char)
+        Hotkey("~F13 & " char, (*) => {})
+}

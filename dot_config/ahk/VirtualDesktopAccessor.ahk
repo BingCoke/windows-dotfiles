@@ -143,12 +143,12 @@ OnChangeDesktop(wParam, lParam, msg, hwnd) {
 ; #^!+b::MoveOrGotoDesktopNumber(13)
 
 
-F13 & 1:: MoveOrGotoDesktopNumber(0)
-F13 & 2:: MoveOrGotoDesktopNumber(1)
-F13 & 3:: MoveOrGotoDesktopNumber(2)
-F13 & 4:: MoveOrGotoDesktopNumber(3)
-F13 & 5:: MoveOrGotoDesktopNumber(4)
-F13 & 6:: MoveOrGotoDesktopNumber(5)
+; F13 & 1:: MoveOrGotoDesktopNumber(0)
+; F13 & 2:: MoveOrGotoDesktopNumber(1)
+; F13 & 3:: MoveOrGotoDesktopNumber(2)
+; F13 & 4:: MoveOrGotoDesktopNumber(3)
+; F13 & 5:: MoveOrGotoDesktopNumber(4)
+; F13 & 6:: MoveOrGotoDesktopNumber(5)
 
 ;LWin & q:: MoveOrGotoDesktopNumber(5)
 ;LWin & w:: MoveOrGotoDesktopNumber(6)
