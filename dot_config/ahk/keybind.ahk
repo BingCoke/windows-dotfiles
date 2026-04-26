@@ -3,13 +3,6 @@
 
 #Include "VirtualDesktopAccessor.ahk"
 
-; 1. 将左Win键单独按下时映射为F13
-;LWin::Send "{F13}"
-;LWin::F13
-;~LWin::vkE8
-;~LWin::F13
-
-
 
 
 
@@ -29,6 +22,7 @@
         WinKill("ahk_id " hwnd)  ; 强制结束该窗口
     }
 }
+
 ~F13 & h::Send("{Left}")
 
 ~F13 & j::Send("{Down}")
@@ -49,7 +43,7 @@ for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
     CoordMode("Mouse", "Screen")
     MouseGetPos(&startX, &startY, &hwnd)
     WinGetPos(&winX, &winY,,, hwnd)
-    SetWinDelay(1)
+    SetWinDelay(3)
 
     while GetKeyState("LButton", "P") {
         MouseGetPos(&currX, &currY)
@@ -58,14 +52,11 @@ for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
 }
 
 
-
-
-
 ~F13 & RButton:: {
     CoordMode("Mouse", "Screen")
     MouseGetPos(&startX, &startY, &hwnd)
     WinGetPos(&winX, &winY, &winW, &winH, hwnd)
-    SetWinDelay(1)
+    SetWinDelay(3)
 
     ; 根据鼠标在窗口中的位置决定拖拽方向
     resizeRight  := (startX >= winX + winW / 2)
@@ -99,3 +90,10 @@ for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
         WinMove(newX, newY, newW, newH, hwnd)
     }
 }
+
+F13 & 1:: MoveOrGotoDesktopNumber(0)
+F13 & 2:: MoveOrGotoDesktopNumber(1)
+F13 & 3:: MoveOrGotoDesktopNumber(2)
+F13 & 4:: MoveOrGotoDesktopNumber(3)
+F13 & 5:: MoveOrGotoDesktopNumber(4)
+F13 & 6:: MoveOrGotoDesktopNumber(5)

@@ -13,7 +13,6 @@ config.color_scheme = "tokyonight-storm"
 
 config.window_decorations = "RESIZE"
 
-local config_dir = wezterm.config_dir
 
 config.window_background_opacity = 0.9
 
@@ -58,6 +57,10 @@ config.colors.tab_bar = {
 config.disable_default_key_bindings = true
 
 config.keys = {
+	{
+		key = "F13",
+		action = wezterm.action.Nop,
+	},
 	{ key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
 	{ key = "q", mods = "CTRL", action = act.CloseCurrentTab({ confirm = true }) },
 
