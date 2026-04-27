@@ -12,3 +12,8 @@ node_modules/**
 target/        # Rust/Maven 构建目录
 dist/
 build/
+
+
+{{- if ne .chezmoi.os "windows" }}
+.config/ahk/
+{{- end }}

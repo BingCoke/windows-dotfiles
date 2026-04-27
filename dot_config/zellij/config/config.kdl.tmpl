@@ -40,8 +40,12 @@ keybinds clear-defaults=true {
         bind "Ctrl k" { MoveTab "left"; }
 
         // ---- Pane 操作 ----
-        bind "-" { NewPane "Down"; SwitchToMode "normal"; }    // 水平分屏
+        bind "-" {
+          NewPane "Down";
+          SwitchToMode "normal";
+        }    // 水平分屏
         bind "=" { NewPane "Right"; SwitchToMode "normal"; }   // 垂直分屏
+
         bind "s" { NewPane "stacked"; SwitchToMode "normal"; } // 堆叠分屏
         bind "x" { CloseFocus; SwitchToMode "normal"; }        // 关闭当前 pane
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; } // 放大/还原 pane
@@ -388,7 +392,7 @@ themes {
 simplified_ui true
 theme "tokyo-night-storm"
 default_mode "normal"
-default_shell "nu"
+default_shell "nu.exe"
 session_serialization false
 default_layout "simple"
 pane_frames false
