@@ -41,10 +41,19 @@ keybinds clear-defaults=true {
 
         // ---- Pane 操作 ----
         bind "-" {
-          NewPane "Down";
+          Run "nu" {
+            cwd "."
+            direction "Down"
+          }
           SwitchToMode "normal";
         }    // 水平分屏
-        bind "=" { NewPane "Right"; SwitchToMode "normal"; }   // 垂直分屏
+        bind "=" {
+            Run "nu" {
+              cwd "."
+              direction "Right"
+            }
+            SwitchToMode "normal";
+        }   // 垂直分屏
 
         bind "s" { NewPane "stacked"; SwitchToMode "normal"; } // 堆叠分屏
         bind "x" { CloseFocus; SwitchToMode "normal"; }        // 关闭当前 pane
