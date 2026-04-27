@@ -1,3 +1,4 @@
+{{- if eq .chezmoi.os "windows" -}}
 if ($Env:OS -ne "Windows_NT") { exit 0 }
 
 $AhkScript = Join-Path $Env:USERPROFILE ".config\ahk\keybind.ahk"
@@ -43,3 +44,4 @@ Write-Host "Task registered: $TaskName"
 Get-Process -Name "AutoHotkey" -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Process -FilePath $Ahk -ArgumentList "`"$AhkScript`"" -WindowStyle Hidden
 Write-Host "AHK started: $AhkScript"
+{{- end }}

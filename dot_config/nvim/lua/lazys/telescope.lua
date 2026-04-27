@@ -12,7 +12,7 @@ return {
 			-- nvim-tree 支持
 			project.setup({
 				--manual_mode = false,
-				detection_methods = { "pattern" },
+				detection_methods = { "lsp", "pattern" },
 				patterns = {
 					".git",
 					".svn",

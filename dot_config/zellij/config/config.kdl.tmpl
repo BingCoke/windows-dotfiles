@@ -9,8 +9,8 @@ keybinds clear-defaults=true {
         // ---- 退出 tmux ----
         bind "Ctrl b" { Write 2; SwitchToMode "normal"; }  // 发送真正的 Ctrl-b
         bind "esc" { SwitchToMode "normal"; }
-        bind "Ctrl g" { SwitchToMode "normal"; }
-        bind "q" { SwitchToMode "normal"; }
+        // bind "Ctrl g" { SwitchToMode "normal"; }
+        bind "q" { Quit; }
 
         // ---- Tab 操作 ----
         bind "c" { NewTab; SwitchToMode "normal"; }           // 新建 tab
@@ -80,12 +80,12 @@ keybinds clear-defaults=true {
         }
 
         // ---- 进入子模式（精细操作）----
-        bind "R" { SwitchToMode "resize"; }     // 进入 resize 模式（连续调整大小）
-        bind "M" { SwitchToMode "move"; }       // 进入 move 模式（连续移动 pane）
-        bind "S" { SwitchToMode "scroll"; }     // 进入 scroll 模式（滚动/搜索）
-        bind "T" { SwitchToMode "tab"; }        // 进入 tab 模式（批量 tab 操作）
-        bind "P" { SwitchToMode "pane"; }       // 进入 pane 模式（更多 pane 操作）
-        bind "O" { SwitchToMode "session"; }    // 进入 session 模式
+        bind "Ctrl r" { SwitchToMode "resize"; }     // 进入 resize 模式（连续调整大小）
+        bind "Ctrl m" { SwitchToMode "move"; }       // 进入 move 模式（连续移动 pane）
+        bind "Ctrl s" { SwitchToMode "scroll"; }     // 进入 scroll 模式（滚动/搜索）
+        bind "Ctrl p" { SwitchToMode "tab"; }        // 进入 tab 模式（批量 tab 操作）
+        bind "Ctrl p" { SwitchToMode "pane"; }       // 进入 pane 模式（更多 pane 操作）
+        bind "Ctrl o" { SwitchToMode "session"; }    // 进入 session 模式
     }
 
     // ========== 子模式（精细操作，esc/enter 返回 normal）==========
@@ -329,8 +329,12 @@ keybinds clear-defaults=true {
 
 // ========== 插件（移除 autolock）==========
 plugins {
-    about location="zellij:about"
-    compact-bar location="zellij:compact-bar"
+    // about location="zellij:about"
+
+    compact-bar location="zellij:compact-bar" {
+      tooltip "F1"
+    }
+
     configuration location="zellij:configuration"
 
     {{- if eq .chezmoi.os "windows" }}
@@ -348,7 +352,7 @@ plugins {
     }
     plugin-manager location="zellij:plugin-manager"
     session-manager location="zellij:session-manager"
-    status-bar location="zellij:status-bar"
+    // status-bar location="zellij:status-bar"
     strider location="zellij:strider"
     tab-bar location="zellij:tab-bar"
     welcome-screen location="zellij:session-manager" {
@@ -356,15 +360,12 @@ plugins {
     }
 }
 
-load_plugins {
-    zellij:link
-}
+
 
 web_client {
     font "monospace"
 }
 
-simplified_ui true
 
 themes {
     tokyo-night-storm {
@@ -383,8 +384,16 @@ themes {
     }
 }
 
+
+simplified_ui true
 theme "tokyo-night-storm"
 default_mode "normal"
-default_shell "nu"
-default_layout "compact"
+//default_shell "nu"
+session_serialization false
+default_layout "simple"
 pane_frames false
+
+show_startup_tips false
+
+on_force_close "quit"
+
