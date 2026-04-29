@@ -9,20 +9,20 @@ SetWinDelay(1)
 
 
 ~F13 & w::{
-    Run "alacritty.exe",,,  &pid
-    WinWait "ahk_pid " pid
-    WinActivate "ahk_pid " pid
-    WinMoveTop "ahk_pid " pid
+  Run "alacritty.exe",,,  &pid
+  WinWait "ahk_pid " pid
+  WinActivate "ahk_pid " pid
+  WinMoveTop "ahk_pid " pid
 }                    ; 打开 Terminal
 
 ~F13 & Space::Send("{F14}")
 
 ~F13 & q::  ; Win+Q
 {
-    MouseGetPos(, , &hwnd)  ; 获取鼠标下的窗口句柄
-    if hwnd {
-        WinKill("ahk_id " hwnd)  ; 强制结束该窗口
-    }
+  MouseGetPos(, , &hwnd)  ; 获取鼠标下的窗口句柄
+  if hwnd {
+    WinKill("ahk_id " hwnd)  ; 强制结束该窗口
+  }
 }
 
 ~F13 & h::Send("{Left}")
@@ -35,101 +35,136 @@ SetWinDelay(1)
 
 
 
-; 鼠标拖动窗口和resize窗口
+  ; 鼠标拖动窗口和resize窗口
 ~F13 & LButton::DragWindow()
+
+
 ~F13 & RButton::ResizeWindow()
 
 ~F13:: {
-    global isMovingWindow
+  global isMovingWindow
 
-    if isMovingWindow
-        return
+  if isMovingWindow{
+    return
+  }
 
-    if GetKeyState("LButton", "P")
-        DragWindow()
-    else if GetKeyState("RButton", "P")
-        ResizeWindow()
+  if GetKeyState("LButton", "P")
+    DragWindow()
+  else if GetKeyState("RButton", "P")
+    ResizeWindow()
 }
+
+
+
 
 DragWindow() {
-    global isMovingWindow
+  global isMovingWindow
+  CoordMode("Mouse", "Screen")
+  if isMovingWindow {
 
-    CoordMode("Mouse", "Screen")
+    return
+  }
+  isMovingWindow := true
+  MouseGetPos(&startX, &startY, &hwnd)
+  WinActivate("ahk_id " hwnd)
+  WinGetPos(&winX, &winY, &winW, &winH, hwnd)
+  ; 如果是最大化状态,解除最大化状态
+  if WinGetMinMax("ahk_id " hwnd) = 1 {
+      ; WINDOWPLACEMENT 结构
+      wp := Buffer(44, 0)
+      NumPut("UInt", 44, wp, 0)          ; length
+      DllCall("GetWindowPlacement", "Ptr", hwnd, "Ptr", wp)
+      NumPut("UInt", 1, wp, 8)           ; showCmd = SW_SHOWNORMAL
+      ; 设置还原后的位置 (rcNormalPosition offset=28)
+      NumPut("Int", winX, wp, 28)
+      NumPut("Int", winY, wp, 32)
+      NumPut("Int", winX + winW, wp, 36)
+      NumPut("Int", winY + winH, wp, 40)
+      DllCall("SetWindowPlacement", "Ptr", hwnd, "Ptr", wp)
+  }
 
-    if isMovingWindow
-        return
 
-
-
-    isMovingWindow := true
-    MouseGetPos(&startX, &startY, &hwnd)
-    WinActivate("ahk_id " hwnd)
-    WinGetPos(&winX, &winY,,, hwnd)
-
-    while GetKeyState("LButton", "P")  {
-        MouseGetPos(&currX, &currY)
-        WinMove(winX + currX - startX, winY + currY - startY,,, hwnd)
-    }
-
-    isMovingWindow := false
+  while GetKeyState("LButton", "P") {
+    MouseGetPos(&currX, &currY)
+    WinMove(winX + currX - startX, winY + currY - startY,,, hwnd)
+  }
+  isMovingWindow := false
 }
+
+
+
 
 ResizeWindow() {
-    global isMovingWindow
+  global isMovingWindow
 
-    CoordMode("Mouse", "Screen")
-    if isMovingWindow
-        return
+  CoordMode("Mouse", "Screen")
+  if isMovingWindow
+    return
 
-    isMovingWindow := true
+  isMovingWindow := true
+  MouseGetPos(&startX, &startY, &hwnd)
+  WinGetPos(&winX, &winY, &winW, &winH, hwnd)
 
-    MouseGetPos(&startX, &startY, &hwnd)
-    WinGetPos(&winX, &winY, &winW, &winH, hwnd)
+  if WinGetMinMax("ahk_id " hwnd) = 1 {
+      ; WINDOWPLACEMENT 结构
+      wp := Buffer(44, 0)
+      NumPut("UInt", 44, wp, 0)          ; length
+      DllCall("GetWindowPlacement", "Ptr", hwnd, "Ptr", wp)
+      NumPut("UInt", 1, wp, 8)           ; showCmd = SW_SHOWNORMAL
+      ; 设置还原后的位置 (rcNormalPosition offset=28)
+      NumPut("Int", winX, wp, 28)
+      NumPut("Int", winY, wp, 32)
+      NumPut("Int", winX + winW, wp, 36)
+      NumPut("Int", winY + winH, wp, 40)
+      DllCall("SetWindowPlacement", "Ptr", hwnd, "Ptr", wp)
+  }
 
-    ; 根据鼠标在窗口中的位置决定拖拽方向
-    resizeRight  := (startX >= winX + winW / 2)
-    resizeBottom := (startY >= winY + winH / 2)
 
-    minW := 100
-    minH := 100
+  ; 根据鼠标在窗口中的位置决定拖拽方向
+  resizeRight  := (startX >= winX + winW / 2)
+  resizeBottom := (startY >= winY + winH / 2)
 
-    while GetKeyState("RButton", "P") {
-        MouseGetPos(&curX, &curY)
-        deltaX := curX - startX
-        deltaY := curY - startY
+  minW := 100
+  minH := 100
 
-        newX := winX, newY := winY
-        newW := winW, newH := winH
+  while GetKeyState("RButton", "P") {
+    MouseGetPos(&curX, &curY)
+      deltaX := curX - startX
+      deltaY := curY - startY
 
-        if resizeRight
-            newW := Max(winW + deltaX, minW)
-        else {
-            newW := Max(winW - deltaX, minW)
-            newX := winX + winW - newW
-        }
+      newX := winX, newY := winY
+      newW := winW, newH := winH
 
-        if resizeBottom
-            newH := Max(winH + deltaY, minH)
-        else {
-            newH := Max(winH - deltaY, minH)
-            newY := winY + winH - newH
-        }
+      if resizeRight
+        newW := Max(winW + deltaX, minW)
+      else {
+        newW := Max(winW - deltaX, minW)
+        newX := winX + winW - newW
+      }
 
-        WinMove(newX, newY, newW, newH, hwnd)
-    }
+      if resizeBottom
+        newH := Max(winH + deltaY, minH)
+      else {
+        newH := Max(winH - deltaY, minH)
+        newY := winY + winH - newH
+      }
 
-    isMovingWindow := false
+    WinMove(newX, newY, newW, newH, hwnd)
+  }
+
+  isMovingWindow := false
 }
 
-~F13 & 1:: MoveOrGotoDesktopNumber(0)
-~F13 & 2:: MoveOrGotoDesktopNumber(1)
-~F13 & 3:: MoveOrGotoDesktopNumber(2)
-~F13 & 4:: MoveOrGotoDesktopNumber(3)
-~F13 & 5:: MoveOrGotoDesktopNumber(4)
+  ~F13 & 1:: MoveOrGotoDesktopNumber(0)
+  ~F13 & 2:: MoveOrGotoDesktopNumber(1)
+  ~F13 & 3:: MoveOrGotoDesktopNumber(2)
+  ~F13 & 4:: MoveOrGotoDesktopNumber(3)
+  ~F13 & 5:: MoveOrGotoDesktopNumber(4)
 ~F13 & 6:: MoveOrGotoDesktopNumber(5)
 
-usedKeys := "wqhjkl,r,c,v"
-for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
+  usedKeys := "wqhjkl,r,c,v"
+  for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
     if !InStr(usedKeys, char)
-        Hotkey("~F13 & " char, (*) => {})
-}
+      Hotkey("~F13 & " char, (*) => {})
+  }
+
