@@ -17,6 +17,22 @@ SetWinDelay(1)
 
 ~F13 & Space::Send("{F14}")
 
+~F13 & f::
+{
+    hwnd := WinExist("A")          ; 获取当前活动窗口
+    if !hwnd
+        return
+
+    minMax := WinGetMinMax(hwnd)
+
+    if (minMax = 1)                    ; 当前已最大化 → 还原
+        WinRestore(hwnd)
+    else if (minMax = -1)                ; 当前已最小化 → 最大化
+        WinMaximize(hwnd)
+    else                               ; 正常状态 → 最大化
+        WinMaximize(hwnd)
+}
+
 ~F13 & q::  ; Win+Q
 {
   MouseGetPos(, , &hwnd)  ; 获取鼠标下的窗口句柄
@@ -155,16 +171,16 @@ ResizeWindow() {
   isMovingWindow := false
 }
 
-  ~F13 & 1:: MoveOrGotoDesktopNumber(0)
-  ~F13 & 2:: MoveOrGotoDesktopNumber(1)
-  ~F13 & 3:: MoveOrGotoDesktopNumber(2)
-  ~F13 & 4:: MoveOrGotoDesktopNumber(3)
-  ~F13 & 5:: MoveOrGotoDesktopNumber(4)
+~F13 & 1:: MoveOrGotoDesktopNumber(0)
+~F13 & 2:: MoveOrGotoDesktopNumber(1)
+~F13 & 3:: MoveOrGotoDesktopNumber(2)
+~F13 & 4:: MoveOrGotoDesktopNumber(3)
+~F13 & 5:: MoveOrGotoDesktopNumber(4)
 ~F13 & 6:: MoveOrGotoDesktopNumber(5)
 
-  usedKeys := "wqhjkl,r,c,v"
-  for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
-    if !InStr(usedKeys, char)
-      Hotkey("~F13 & " char, (*) => {})
-  }
+usedKeys := "wqhjkl,r,c,v"
+for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
+  if !InStr(usedKeys, char)
+    Hotkey("~F13 & " char, (*) => {})
+}
 

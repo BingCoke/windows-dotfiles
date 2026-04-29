@@ -1,20 +1,7 @@
 {{- if eq .chezmoi.os "windows" -}}
 if ($Env:OS -ne "Windows_NT") { exit 0 }
-
 $AhkScript = Join-Path $Env:USERPROFILE ".config\ahk\keybind.ahk"
 $TaskName = "chezmoi_AHK_keybind"
-
-$AhkCmd = Get-Command "AutoHotkey.exe" -ErrorAction SilentlyContinue
-if ($AhkCmd) {
-    $Ahk = $AhkCmd.Source
-} else {
-    $Ahk = "C:\Program Files\AutoHotkey\AutoHotkey.exe"
-}
-
-if (-not (Test-Path $Ahk)) {
-    Write-Warning "AutoHotkey.exe not found: $Ahk"
-    exit 1
-}
 
 if (-not (Test-Path $AhkScript)) {
     Write-Warning "AHK script not found: $AhkScript"
@@ -27,7 +14,7 @@ if ($existing) {
 }
 
 $trigger   = New-ScheduledTaskTrigger -AtLogOn
-$action    = New-ScheduledTaskAction -Execute $Ahk -Argument "`"$AhkScript`""
+$action    = New-ScheduledTaskAction -Execute $AhkScript
 $settings  = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 0) -MultipleInstances IgnoreNew
 $principal = New-ScheduledTaskPrincipal -UserId "$Env:USERDOMAIN\$Env:USERNAME" -LogonType Interactive -RunLevel Highest
 
@@ -42,6 +29,6 @@ Register-ScheduledTask `
 Write-Host "Task registered: $TaskName"
 
 Get-Process -Name "AutoHotkey" -ErrorAction SilentlyContinue | Stop-Process -Force
-Start-Process -FilePath $Ahk -ArgumentList "`"$AhkScript`"" -WindowStyle Hidden
+Start-Process -FilePath $AhkScript -WindowStyle Hidden
 Write-Host "AHK started: $AhkScript"
 {{- end }}
