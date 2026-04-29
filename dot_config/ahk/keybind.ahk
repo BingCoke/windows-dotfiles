@@ -178,7 +178,7 @@ ResizeWindow() {
 ~F13 & 5:: MoveOrGotoDesktopNumber(4)
 ~F13 & 6:: MoveOrGotoDesktopNumber(5)
 
-usedKeys := "wqhjkl,r,c,v"
+usedKeys := "wqhjklrcf"
 for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
   if !InStr(usedKeys, char)
     Hotkey("~F13 & " char, (*) => {})
