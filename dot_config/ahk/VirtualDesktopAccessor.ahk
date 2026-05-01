@@ -128,7 +128,6 @@ MoveOrGotoDesktopNumber(num) {
         if IsPinnedWindow(hwnd)
           continue
 
-        ; 获取进程名，排除企业微信等干扰进程
         try {
             procName := WinGetProcessName("ahk_id " hwnd)
         } catch {
@@ -141,7 +140,33 @@ MoveOrGotoDesktopNumber(num) {
           title := ""
         }
 
+        ; title 没有或者是桌面的 取消
+        if (title = "" || title = "Program Manager")
+          continue
+
+        ; 查看是否是tool window
+        try {
+          exStyle := WinGetExStyle("ahk_id " hwnd)
+          if (exStyle & 0x00000080)  ; WS_EX_TOOLWINDOW
+            continue
+          if (exStyle & 0x08000000)  ; WS_EX_NOACTIVATE
+            continue
+        } catch {
+          continue
+        }
+
+
+
+        try {
+          minMax := WinGetMinMax("ahk_id " hwnd)
+          if (minMax = -1)
+            continue
+        } catch {
+          continue
+        }
+
         WinActivate("ahk_id " hwnd)
+
         break
       }
       return
