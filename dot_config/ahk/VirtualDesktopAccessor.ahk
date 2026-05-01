@@ -27,6 +27,26 @@ SetWorkingDir(A_ScriptDir)
       return count
   }
 
+IsWindowOnCurrentVirtualDesktop(hwnd) {
+    global IsWindowOnCurrentVirtualDesktopProc
+    return DllCall(IsWindowOnCurrentVirtualDesktopProc, "Ptr", hwnd, "Int")
+}
+
+IsWindowOnDesktopNumber(hwnd, num) {
+    global IsWindowOnDesktopNumberProc
+    return DllCall(IsWindowOnDesktopNumberProc, "Ptr", hwnd, "Int", num, "Int")
+}
+IsPinnedWindow(hwnd) {
+    global IsPinnedWindowProc
+    return DllCall(IsPinnedWindowProc, "Ptr", hwnd, "Int")
+}
+
+GetCurrentDesktopNumber() {
+    global GetCurrentDesktopNumberProc
+    return DllCall(GetCurrentDesktopNumberProc, "Int")
+}
+
+
 MoveWindowUnderMouseToDesktop(number) {
   global MoveWindowToDesktopNumberProc, GoToDesktopNumberProc
     MouseGetPos(, , &hwnd)
@@ -73,30 +93,160 @@ MoveOrGotoDesktopNumber(num) {
   ; If user is holding down Mouse left button, move the window under mouse also
     if (GetKeyState("LButton","P")) {
       MoveWindowUnderMouseToDesktop(num)
-    } else {
-      GoToDesktopNumber(num)
-        Sleep 50
-        hwnds := WinGetList()
-        for hwnd in hwnds {
-          title := WinGetTitle("ahk_id " hwnd)
-          ; 获取进程名，排除企业微信等干扰进程
-          try {
-              procName := WinGetProcessName("ahk_id " hwnd)
-          } catch {
-              procName := ""
-          }
-          ; 跳过空标题、Program Manager、企业微信
-          if (title = "" || title = "Program Manager" || title = "wemail")
-              continue
-          if (procName = "WXWork.exe" || procName = "wemail.exe")
-              continue
+      return
+    }
+      logFile := A_ScriptDir "\ahk_debug.log"
+      timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
+      sep := "================================================================`n"
+      log := sep
+      log .= "TIME: " timestamp "  →  Desktop(" num ")`n"
 
-          WinActivate("ahk_id " hwnd)
-          break
+      ; 切换前所有窗口
+      log .= "[PRE-SWITCH ALL WINDOWS]`n"
+      log .= GetAllWindowsInfo()
+      log .= sep
+
+      GoToDesktopNumber(num)
+
+      ; 切换后快照
+      log .= "[POST-SWITCH ACTIVE WINDOW]`n"
+      log .= GetWindowInfo(WinExist("A"))
+      log .= sep
+
+      ; 切换后所有窗口
+      log .= "[POST-SWITCH ALL WINDOWS]`n"
+      log .= GetAllWindowsInfo()
+      log .= sep . "`n"
+
+      FileAppend(log, logFile)
+
+      hwnds := WinGetList()
+      for hwnd in hwnds {
+        if !IsWindowOnCurrentVirtualDesktop(hwnd)
+          continue
+        ; 排除 pin 到所有桌面的窗口（任务栏等）
+        if IsPinnedWindow(hwnd)
+          continue
+
+        ; 获取进程名，排除企业微信等干扰进程
+        try {
+            procName := WinGetProcessName("ahk_id " hwnd)
+        } catch {
+            procName := ""
         }
 
+        try {
+          title := WinGetTitle("ahk_id " hwnd)
+        } catch {
+          title := ""
+        }
+
+        WinActivate("ahk_id " hwnd)
+        break
+      }
+      return
+
+}
+GetWindowInfo(hwnd) {
+  if !hwnd
+    return "  (none)`n"
+
+  info := "  hwnd       = " hwnd "`n"
+
+  try {
+    info .= "  title      = " WinGetTitle("ahk_id " hwnd) "`n"
+  } catch  {
+  }
+
+  try {
+    info .= "  proc       = " WinGetProcessName("ahk_id " hwnd) "`n"
+  } catch  {
+  }
+
+  try {
+    info .= "  pid        = " WinGetPID("ahk_id " hwnd) "`n"
+  } catch  {
+  }
+
+  try {
+    info .= "  class      = " WinGetClass("ahk_id " hwnd) "`n"
+  } catch  {
+  }
+
+  try {
+    minMax := WinGetMinMax("ahk_id " hwnd)
+    minMaxStr := (minMax = 1) ? "1 (maximized)" : (minMax = -1) ? "-1 (minimized)" : "0 (normal)"
+    info .= "  minMax     = " minMaxStr "`n"
+  } catch  {
+  }
+
+  try {
+    style := WinGetStyle("ahk_id " hwnd)
+    info .= "  style      = 0x" Format("{:08X}", style) "`n"
+    info .= "  WS_VISIBLE = " ((style & 0x10000000) ? "YES" : "NO") "`n"
+    info .= "  WS_CHILD   = " ((style & 0x40000000) ? "YES" : "NO") "`n"
+  } catch  {
+  }
+
+  try {
+    exStyle := WinGetExStyle("ahk_id " hwnd)
+    info .= "  exStyle    = 0x" Format("{:08X}", exStyle) "`n"
+    info .= "  WS_EX_TOOL = " ((exStyle & 0x00000080) ? "YES" : "NO") "`n"
+    info .= "  WS_EX_NOAC = " ((exStyle & 0x08000000) ? "YES" : "NO") "`n"
+  } catch  {
+  }
+
+  try {
+    WinGetPos(&x, &y, &w, &h, "ahk_id " hwnd)
+    info .= "  pos        = x=" x " y=" y " w=" w " h=" h "`n"
+  } catch  {
+  }
+
+  return info
+}
+
+GetAllWindowsInfo() {
+  hwnds := WinGetList()
+  info := "  total=" hwnds.Length "`n"
+  info .= "--------------------------------`n"
+
+  idx := 0
+  for hwnd in hwnds {
+    if !IsWindowOnCurrentVirtualDesktop(hwnd)
+        continue
+    ; 排除 pin 到所有桌面的窗口（任务栏等）
+    if IsPinnedWindow(hwnd)
+        continue
+    idx++
+    info .= "[" idx "] "
+
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch
+      title := ""
+
+    ; 无标题窗口单行打印，减少噪音
+    if (title = "") {
+      try {
+          proc := WinGetProcessName("ahk_id " hwnd)
+      } catch {
+          proc := "?"
+      }
+
+      try {
+          cls := WinGetClass("ahk_id " hwnd)
+      } catch {
+          cls := "?"
+      }
+      info .= "hwnd=" hwnd " proc=" proc " class=" cls " (no title)`n"
+      continue
     }
-  return
+
+    info .= "`n"
+    info .= GetWindowInfo(hwnd)
+    info .= "--------------------------------`n"
+  }
+
+  return info
 }
 
 GetDesktopName(num) {
