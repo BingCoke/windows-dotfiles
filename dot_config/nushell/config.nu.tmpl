@@ -1,0 +1,48 @@
+# config.nu
+# Installed by:
+# version = "0.112.2"
+#
+# This file is used to override default Nushell settings, define
+# (or import) custom commands, or run any other startup tasks.
+# See https://www.nushell.sh/book/configuration.html
+#
+# Nushell sets "sensible defaults" for most configuration settings,
+# so your `config.nu` only needs to override these defaults if desired.
+#
+# You can open this file in your default editor using:
+#     config nu
+#
+# You can also pretty-print and page through the documentation for configuration
+# options using:
+#     config nu --doc | nu-highlight | less -R
+# #
+$env.config.buffer_editor = 'nvim'
+
+$env.config = ($env.config | upsert shell_integration {
+  osc2: true
+  osc7: true
+  osc8: true
+  osc9_9: false   # 改成 false
+  osc133: false
+  osc633: false
+})
+
+$env.config.history = {
+  file_format: sqlite
+  max_size: 1_000_000
+  sync_on_enter: true
+  isolation: true
+}
+
+{{ if ne .chezmoi.os "windows" }}
+$env.PATH ++= [ 'C:\Users\Administrator\scoop\apps\mingw\current\bin', 'C:\Users\Administrator\.cargo\bin' ,]
+{{ end }}
+
+$env.HTTP_PROXY = "http://127.0.0.1:7890"
+$env.HTTPS_PROXY = "http://127.0.0.1:7890"
+$env.NO_PROXY = "localhost,127.0.0.1,.local"
+
+# mkdir ($nu.data-dir | path join "vendor/autoload")
+# starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
+# tv init nu | save -f ($nu.data-dir | path join "vendor/autoload/tv.nu")
+

@@ -61,6 +61,13 @@ New-DirSymlink `
     -Target "$xdgConfig\alacritty" `
     -Link   "$roaming\alacritty"
 
+Write-Host "`n[nushell]"
+
+New-DirSymlink `
+    -Target "$xdgConfig\nushell" `
+    -Link   "$roaming\nushell"
+
+
 Write-Host "`n=== Done ===" -ForegroundColor Cyan
 
 
