@@ -95,30 +95,35 @@ MoveOrGotoDesktopNumber(num) {
       MoveWindowUnderMouseToDesktop(num)
       return
     }
-      logFile := A_ScriptDir "\ahk_debug.log"
-      timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
-      sep := "================================================================`n"
-      log := sep
-      log .= "TIME: " timestamp "  →  Desktop(" num ")`n"
+      global DEBUG_ENABLED
+      if DEBUG_ENABLED {
+          logFile := A_ScriptDir "\ahk_debug.log"
+          timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
+          sep := "================================================================`n"
+          log := sep
+          log .= "TIME: " timestamp "  →  Desktop(" num ")`n"
 
-      ; 切换前所有窗口
-      log .= "[PRE-SWITCH ALL WINDOWS]`n"
-      log .= GetAllWindowsInfo()
-      log .= sep
+          ; 切换前所有窗口
+          log .= "[PRE-SWITCH ALL WINDOWS]`n"
+          log .= GetAllWindowsInfo()
+          log .= sep
+      }
 
       GoToDesktopNumber(num)
 
-      ; 切换后快照
-      log .= "[POST-SWITCH ACTIVE WINDOW]`n"
-      log .= GetWindowInfo(WinExist("A"))
-      log .= sep
+      if DEBUG_ENABLED {
+          ; 切换后快照
+          log .= "[POST-SWITCH ACTIVE WINDOW]`n"
+          log .= GetWindowInfo(WinExist("A"))
+          log .= sep
 
-      ; 切换后所有窗口
-      log .= "[POST-SWITCH ALL WINDOWS]`n"
-      log .= GetAllWindowsInfo()
-      log .= sep . "`n"
+          ; 切换后所有窗口
+          log .= "[POST-SWITCH ALL WINDOWS]`n"
+          log .= GetAllWindowsInfo()
+          log .= sep . "`n"
 
-      FileAppend(log, logFile)
+          FileAppend(log, logFile)
+      }
 
       hwnds := WinGetList()
       for hwnd in hwnds {

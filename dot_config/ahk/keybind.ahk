@@ -4,9 +4,6 @@
 #Include "VirtualDesktopAccessor.ahk"
 SetWinDelay(1)
 
-isMovingWindow := false
-
-
 ; ============================================================
 ;  MOD KEY CONFIG — 只改这里
 ;  可选值示例: "F13"  "F14"  "CapsLock"  "ScrollLock"
@@ -14,6 +11,7 @@ isMovingWindow := false
 ; ============================================================
 global MOD_KEY  := "F13"
 global isMovingWindow := false
+global DEBUG_ENABLED := false
 
 ; 设置成 CapsLock 那么就设置系统永远不会被大小写锁定
 if (MOD_KEY = "CapsLock")
