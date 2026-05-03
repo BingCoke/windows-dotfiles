@@ -45,8 +45,8 @@ def --env y [...args] {
 	rm -fp $tmp
 }
 
-{{ if ne .chezmoi.os "windows" }}
-$env.PATH ++= [ 'C:\Users\Administrator\scoop\apps\mingw\current\bin', 'C:\Users\Administrator\.cargo\bin' ,]
+{{ if eq .chezmoi.os "windows" }}
+$env.PATH ++= [ 'C:\Users\Administrator\scoop\apps\mingw\current\bin', 'C:\Users\Administrator\.cargo\bin' , 'C:\Users\Administrator\.local\bin']
 {{ end }}
 
 $env.HTTP_PROXY = "http://127.0.0.1:7890"

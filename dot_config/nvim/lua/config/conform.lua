@@ -26,6 +26,8 @@ conform.setup({
     prettier_d = require("formatters.prettierd"),
   },
   formatters_by_ft = {
+    c = { "clang-format", lsp_format = "fallback" },
+    cpp = { "clang-format", lsp_format = "fallback" },
     javascript = { "prettier_d", "biome", lsp_format = "fallback", stop_after_first = true },
     javascriptreact = { "prettier_d", "biome", stop_after_first = true },
     typescript = { "prettier_d", lsp_format = "fallback", stop_after_first = true },
