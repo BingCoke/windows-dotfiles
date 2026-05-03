@@ -31,7 +31,6 @@ map("i", "<M-d>", "<C-w>c", opt)
 -- 关闭其他
 map("n", "<leader>so", "<C-w>o", opt)
 
-vim.s = 12
 -- 左右比例控制
 
 map("n", "<esc>", "<cmd>noh<cr><esc>", opt)

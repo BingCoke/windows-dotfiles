@@ -35,7 +35,7 @@ return {
 	{
 		"saecki/crates.nvim",
 		tag = "v0.3.0",
-		requires = { "nvim-lua/plenary.nvim" },
+		dependencies = { "nvim-lua/plenary.nvim" },
 		config = function()
 			local cmp = require("cmp")
 			cmp.setup.buffer({ sources = { { name = "crates" } } })

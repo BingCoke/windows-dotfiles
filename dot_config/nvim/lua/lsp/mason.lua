@@ -8,7 +8,6 @@ mason_lspconfig.setup({
 	automatic_enable = false,
 	-- list of servers for mason to install
 	ensure_installed = {
-		"ts_ls",
 		"html",
 		"lua_ls",
 		"cssls",
@@ -21,12 +20,7 @@ mason_lspconfig.setup({
 		"pyright",
 		"rust_analyzer",
 		"biome",
-		"cssls",
-		"gopls",
-		"html",
-		"marksman",
 		"eslint",
 		"astro",
 	},
 })
-

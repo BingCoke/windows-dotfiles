@@ -224,12 +224,6 @@ local cmdmap = {
 }
 
 
-cmp.setup.filetype({ "dap-repl", "dapui_watches", "dapui_hover" }, {
-	sources = {
-		{ name = "dap" },
-	},
-})
-
 -- / 查找模式使用 buffer 源
 cmp.setup.cmdline("/", {
 	mapping = cmdmap,
@@ -370,10 +364,3 @@ local function generate_highlight()
 end
 
 generate_highlight()
-
--- 创建自定义命令
-vim.cmd('command! -nargs=0 SnipEdit lua require("my.command").snip_edit();')
-
-
-
-

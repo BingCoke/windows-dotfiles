@@ -53,8 +53,6 @@ local ts = {
 	"svelte",
 	"vue",
 }
-local needHi = {}
-
 M.language = language
 M.ts = ts
 

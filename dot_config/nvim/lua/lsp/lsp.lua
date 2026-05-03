@@ -120,8 +120,6 @@ local capabilities = require("util.cmp").getCapabilites()
 
 local M = {}
 
-vim.cmd("command! -nargs=0 OpenInGoogle !google-chrome-stable  --new-window % &;")
-
 M.on_attach = on_attach
 M.capabilities = capabilities
 

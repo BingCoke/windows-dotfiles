@@ -122,8 +122,8 @@ DragWindow() {
         return
     isMovingWindow := true
     MouseGetPos(&startX, &startY, &hwnd)
-    WinGetPos(&winX, &winY, &winW, &winH, hwnd)
     WinActivate("ahk_id " hwnd)
+    WinGetPos(&winX, &winY, &winW, &winH, hwnd)
     if WinGetMinMax("ahk_id " hwnd) = 1
         UnMaximizeWindow(hwnd, winX, winY, winW, winH)
     while GetKeyState("LButton", "P") {

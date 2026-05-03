@@ -1,5 +1,6 @@
 
 
+
 vim.g.root_spec = { "lsp", { ".git", "lua" }, "cwd" }
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
@@ -20,7 +21,6 @@ vim.opt.smoothscroll = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 vim.opt_local.spell = false
-vim.opt_local.wrap = false
 vim.opt_local.conceallevel = 3
 
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -36,15 +36,10 @@ vim.bo.shiftwidth = 2
 vim.o.expandtab = true
 vim.bo.expandtab = true
 -- 新行对齐当前行
---
 vim.o.autoindent = true
 vim.bo.autoindent = true
 vim.o.smartindent = true
-vim.opt.smartindent = true
 
-vim.bo.shiftwidth = 2
-vim.bo.tabstop = 2
-vim.bo.softtabstop = 2
 -- 搜索大小写不敏感，除非包含大写
 vim.o.ignorecase = true
 vim.o.smartcase = true
@@ -81,7 +76,6 @@ vim.o.splitright = true
 -- 样式
 vim.o.background = "dark"
 vim.o.termguicolors = true
-vim.opt.termguicolors = true
 
 vim.o.listchars = "space: ,tab:  "
 vim.o.list = true
@@ -97,9 +91,7 @@ vim.o.showtabline = 1
 -- 使用增强状态栏插件后不再需要 vim 的模式提示
 vim.o.showmode = false
 -- css关闭自动注释
-vim.cmd("autocmd BufEnter *.css set formatoptions-=cro")
 vim.cmd("autocmd BufEnter *.css setlocal formatoptions-=cro")
-vim.cmd("autocmd BufEnter *.lua set formatoptions-=cro")
 vim.cmd("autocmd BufEnter *.lua setlocal formatoptions-=cro")
 
 vim.filetype.add({
@@ -111,12 +103,7 @@ vim.filetype.add({
 
 vim.wo.cursorline = true
 
-
 vim.cmd([[
 	set tagfunc=v:lua.vim.lsp.tagfunc
 	set jumpoptions+=stack
 	]])
-
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-vim.opt.termguicolors = true
