@@ -37,6 +37,12 @@ return {
 
 		local function get_special_buf_name(bufid)
 			local ft = vim.bo[bufid].filetype
+      if ft == "OverseerList" then
+        return "OverseerList"
+      end
+      if ft == "OverseerOutput" then
+        return "OverseerListput"
+      end
 			if ft == "TelescopePrompt" then
 				return "telescope"
 			end
