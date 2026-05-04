@@ -5,7 +5,7 @@ return {
   priority = 1000,
   config = function()
     require('lint').linters_by_ft = {
-      cpp = { "clangtidyclangtidy" },
+      cpp = { "clangtidy" },
       c = { "clangtidy" },
       python = { 'pylint' },
     }

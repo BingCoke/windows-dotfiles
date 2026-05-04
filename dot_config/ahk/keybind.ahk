@@ -123,6 +123,15 @@ DragWindow() {
     isMovingWindow := true
     MouseGetPos(&startX, &startY, &hwnd)
     WinActivate("ahk_id " hwnd)
+
+    ; Activate 可能导致原窗口消失，重新取鼠标下的窗口
+    MouseGetPos(,, &hwndAfter)
+    if (hwndAfter != hwnd) {
+        ; 原窗口没了（菜单/浮层被关掉），用新窗口
+        ; 新窗口此时可能已经是正确的宿主窗口了
+        hwnd := hwndAfter
+    }
+
     WinGetPos(&winX, &winY, &winW, &winH, hwnd)
     if WinGetMinMax("ahk_id " hwnd) = 1
         UnMaximizeWindow(hwnd, winX, winY, winW, winH)
