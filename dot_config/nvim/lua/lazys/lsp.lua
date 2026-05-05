@@ -99,8 +99,9 @@ return {
   },
   -- language ts
   {
-    "NvChad/nvim-colorizer.lua",
+    "catgoose/nvim-colorizer.lua",
     config = function()
+      require("colorizer").setup()
       --require("plugin-config.color")
     end,
     event = "VeryLazy",

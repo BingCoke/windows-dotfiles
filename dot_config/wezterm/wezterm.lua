@@ -9,11 +9,11 @@ config.window_close_confirmation = "NeverPrompt"
 
 config.default_prog = { "nu" }
 
-config.color_scheme = "tokyonight-storm"
+config.color_scheme = "Tokyo Night Moon"
 
 config.window_decorations = "RESIZE"
 
-config.window_background_opacity = 0.78
+config.window_background_opacity = 0.90
 config.front_end = "Software"
 
 config.font = wezterm.font_with_fallback({
@@ -57,6 +57,11 @@ config.colors.tab_bar = {
 config.disable_default_key_bindings = true
 
 config.keys = {
+
+  { key = "=", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
+  { key = "-", mods = "CTRL|SHIFT", action = act.DecreaseFontSize },
+  { key = "0", mods = "CTRL|SHIFT", action = act.ResetFontSize },
+
   {
     key = "F13",
     action = wezterm.action.Nop,

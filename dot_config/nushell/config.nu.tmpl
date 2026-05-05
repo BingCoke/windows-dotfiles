@@ -53,6 +53,11 @@ $env.HTTP_PROXY = "http://127.0.0.1:7890"
 $env.HTTPS_PROXY = "http://127.0.0.1:7890"
 $env.NO_PROXY = "localhost,127.0.0.1,.local"
 
+# 启用外部命令路径解析高亮
+$env.config.highlight_resolved_externals = true
+
+
+
 # mkdir ($nu.data-dir | path join "vendor/autoload")
 # starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
 # tv init nu | save -f ($nu.data-dir | path join "vendor/autoload/tv.nu")
