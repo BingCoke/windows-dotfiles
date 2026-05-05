@@ -1,0 +1,16 @@
+command_timeout = 1000
+scan_timeout = 500
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+
+[nodejs]
+disabled = true
+
+# 或者 git 相关
+[git_status]
+disabled = true
+
+[cmake]
+disabled = true
