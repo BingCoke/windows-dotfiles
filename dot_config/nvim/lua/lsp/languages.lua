@@ -3,6 +3,7 @@ local on_attach = lsp.on_attach
 local capabilities = lsp.capabilities
 
 local simple_lsp_by_filetype = {
+  qml = { "qmlls" },
   cmake = { "neocmake" },
   sh = { "bashls" },
   bash = { "bashls" },

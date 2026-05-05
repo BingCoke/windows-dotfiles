@@ -1,6 +1,3 @@
-
-
-
 vim.g.root_spec = { "lsp", { ".git", "lua" }, "cwd" }
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
@@ -95,10 +92,10 @@ vim.cmd("autocmd BufEnter *.css setlocal formatoptions-=cro")
 vim.cmd("autocmd BufEnter *.lua setlocal formatoptions-=cro")
 
 vim.filetype.add({
-	extension = {
-		astro = "astro",
-		max = "mdx",
-	},
+  extension = {
+    astro = "astro",
+    max = "mdx",
+  },
 })
 
 vim.wo.cursorline = true
@@ -107,3 +104,14 @@ vim.cmd([[
 	set tagfunc=v:lua.vim.lsp.tagfunc
 	set jumpoptions+=stack
 	]])
+
+
+
+
+-- use fold
+vim.o.fillchars = "eob: ,fold: ,foldopen:,foldsep: ,foldinner: ,foldclose:"
+
+vim.o.foldcolumn = '1' -- '0' is not bad
+vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true

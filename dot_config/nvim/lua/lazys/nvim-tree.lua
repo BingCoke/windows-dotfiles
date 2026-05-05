@@ -1,6 +1,7 @@
 return {
   {
     "nvim-tree/nvim-tree.lua",
+    event = "VeryLazy",
     config = function()
       local tree_api = require("nvim-tree.api")
 

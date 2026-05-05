@@ -11,12 +11,13 @@ return {
     priority = 1000,
     config = function()
       require("tiny-inline-diagnostic").setup()
-      vim.diagnostic.config({ virtual_text = false })   -- Disable Neovim's default virtual text diagnostics
+      vim.diagnostic.config({ virtual_text = false }) -- Disable Neovim's default virtual text diagnostics
     end,
   },
 
   {
     "mason-org/mason-lspconfig.nvim",
+    event = "VeryLazy",
     dependencies = {
       "mason-org/mason.nvim",
       "neovim/nvim-lspconfig",
@@ -31,7 +32,6 @@ return {
       require("lsp.lsp")
       require("lsp.languages")
     end,
-    ft = language,
   },
   {
     "folke/lazydev.nvim",
@@ -103,7 +103,7 @@ return {
     config = function()
       --require("plugin-config.color")
     end,
-    ft = language,
+    event = "VeryLazy",
   },
   {
     "NMAC427/guess-indent.nvim",
@@ -124,7 +124,7 @@ return {
         },
       })
     end,
-    ft = language,
+    event = "VeryLazy",
   },
   {
     "yioneko/nvim-vtsls",
@@ -135,9 +135,9 @@ return {
   },
   {
     "folke/trouble.nvim",
-    ft = language,
     config = function()
       require("config.trouble")
     end,
+    event = "VeryLazy",
   },
 }
