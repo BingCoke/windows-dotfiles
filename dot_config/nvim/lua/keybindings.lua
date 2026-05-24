@@ -18,6 +18,11 @@ vim.keymap.set("c", "<C-v>", function()
 	vim.api.nvim_feedkeys(text, "n", true)
 end, { noremap = true, silent = true })
 
+map("v", "<c-c>", '"+y', opt)
+map("v", "<D-c>", '"+y', opt)
+
+
+
 vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
 
 map({ "n", "v", "i" }, "<c-a>", "<esc>ggVG", opt)
@@ -53,8 +58,6 @@ map("t", "<M-j>", [[ <C-\><C-N><C-w>j ]], opt)
 map("t", "<M-k>", [[ <C-\><C-N><C-w>k ]], opt)
 map("t", "<M-l>", [[ <C-\><C-N><C-w>l ]], opt)
 
-map("v", "<c-c>", '"+y', opt)
-map("v", "<D-c>", '"+y', opt)
 
 -- visual模式下缩进代码
 map("v", "<", "<gv", opt)

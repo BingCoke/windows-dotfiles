@@ -115,6 +115,9 @@ cmp.setup({
 		{
 			name = "path",
 		},
+    {
+      name = "filemention"
+    }
 	}, {
 		{ name = "buffer" },
 	}),

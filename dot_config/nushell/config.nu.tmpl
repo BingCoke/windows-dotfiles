@@ -18,6 +18,8 @@
 # #
 $env.config.buffer_editor = 'nvim'
 
+$env.EDITOR = "nvim"
+
 $env.config = ($env.config | upsert shell_integration {
   osc2: true
   osc7: true

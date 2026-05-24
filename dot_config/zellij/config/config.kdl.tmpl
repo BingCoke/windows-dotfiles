@@ -352,7 +352,7 @@ plugins {
     configuration location="zellij:configuration"
 
     {{- if eq .chezmoi.os "windows" }}
-    navigator location="file:{{ .chezmoi.homeDir | replace "\\" "/" }}/AppData/Roaming/zellij/plugins/navigator/release/navigator.wasm" {
+    navigator location="file:{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/zellij/plugins/navigator/release/navigator.wasm" {
     {{- else }}
     navigator location="file:~/.config/zellij/plugins/navigator.wasm" {
     {{- end }}
