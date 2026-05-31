@@ -40,21 +40,9 @@ keybinds clear-defaults=true {
         bind "Ctrl k" { MoveTab "left"; }
 
         // ---- Pane 操作 ----
-        bind "-" {
-          Run "nu" {
-            cwd "."
-            direction "Down"
-          }
-          SwitchToMode "normal";
-        }    // 水平分屏
+        bind "-" { NewPane "down"; SwitchToMode "normal"; }   // 水平分屏
+        bind "=" { NewPane "right"; SwitchToMode "normal"; }  // 垂直分屏
 
-        bind "=" {
-            Run "nu" {
-              cwd "."
-              direction "Right"
-            }
-            SwitchToMode "normal";
-        }   // 垂直分屏
 
         bind "s" { NewPane "stacked"; SwitchToMode "normal"; } // 堆叠分屏
         bind "x" { CloseFocus; SwitchToMode "normal"; }        // 关闭当前 pane
@@ -402,7 +390,6 @@ themes {
 simplified_ui true
 theme "tokyo-night-storm"
 default_mode "normal"
-default_shell "nu"
 session_serialization false
 default_layout "simple"
 pane_frames false
