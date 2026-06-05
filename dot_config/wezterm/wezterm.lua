@@ -13,11 +13,10 @@ config.color_scheme = "Tokyo Night Moon"
 
 config.window_decorations = "RESIZE"
 
-config.window_background_opacity = 0.90
-config.front_end = "Software"
+config.window_background_opacity = 0.9
 
 config.font = wezterm.font_with_fallback({
-  "IntoneMono Nerd Font Mono",
+    "IntoneMono Nerd Font Mono",
 })
 
 config.background = {}

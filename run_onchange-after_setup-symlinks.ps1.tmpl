@@ -1,72 +1,47 @@
 {{- if eq .chezmoi.os "windows" -}}
 # chezmoi:template:remove-space
-# Hash: {{ include (joinPath .chezmoi.sourceDir "dot_config/nvim/init.lua") | sha256sum }}
-
 $ErrorActionPreference = "Stop"
 
-function New-DirSymlink {
+function Ensure-DirSymlink {
     param(
-        [string]$Target,   # 真实文件/目录（chezmoi 已 apply 的位置）
-        [string]$Link      # 软链接路径（nvim 期望读取的位置）
+        [Parameter(Mandatory)] [string]$Target,
+        [Parameter(Mandatory)] [string]$Link
     )
 
     $Target = [System.Environment]::ExpandEnvironmentVariables($Target)
-    $Link   = [System.Environment]::ExpandEnvironmentVariables($Link)
+    $Link = [System.Environment]::ExpandEnvironmentVariables($Link)
 
-    # 如果软链接已存在且正确，跳过
-    if (Test-Path $Link) {
-        $existing = Get-Item $Link -Force
+    if (Test-Path -LiteralPath $Link) {
+        $existing = Get-Item -LiteralPath $Link -Force
         if ($existing.LinkType -eq "SymbolicLink" -and $existing.Target -eq $Target) {
-            Write-Host "OK (already linked): $Link -> $Target"
+            Write-Host "OK: $Link -> $Target"
             return
         }
-        # 已存在但不是正确的链接，删除重建
-        Remove-Item $Link -Recurse -Force
+
+        Remove-Item -LiteralPath $Link -Recurse -Force
     }
 
-    # 确保父目录存在
-    $parentDir = Split-Path $Link -Parent
-    if (-not (Test-Path $parentDir)) {
-        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
-    }
-
-    # 创建软链接（需要管理员权限或开发者模式）
+    $parentDir = Split-Path -Path $Link -Parent
+    New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
     New-Item -ItemType SymbolicLink -Path $Link -Target $Target | Out-Null
-    Write-Host "Created symlink: $Link -> $Target"
+    Write-Host "Created: $Link -> $Target"
 }
 
-# 还有其他工具需要类似处理，继续添加：
-# New-Symlink -Target "$env:USERPROFILE\.config\foo" -Link "$env:APPDATA\foo"
+$xdgConfig = Join-Path $env:USERPROFILE ".config"
+$local = $env:LOCALAPPDATA
+$roaming = $env:APPDATA
 
-$xdgConfig  = "$env:USERPROFILE\.config"   # chezmoi apply 的目标根
-$local      = $env:LOCALAPPDATA            # C:\Users\<user>\AppData\Local
-$roaming    = $env:APPDATA                 # C:\Users\<user>\AppData\Roaming
+$links = @(
+    @{ Name = "nvim";      Target = Join-Path $xdgConfig "nvim";      Link = Join-Path $local "nvim" },
+    @{ Name = "zellij";    Target = Join-Path $xdgConfig "zellij";    Link = Join-Path $roaming "zellij" },
+    @{ Name = "alacritty"; Target = Join-Path $xdgConfig "alacritty"; Link = Join-Path $roaming "alacritty" },
+    @{ Name = "nushell";   Target = Join-Path $xdgConfig "nushell";   Link = Join-Path $roaming "nushell" }
+)
 
-
-# nvim: %LOCALAPPDATA%\nvim  ->  ~/.config/nvim
-Write-Host "`n[nvim]"
-New-DirSymlink `
-    -Target "$xdgConfig\nvim" `
-    -Link   "$local\nvim"
-
-# zellij: %APPDATA%\zellij  ->  ~/.config/zellij
-Write-Host "`n[zellij]"
-New-DirSymlink `
-    -Target "$xdgConfig\zellij" `
-    -Link   "$roaming\zellij"
-
-# alacritty: %APPDATA%\alacritty  ->  ~/.config/alacritty
-Write-Host "`n[alacritty]"
-New-DirSymlink `
-    -Target "$xdgConfig\alacritty" `
-    -Link   "$roaming\alacritty"
-
-Write-Host "`n[nushell]"
-
-New-DirSymlink `
-    -Target "$xdgConfig\nushell" `
-    -Link   "$roaming\nushell"
-
+foreach ($item in $links) {
+    Write-Host "`n[$($item.Name)]"
+    Ensure-DirSymlink -Target $item.Target -Link $item.Link
+}
 
 Write-Host "`n=== Done ===" -ForegroundColor Cyan
 

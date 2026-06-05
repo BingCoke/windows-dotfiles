@@ -24,7 +24,7 @@ if (MOD_KEY = "CapsLock")
 ;  辅助: 动态注册组合键
 ; ============================================================
 _hk(suffix, fn) {
-    Hotkey("~" MOD_KEY " & " suffix, fn)
+    Hotkey(MOD_KEY " & " suffix, fn)
 }
 
 ; ============================================================
@@ -51,10 +51,10 @@ _hk("5", (*) => MoveOrGotoDesktopNumber(4))
 _hk("6", (*) => MoveOrGotoDesktopNumber(5))
 
 ; mod key 单独按下时, 若鼠标已按住则触发拖动/缩放
-Hotkey("~" MOD_KEY, ModKeyAlone)
+Hotkey(MOD_KEY, ModKeyAlone)
 
 ; 屏蔽未使用的字母键
-usedKeys := "wqhjklrcf"
+usedKeys := "wqhjklrf"
 for char in StrSplit("abcdefghijklmnopqrstuvwxyz") {
     if !InStr(usedKeys, char)
         _hk(char, (*) => {})
@@ -76,10 +76,15 @@ ModKeyAlone(*) {
 }
 
 OpenTerminal(*) {
-    Run "alacritty.exe",,,  &pid
-    WinWait "ahk_pid " pid
-    WinActivate "ahk_pid " pid
-    WinMoveTop "ahk_pid " pid
+    try {
+        Run "alacritty.exe",,, &pid
+    } catch {
+        return
+    }
+    if WinWait("ahk_pid " pid,, 3) {
+        WinActivate "ahk_pid " pid
+        WinMoveTop "ahk_pid " pid
+    }
 }
 
 SendF14(*) {
@@ -123,26 +128,35 @@ DragWindow() {
     CoordMode("Mouse", "Screen")
     if isMovingWindow
         return
-    isMovingWindow := true
+
     MouseGetPos(&startX, &startY, &hwnd)
-    WinActivate("ahk_id " hwnd)
+    if !hwnd
+        return
 
-    ; Activate 可能导致原窗口消失，重新取鼠标下的窗口
-    MouseGetPos(,, &hwndAfter)
-    if (hwndAfter != hwnd) {
-        ; 原窗口没了（菜单/浮层被关掉），用新窗口
-        ; 新窗口此时可能已经是正确的宿主窗口了
-        hwnd := hwndAfter
-    }
+    isMovingWindow := true
+    try {
+        WinActivate("ahk_id " hwnd)
 
-    WinGetPos(&winX, &winY, &winW, &winH, hwnd)
-    if WinGetMinMax("ahk_id " hwnd) = 1
-        UnMaximizeWindow(hwnd, winX, winY, winW, winH)
-    while GetKeyState("LButton", "P") {
-        MouseGetPos(&currX, &currY)
-        WinMove(winX + currX - startX, winY + currY - startY,,, hwnd)
+        ; Activate 可能导致原窗口消失，重新取鼠标下的窗口
+        MouseGetPos(,, &hwndAfter)
+        if hwndAfter
+            hwnd := hwndAfter
+
+        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
+        if WinGetMinMax("ahk_id " hwnd) = 1 {
+            UnMaximizeWindow(hwnd, winX, winY, winW, winH)
+            WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
+        }
+
+        while GetKeyState("LButton", "P") {
+            MouseGetPos(&currX, &currY)
+            WinMove(winX + currX - startX, winY + currY - startY,,, "ahk_id " hwnd)
+            Sleep(1)
+        }
+    } catch {
+    } finally {
+        isMovingWindow := false
     }
-    isMovingWindow := false
 }
 
 ResizeWindow() {
@@ -150,44 +164,53 @@ ResizeWindow() {
     CoordMode("Mouse", "Screen")
     if isMovingWindow
         return
-    isMovingWindow := true
+
     MouseGetPos(&startX, &startY, &hwnd)
-    WinGetPos(&winX, &winY, &winW, &winH, hwnd)
-
-    style := WinGetStyle("ahk_id " hwnd)
-    if !(style & 0x40000) {
-        isMovingWindow := false
+    if !hwnd
         return
-    }
 
-    if WinGetMinMax("ahk_id " hwnd) = 1
-        UnMaximizeWindow(hwnd, winX, winY, winW, winH)
+    isMovingWindow := true
+    try {
+        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
 
-    resizeRight  := (startX >= winX + winW / 2)
-    resizeBottom := (startY >= winY + winH / 2)
-    minW := 100
-    minH := 100
+        style := WinGetStyle("ahk_id " hwnd)
+        if !(style & 0x40000)
+            return
 
-    while GetKeyState("RButton", "P") {
-        MouseGetPos(&curX, &curY)
-        deltaX := curX - startX
-        deltaY := curY - startY
-        newX := winX, newY := winY
-        newW := winW, newH := winH
-        if resizeRight
-            newW := Max(winW + deltaX, minW)
-        else {
-            newW := Max(winW - deltaX, minW)
-            newX := winX + winW - newW
+        if WinGetMinMax("ahk_id " hwnd) = 1 {
+            UnMaximizeWindow(hwnd, winX, winY, winW, winH)
+            WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
         }
-        if resizeBottom
-            newH := Max(winH + deltaY, minH)
-        else {
-            newH := Max(winH - deltaY, minH)
-            newY := winY + winH - newH
+
+        resizeRight  := (startX >= winX + winW / 2)
+        resizeBottom := (startY >= winY + winH / 2)
+        minW := 100
+        minH := 100
+
+        while GetKeyState("RButton", "P") {
+            MouseGetPos(&curX, &curY)
+            deltaX := curX - startX
+            deltaY := curY - startY
+            newX := winX, newY := winY
+            newW := winW, newH := winH
+            if resizeRight
+                newW := Max(winW + deltaX, minW)
+            else {
+                newW := Max(winW - deltaX, minW)
+                newX := winX + winW - newW
+            }
+            if resizeBottom
+                newH := Max(winH + deltaY, minH)
+            else {
+                newH := Max(winH - deltaY, minH)
+                newY := winY + winH - newH
+            }
+            WinMove(newX, newY, newW, newH, "ahk_id " hwnd)
+            Sleep(1)
         }
-        WinMove(newX, newY, newW, newH, hwnd)
+    } catch {
+    } finally {
+        isMovingWindow := false
     }
-    isMovingWindow := false
 }
 
