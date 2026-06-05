@@ -19,6 +19,7 @@
 $env.config.buffer_editor = 'nvim'
 
 $env.EDITOR = "nvim"
+$env.VISUAL = "nvim"
 
 $env.config = ($env.config | upsert shell_integration {
   osc2: true
@@ -48,7 +49,8 @@ def --env y [...args] {
 }
 
 {{ if eq .chezmoi.os "windows" }}
-$env.PATH ++= [ 'C:\Users\Administrator\scoop\apps\mingw\current\bin', 'C:\Users\Administrator\.cargo\bin' , 'C:\Users\Administrator\.local\bin']
+$env.VISUAL = '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/script/wezterm-nvim.ps1'
+$env.PATH ++= [ '{{ .chezmoi.homeDir | replace "\\" "/" }}/scoop/apps/mingw/current/bin', '{{ .chezmoi.homeDir | replace "\\" "/" }}/.cargo/bin' , '{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/bin', '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/script' ]
 {{ end }}
 
 $env.HTTP_PROXY = "http://127.0.0.1:7890"

@@ -339,11 +339,7 @@ plugins {
 
     configuration location="zellij:configuration"
 
-    {{- if eq .chezmoi.os "windows" }}
     navigator location="file:{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/zellij/plugins/navigator/release/navigator.wasm" {
-    {{- else }}
-    navigator location="file:~/.config/zellij/plugins/navigator/release/navigator.wasm" {
-    {{- end }}
 
         editor_commands "nvim,vim,hx,microc"
         move_mod "Alt"

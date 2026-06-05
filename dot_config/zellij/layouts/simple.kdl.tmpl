@@ -4,11 +4,7 @@ layout {
     }
 
     pane size=1 borderless=true {
-        {{- if eq .chezmoi.os "windows" }}
         plugin location="file:{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/zellij/plugins/zjstatus/zjstatus.wasm" {
-        {{- else }}
-        plugin location="file:~/.config/zellij/plugins/zjstatus/zjstatus.wasm" {
-        {{- end }}
             format_left  "{mode}#[fg=#89B4FA,bg=#181825,bold] {session}#[bg=#181825] {tabs}"
             format_right ""
             format_space "#[bg=#181825]"

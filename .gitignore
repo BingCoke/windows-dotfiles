@@ -19,6 +19,7 @@ $RECYCLE.BIN/
 build/
 dist/
 target/
+**/target/**
 *.o
 *.obj
 *.exe

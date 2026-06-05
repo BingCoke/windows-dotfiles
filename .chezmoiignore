@@ -9,7 +9,8 @@ __pycache__/**
 .cache/**
 node_modules/
 node_modules/**
-target/        # Rust/Maven 构建目录
+target/
+**/target/**
 dist/
 build/
 
@@ -17,3 +18,27 @@ build/
 {{- if ne .chezmoi.os "windows" }}
 .config/ahk/
 {{- end }}
+{{- if ne .chezmoi.os "windows" }}
+.config/script/*.ps1
+{{- end }}
+
+.pi/agent/auth.json
+.pi/agent/models.json
+.pi/agent/sessions/
+.pi/agent/run-history.jsonl
+.pi/agent/pi-hermes-memory/
+.pi/agent/projects-memory/
+.pi/agent/npm/
+.pi/agent/git/
+.pi/agent/bin/
+.pi/agent/pi.exe
+.pi/agent/extensions/**/logs/
+.pi/agent/extensions/**/node_modules/
+.pi/agent/extensions/**/dist/
+.pi/agent/extensions/**/build/
+.pi/agent/skills/**/node_modules/
+.pi/agent/skills/**/dist/
+.pi/agent/skills/**/build/
+.agents/skills/**/node_modules/
+.agents/skills/**/dist/
+.agents/skills/**/build/
