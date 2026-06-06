@@ -232,14 +232,15 @@ impl State {
         self.use_arrow_keys = configuration
             .get("use_arrow_keys")
             .is_some_and(|v| v.to_lowercase() == "true");
-        self.editor_commands = configuration
-            .get("editor_commands")
-            .map_or(vec!["nvim".into(), "vim".into()], |v| {
-                v.split(',')
-                    .map(|s| s.trim().to_lowercase())
-                    .filter(|s| !s.is_empty())
-                    .collect()
-            });
+        self.editor_commands =
+            configuration
+                .get("editor_commands")
+                .map_or(vec!["nvim".into(), "vim".into()], |v| {
+                    v.split(',')
+                        .map(|s| s.trim().to_lowercase())
+                        .filter(|s| !s.is_empty())
+                        .collect()
+                });
     }
 
     fn parse_modifiers(input: &str) -> Result<Vec<Mod>, String> {
@@ -278,22 +279,69 @@ impl State {
 fn term_command_from_client_list(clients: Vec<ClientInfo>) -> Option<String> {
     for c in clients {
         if c.is_current_client {
-            let command = c.running_command.split(' ').next()?;
-            // Handle both Unix (/) and Windows (\) path separators
-            let command = command
-                .rsplit('/')
-                .next()
-                .unwrap_or(command);
-            let command = command
-                .rsplit('\\')
-                .next()
-                .unwrap_or(command);
-            // Strip Windows .exe suffix
-            let command = command.strip_suffix(".exe").unwrap_or(command);
-            return Some(command.to_string());
+            return command_name_from_running_command(&c.running_command);
         }
     }
     None
+}
+
+fn command_name_from_running_command(running_command: &str) -> Option<String> {
+    let command = command_path_from_running_command(running_command.trim())?;
+    let command = command.trim().trim_matches('"');
+    let command = command.rsplit('/').next().unwrap_or(command);
+    let command = command.rsplit('\\').next().unwrap_or(command);
+    let command = strip_exe_suffix(command);
+
+    if command.is_empty() {
+        None
+    } else {
+        Some(command.to_string())
+    }
+}
+
+fn command_path_from_running_command(running_command: &str) -> Option<&str> {
+    if running_command.is_empty() {
+        return None;
+    }
+
+    if let Some(command) = running_command.strip_prefix('"') {
+        if let Some(end_quote) = command.find('"') {
+            return Some(&command[..end_quote]);
+        }
+        if let Some(exe_end) = windows_exe_command_end(command) {
+            return Some(&command[..exe_end]);
+        }
+        return command.split_whitespace().next();
+    }
+
+    if let Some(exe_end) = windows_exe_command_end(running_command) {
+        return Some(&running_command[..exe_end]);
+    }
+
+    running_command.split_whitespace().next()
+}
+
+fn windows_exe_command_end(command: &str) -> Option<usize> {
+    let lower = command.to_ascii_lowercase();
+    for (idx, _) in lower.match_indices(".exe") {
+        let end = idx + ".exe".len();
+        let next = lower[end..].chars().next();
+        if next.is_none() || next.is_some_and(|c| c.is_whitespace() || c == '"') {
+            return Some(end);
+        }
+    }
+    None
+}
+
+fn strip_exe_suffix(command: &str) -> &str {
+    let suffix_len = ".exe".len();
+    if command.len() >= suffix_len
+        && command[command.len() - suffix_len..].eq_ignore_ascii_case(".exe")
+    {
+        &command[..command.len() - suffix_len]
+    } else {
+        command
+    }
 }
 
 fn mod_to_kitty_protocol(modifier: &Mod) -> u8 {

@@ -1,8 +1,8 @@
-local highlights = require("telescope.pickers.highlights")
 return {
   "nanozuki/tabby.nvim",
   event = "VeryLazy",
   config = function()
+    
     vim.api.nvim_set_keymap("n", "<leader>oa", "<cmd>tabnew<CR>", { noremap = true })
     vim.api.nvim_set_keymap("n", "<leader>oo", "<cmd>tabonly<CR>", { noremap = true })
 

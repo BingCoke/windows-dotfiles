@@ -45,10 +45,13 @@ local function copy_file_line_reference()
 	local text = string.format("%s line %s", path, line_text)
 
 	vim.fn.setreg("+", text)
-	vim.notify("Copied: " .. text)
 end
 
-map({ "n", "v" }, "<M-c>", copy_file_line_reference, opt)
+map("n", "<M-c>", copy_file_line_reference, opt)
+map("v", "<M-c>", function()
+	copy_file_line_reference()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+end, opt)
 
 
 
