@@ -20,6 +20,7 @@ build/
 {{- end }}
 {{- if ne .chezmoi.os "windows" }}
 .config/script/*.ps1
+onchange-after_setup-symlinks.ps1
 {{- end }}
 
 .pi/agent/auth.json

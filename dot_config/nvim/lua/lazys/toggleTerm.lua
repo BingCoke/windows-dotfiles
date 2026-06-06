@@ -25,7 +25,6 @@ return {
       M.term = Terminal:new({
         direction = "float",
         close_on_exit = true,
-        cmd = "nu",
         display_name = "term",
         on_open = function()
           vim.cmd("startinsert!")

@@ -1,4 +1,11 @@
 local wezterm = require("wezterm")
+local configured_shell = os.getenv("DOTFILES_USE_SHELL")
+
+local function executable_exists(name)
+  local command = wezterm.target_triple:find("windows") and { "where.exe", name } or { "which", name }
+  local ok = wezterm.run_child_process(command)
+  return ok
+end
 
 local config = {}
 
@@ -7,7 +14,9 @@ local act = wezterm.action
 
 config.window_close_confirmation = "NeverPrompt"
 
-config.default_prog = { "nu" }
+if configured_shell and configured_shell ~= "" and executable_exists(configured_shell) then
+  config.default_prog = { configured_shell }
+end
 
 config.color_scheme = "Tokyo Night Moon"
 
@@ -143,5 +152,7 @@ config.window_padding = {
   top = 0,
   bottom = 0,
 }
+
+config.enable_kitty_keyboard = true
 
 return config

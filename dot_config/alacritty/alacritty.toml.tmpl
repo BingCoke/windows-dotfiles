@@ -5,8 +5,10 @@ padding = { x = 2, y = 0 }   # 对应 window_padding
 blur = true
 
 dimensions = { columns = 120, lines = 35 }
+{{ if and (env "DOTFILES_USE_SHELL") (lookPath (env "DOTFILES_USE_SHELL")) }}
 [terminal]
-shell = { program = "nu"}
+shell = { program = "{{ env "DOTFILES_USE_SHELL" }}" }
+{{ end }}
 
 [font]
 size = 16.0

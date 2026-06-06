@@ -1,3 +1,7 @@
+{{ if and (env "DOTFILES_USE_SHELL") (lookPath (env "DOTFILES_USE_SHELL")) -}}
+default_shell "{{ env "DOTFILES_USE_SHELL" }}"
+{{ end }}
+
 keybinds clear-defaults=true {
     normal {
         bind "Ctrl b" { SwitchToMode "tmux"; }

@@ -49,7 +49,7 @@ def --env y [...args] {
 }
 
 {{ if eq .chezmoi.os "windows" }}
-$env.VISUAL = '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/script/wezterm-nvim.ps1'
+$env.YAZI_CONFIG_HOME = '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/yazi'
 $env.PATH ++= [ '{{ .chezmoi.homeDir | replace "\\" "/" }}/scoop/apps/mingw/current/bin', '{{ .chezmoi.homeDir | replace "\\" "/" }}/.cargo/bin' , '{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/bin', '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/script' ]
 {{ end }}
 

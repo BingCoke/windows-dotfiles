@@ -83,27 +83,79 @@ return {
         },
       },
       line = function(line)
-        local function extract_fg(groups, fallback)
+        local function hex_to_rgb(color)
+          if not color or color == "NONE" then
+            return nil, nil, nil
+          end
+
+          local hex = color:gsub("#", "")
+          return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16)
+        end
+
+        local function shade_color(color, percent)
+          local r, g, b = hex_to_rgb(color)
+          if not r or not g or not b then
+            return color
+          end
+
+          local function alter(value)
+            return math.min(math.floor(value * (100 + percent) / 100), 255)
+          end
+
+          return string.format("#%02x%02x%02x", alter(r), alter(g), alter(b))
+        end
+
+        local function color_is_bright(color)
+          local r, g, b = hex_to_rgb(color)
+          if not r or not g or not b then
+            return false
+          end
+
+          return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5
+        end
+
+        local function get_hl_color(groups, attribute, fallback, not_match)
+          groups = type(groups) == "table" and groups or { groups }
+
           for _, name in ipairs(groups) do
             local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
-            if ok and hl.fg then
-              return string.format("#%06x", hl.fg)
+            local value = ok and hl[attribute] or nil
+            if value then
+              local color = string.format("#%06x", value)
+              if color ~= not_match then
+                return color
+              end
             end
           end
+
           return fallback
         end
 
-        local function get_tab_bg(hl_name)
-          local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = hl_name, link = false })
-          if ok and hl.bg then
-            return string.format("#%06x", hl.bg)
+        local function get_tab_bg(hl)
+          if type(hl) == "table" and hl.bg then
+            return hl.bg
           end
-          return "#1f2335"
+
+          return get_hl_color(hl, "bg", get_hl_color("Normal", "bg", "NONE"))
         end
 
+        local normal_fg = get_hl_color("Normal", "fg", "#c0caf5")
+        local normal_bg = get_hl_color({ "TabLine", "Normal" }, "bg", "#1f2335")
+        local comment_fg = get_hl_color("Comment", "fg", normal_fg)
+        local tabline_fg = get_hl_color("TabLine", "fg", comment_fg)
+        local tabline_bg = get_hl_color("TabLine", "bg", normal_bg)
+        local tabline_sel_fg = get_hl_color("TabLineSel", "bg", nil, normal_bg)
+          or get_hl_color("TabLineSel", "fg", nil, normal_bg)
+          or get_hl_color("WildMenu", "fg", normal_fg)
+        local is_bright_background = color_is_bright(normal_bg)
+
+        local fill_bg = shade_color(tabline_bg, is_bright_background and -6 or 8)
+        local tab_bg = shade_color(tabline_bg, is_bright_background and -4 or 12)
+        local current_bg = shade_color(normal_bg, is_bright_background and -3 or 6)
+
         local diag_colors = {
-          error = extract_fg({ "DiagnosticError", "LspDiagnosticsDefaultError", "DiffDelete" }, "#e32636"),
-          warn = extract_fg({ "DiagnosticWarn", "LspDiagnosticsDefaultWarning", "DiffText" }, "#ffa500"),
+          error = get_hl_color({ "DiagnosticError", "LspDiagnosticsDefaultError", "DiffDelete" }, "fg", "#e32636"),
+          warn = get_hl_color({ "DiagnosticWarn", "LspDiagnosticsDefaultWarning", "DiffText" }, "fg", "#ffa500"),
         }
 
         local signs = {
@@ -131,12 +183,12 @@ return {
         end
 
         local theme = {
-          fill = "TabLineFill",
-          head = "TabLine",
-          current_tab = "TabLineSel",
-          tab = "TabLine",
-          win = "TabLine",
-          tail = "TabLine",
+          fill = { fg = comment_fg, bg = fill_bg },
+          head = { fg = tabline_fg, bg = tab_bg },
+          current_tab = { fg = tabline_sel_fg, bg = current_bg, bold = true },
+          tab = { fg = tabline_fg, bg = tab_bg },
+          win = { fg = tabline_fg, bg = tab_bg },
+          tail = { fg = tabline_fg, bg = tab_bg },
         }
 
         return {

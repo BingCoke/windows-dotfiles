@@ -6,6 +6,111 @@ return {
     },
     config = function()
       local project_actions = require("telescope._extensions.project.actions")
+      local project_utils = require("telescope._extensions.project.utils")
+      local project_finders = require("telescope._extensions.project.finders")
+      local telescope_actions = require("telescope.actions")
+      local action_state = require("telescope.actions.state")
+      local builtin = require("telescope.builtin")
+      local project_order_by = "asc"
+      local project_hidden_files = true
+      local project_sync_with_nvim_tree = true
+
+      local function refresh_project_picker(prompt_bufnr)
+        local ok, picker = pcall(action_state.get_current_picker, prompt_bufnr)
+        if not ok or not picker then
+          return
+        end
+
+        picker:refresh(project_finders.project_finder({}, project_utils.get_projects(project_order_by)), { reset_prompt = true })
+      end
+
+      local function safe_git_root()
+        local cwd = vim.loop.cwd()
+        local out = vim.fn.systemlist({ "git", "-C", cwd, "rev-parse", "--show-toplevel" })
+        if vim.v.shell_error ~= 0 or not out[1] or out[1] == "" then
+          return cwd
+        end
+
+        return tostring(out[1]):gsub("\027.*\007", "")
+      end
+
+      local function safe_add_project(prompt_bufnr)
+        project_actions.add_project_path(safe_git_root())
+        refresh_project_picker(prompt_bufnr)
+      end
+
+      local function current_cd_command()
+        local scope = project_actions.get_cd_scope()
+        return ({ tab = "tcd", window = "lcd", global = "cd" })[scope] or "tcd"
+      end
+
+      local function safe_change_project_dir(project_path, cd_cmd)
+        if not project_path or vim.fn.isdirectory(project_path) ~= 1 then
+          print("The path '" .. tostring(project_path) .. "' does not exist")
+          return false
+        end
+
+        project_utils.update_last_accessed_project_time(project_path)
+        vim.cmd(cd_cmd .. " " .. vim.fn.fnameescape(project_path))
+
+        if project_sync_with_nvim_tree then
+          project_utils.open_in_nvim_tree(project_path)
+        end
+
+        return true
+      end
+
+      local function safe_find_project_files(prompt_bufnr)
+        local project_path = project_actions.get_selected_path(prompt_bufnr)
+        telescope_actions.close(prompt_bufnr)
+        if safe_change_project_dir(project_path, current_cd_command()) then
+          vim.schedule(function()
+            builtin.find_files({ cwd = project_path, hidden = project_hidden_files })
+          end)
+        end
+      end
+
+      local function safe_browse_project_files(prompt_bufnr)
+        local ok, file_browser = pcall(require, "telescope._extensions.file_browser")
+        if not ok then
+          vim.notify("telescope-file-browser.nvim is required to use this action!", vim.log.levels.ERROR, { title = "telescope-project.nvim" })
+          return
+        end
+
+        local project_path = project_actions.get_selected_path(prompt_bufnr)
+        telescope_actions.close(prompt_bufnr)
+        if safe_change_project_dir(project_path, current_cd_command()) then
+          vim.schedule(function()
+            file_browser.exports.file_browser({ cwd = project_path })
+          end)
+        end
+      end
+
+      local function safe_search_in_project_files(prompt_bufnr)
+        local project_path = project_actions.get_selected_path(prompt_bufnr)
+        telescope_actions.close(prompt_bufnr)
+        if safe_change_project_dir(project_path, "lcd") then
+          vim.schedule(function()
+            builtin.live_grep({ cwd = project_path })
+          end)
+        end
+      end
+
+      local function safe_recent_project_files(prompt_bufnr)
+        local project_path = project_actions.get_selected_path(prompt_bufnr)
+        telescope_actions.close(prompt_bufnr)
+        if safe_change_project_dir(project_path, "lcd") then
+          vim.schedule(function()
+            builtin.oldfiles({ cwd_only = true })
+          end)
+        end
+      end
+
+      local function safe_change_working_directory(prompt_bufnr)
+        local project_path = project_actions.get_selected_path(prompt_bufnr)
+        telescope_actions.close(prompt_bufnr)
+        safe_change_project_dir(project_path, "tcd")
+      end
       require('telescope').setup({
         extensions = {
           project = {
@@ -32,25 +137,25 @@ return {
               n = {
                 ['d'] = project_actions.delete_project,
                 ['r'] = project_actions.rename_project,
-                ['c'] = project_actions.add_project,
+                ['c'] = safe_add_project,
                 ['C'] = project_actions.add_project_cwd,
-                ['f'] = project_actions.find_project_files,
-                ['b'] = project_actions.browse_project_files,
-                ['s'] = project_actions.search_in_project_files,
-                ['R'] = project_actions.recent_project_files,
-                ['w'] = project_actions.change_working_directory,
+                ['f'] = safe_find_project_files,
+                ['b'] = safe_browse_project_files,
+                ['s'] = safe_search_in_project_files,
+                ['R'] = safe_recent_project_files,
+                ['w'] = safe_change_working_directory,
                 ['o'] = project_actions.next_cd_scope,
               },
               i = {
                 ['<c-d>'] = project_actions.delete_project,
                 ['<c-v>'] = project_actions.rename_project,
-                ['<c-a>'] = project_actions.add_project,
+                ['<c-a>'] = safe_add_project,
                 ['<c-A>'] = project_actions.add_project_cwd,
-                ['<c-f>'] = project_actions.find_project_files,
-                ['<c-b>'] = project_actions.browse_project_files,
-                ['<c-s>'] = project_actions.search_in_project_files,
-                ['<c-r>'] = project_actions.recent_project_files,
-                ['<c-l>'] = project_actions.change_working_directory,
+                ['<c-f>'] = safe_find_project_files,
+                ['<c-b>'] = safe_browse_project_files,
+                ['<c-s>'] = safe_search_in_project_files,
+                ['<c-r>'] = safe_recent_project_files,
+                ['<c-l>'] = safe_change_working_directory,
                 ['<c-o>'] = project_actions.next_cd_scope,
               }
             }

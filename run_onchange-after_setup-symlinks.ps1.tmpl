@@ -44,36 +44,6 @@ function Ensure-UserEnvironmentVariable {
     Write-Host "Set: $Name=$Value"
 }
 
-function Remove-DirSymlink {
-    param(
-        [Parameter(Mandatory)] [string]$Target,
-        [Parameter(Mandatory)] [string]$Link
-    )
-
-    $Target = [System.Environment]::ExpandEnvironmentVariables($Target)
-    $Link = [System.Environment]::ExpandEnvironmentVariables($Link)
-
-    if (-not (Test-Path -LiteralPath $Link)) {
-        Write-Host "OK: $Link does not exist"
-        return
-    }
-
-    $existing = Get-Item -LiteralPath $Link -Force
-    if ($existing.LinkType -ne "SymbolicLink") {
-        Write-Host "Skip: $Link exists and is not a symlink"
-        return
-    }
-
-    if ($existing.Target -ne $Target) {
-        $existingTarget = $existing.Target -join ", "
-        Write-Host "Skip: $Link points to $existingTarget"
-        return
-    }
-
-    Remove-Item -LiteralPath $Link -Force
-    Write-Host "Removed: $Link -> $Target"
-}
-
 $xdgConfig = Join-Path $env:USERPROFILE ".config"
 $xdgData = Join-Path $env:USERPROFILE ".local\share"
 $xdgState = Join-Path $env:USERPROFILE ".local\state"
@@ -83,7 +53,7 @@ $roaming = $env:APPDATA
 
 $zellijConfigDir = Join-Path $xdgConfig "zellij"
 $scriptsDir = Join-Path $xdgConfig "script"
-$visualEditor = Join-Path $scriptsDir "wezterm-nvim.ps1"
+$yaziConfigHome = Join-Path $xdgConfig "yazi"
 
 Write-Host "`n[xdg env]"
 Ensure-UserEnvironmentVariable -Name "XDG_CONFIG_HOME" -Value $xdgConfig
@@ -95,14 +65,8 @@ Write-Host "`n[zellij env]"
 Ensure-UserEnvironmentVariable -Name "ZELLIJ_CONFIG_DIR" -Value $zellijConfigDir
 
 Write-Host "`n[shell/editor env]"
-Ensure-UserEnvironmentVariable -Name "SHELL" -Value "nu"
 Ensure-UserEnvironmentVariable -Name "EDITOR" -Value "nvim"
-Ensure-UserEnvironmentVariable -Name "VISUAL" -Value $visualEditor
-
-Write-Host "`n[stale symlinks]"
-Remove-DirSymlink -Target (Join-Path $xdgConfig "nvim") -Link (Join-Path $local "nvim")
-Remove-DirSymlink -Target (Join-Path $xdgConfig "nushell") -Link (Join-Path $roaming "nushell")
-Remove-DirSymlink -Target (Join-Path $xdgConfig "zellij") -Link (Join-Path $roaming "zellij")
+Ensure-UserEnvironmentVariable -Name "YAZI_CONFIG_HOME" -Value $yaziConfigHome
 
 $links = @(
     @{ Name = "alacritty"; Target = Join-Path $xdgConfig "alacritty"; Link = Join-Path $roaming "alacritty" }
