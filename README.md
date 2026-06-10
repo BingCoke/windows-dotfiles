@@ -8,7 +8,7 @@
 
 ```powershell
 $env:DOTFILES_USE_SHELL = 'nu'
-chezmoi apply
+    chezmoi apply
 ```
 
 当前会读取这个变量的配置：
