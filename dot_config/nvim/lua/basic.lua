@@ -8,7 +8,7 @@ vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
 -- jkhl 移动时光标周围保留8行
 vim.o.scrolloff = 3
-vim.o.sidescrolloff = 3
+vim.o.sidescrolloff = 0
 -- 使用相对行号
 vim.wo.number = false
 vim.wo.relativenumber = false
@@ -115,3 +115,7 @@ vim.o.foldcolumn = '1' -- '0' is not bad
 vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
+
+
+
+

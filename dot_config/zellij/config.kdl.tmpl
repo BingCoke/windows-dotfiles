@@ -52,7 +52,7 @@ keybinds clear-defaults=true {
         bind "x" { CloseFocus; SwitchToMode "normal"; }        // 关闭当前 pane
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; } // 放大/还原 pane
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }   // 浮动窗口切换
-        bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; } // 嵌入/浮动切换
+        bind "e" { EditScrollback; SwitchToMode "normal"; } // 用编辑器打开 scrollback
         bind "i" { TogglePanePinned; SwitchToMode "normal"; }         // 固定 pane
         bind "o" { FocusNextPane; }                            // 轮转焦点（不退出，可连续按）
         bind "b" { BreakPane; SwitchToMode "normal"; }         // 拆出 pane 为新 tab
@@ -88,10 +88,11 @@ keybinds clear-defaults=true {
         // ---- 进入子模式（精细操作）----
         bind "Ctrl r" { SwitchToMode "resize"; }     // 进入 resize 模式（连续调整大小）
         bind "Ctrl m" { SwitchToMode "move"; }       // 进入 move 模式（连续移动 pane）
-        bind "Ctrl s" { SwitchToMode "scroll"; }     // 进入 scroll 模式（滚动/搜索）
-        bind "Ctrl p" { SwitchToMode "tab"; }        // 进入 tab 模式（批量 tab 操作）
-        bind "Ctrl p" { SwitchToMode "pane"; }       // 进入 pane 模式（更多 pane 操作）
-        bind "Ctrl o" { SwitchToMode "session"; }    // 进入 session 模式
+        bind "enter" { SwitchToMode "scroll"; }     // 进入 scroll 模式（滚动/搜索）
+        bind "Ctrl s" { SwitchToMode "scroll"; }    // 进入 scroll 模式（滚动/搜索）
+        bind "Ctrl t" { SwitchToMode "tab"; }       // 进入 tab 模式（批量 tab 操作）
+        bind "Ctrl p" { SwitchToMode "pane"; }      // 进入 pane 模式（更多 pane 操作）
+        bind "Ctrl o" { SwitchToMode "session"; }   // 进入 session 模式
     }
 
     // ========== 子模式（精细操作，esc/enter 返回 normal）==========
@@ -290,7 +291,7 @@ keybinds clear-defaults=true {
     }
 
     // 所有非 normal/locked 模式通用退出
-    shared_except "normal" "entersearch" {
+    shared_except "normal" "tmux" "entersearch" {
         bind "enter" { SwitchToMode "normal"; }
     }
     shared_except "normal"  "entersearch" "renametab" "renamepane" {

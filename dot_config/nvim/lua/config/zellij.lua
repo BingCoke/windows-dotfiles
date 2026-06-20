@@ -1,6 +1,22 @@
-local function nav(short_direction, direction, action)
-	--local t0 = vim.uv.hrtime()
+local function is_terminal(bufnr)
+	return vim.bo[bufnr].buftype == "terminal"
+end
 
+local function remember_terminal_insert_state(bufnr, was_insert)
+	vim.b[bufnr].zellij_nav_restore_insert = was_insert
+end
+
+local function restore_terminal_insert_if_needed()
+	vim.schedule(function()
+		local bufnr = vim.api.nvim_get_current_buf()
+
+		if is_terminal(bufnr) and vim.b[bufnr].zellij_nav_restore_insert then
+			vim.cmd("startinsert")
+		end
+	end)
+end
+
+local function nav(short_direction, direction, action)
 	if not action then
 		action = "move-focus"
 	end
@@ -9,46 +25,25 @@ local function nav(short_direction, direction, action)
 		error("invalid action: " .. action)
 	end
 
+	local cur_bufnr = vim.api.nvim_get_current_buf()
 	local cur_winnr = vim.fn.winnr()
-	--local t1 = vim.uv.hrtime()
 
-	vim.api.nvim_command("wincmd " .. short_direction)
-	--local t2 = vim.uv.hrtime()
-
-	local new_winnr = vim.fn.winnr()
-	--local t3 = vim.uv.hrtime()
-
-	local at_edge = cur_winnr == new_winnr
-	--local spawn_elapsed_ms = nil
-
-	if at_edge then
-		local t_spawn = vim.uv.hrtime()
-		vim.fn.jobstart({ "zellij", "action", action, direction }, {
-			detach = true,
-			--on_exit = function(_, code)
-			--	if code ~= 0 then
-			--		vim.schedule(function()
-			--			vim.notify("[nav] zellij action exited with code " .. code, vim.log.levels.WARN)
-			--		end)
-			--	end
-			--end,
-		})
-		--spawn_elapsed_ms = (vim.uv.hrtime() - t_spawn) / 1e6
+	if is_terminal(cur_bufnr) then
+		remember_terminal_insert_state(cur_bufnr, vim.fn.mode(1) == "t")
 	end
 
-	--local total_ms = (vim.uv.hrtime() - t0) / 1e6
-	--local msg = string.format(
-	--	"[nav] %s(%s) total=%.3fms | winnr=%.3fms wincmd=%.3fms winnr2=%.3fms | at_edge=%s spawn_jobstart=%s",
-	--	action,
-	--	direction,
-	--	total_ms,
-	--	(t1 - t0) / 1e6,
-	--	(t2 - t1) / 1e6,
-	--	(t3 - t2) / 1e6,
-	--	tostring(at_edge),
-	--	spawn_elapsed_ms and string.format("%.3fms", spawn_elapsed_ms) or "n/a"
-	--)
-	--vim.notify(msg, vim.log.levels.INFO)
+	vim.api.nvim_command("wincmd " .. short_direction)
+
+	local new_winnr = vim.fn.winnr()
+	local at_edge = cur_winnr == new_winnr
+
+	if at_edge then
+		vim.fn.jobstart({ "zellij", "action", action, direction }, {
+			detach = true,
+		})
+	end
+
+	restore_terminal_insert_if_needed()
 end
 local M = {}
 
@@ -86,15 +81,18 @@ end
 
 local map = vim.keymap.set
 
-map({ "n" }, "<m-h>", function()
+map({ "n", "t", "i" }, "<m-h>", function()
 	M.left()
 end, { desc = "navigate left or tab" })
-map({ "n" }, "<m-j>", function()
+
+map({ "n", "t", "i" }, "<m-j>", function()
 	M.down()
 end, { desc = "navigate down" })
-map({ "n" }, "<m-k>", function()
+
+map({ "n", "t", "i" }, "<m-k>", function()
 	M.up()
 end, { desc = "navigate up" })
-map({ "n" }, "<M-l>", function()
+
+map({ "n", "t", "i" }, "<M-l>", function()
 	M.right()
 end, { desc = "navigate right or tab" })

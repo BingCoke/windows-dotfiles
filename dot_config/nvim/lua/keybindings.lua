@@ -11,6 +11,8 @@ map("i", "<c-`>", "`", opt)
 -- 取消 s 默认功能
 map("n", "s", "", opt)
 
+vim.keymap.set({ "i", "v" }, "<C-;>", "<esc>", { noremap = true, silent = true })
+vim.keymap.set({ "t" }, "<C-;>", "<c-\\><c-n>", { noremap = true, silent = true })
 -- 插入模式
 vim.keymap.set({ "i" }, "<C-v>", "<C-r>+", { noremap = true, silent = true })
 vim.keymap.set("c", "<C-v>", function()
@@ -19,7 +21,6 @@ vim.keymap.set("c", "<C-v>", function()
 end, { noremap = true, silent = true })
 
 map("v", "<c-c>", '"+y', opt)
-map("v", "<D-c>", '"+y', opt)
 
 local function copy_file_line_reference()
 	local path = vim.fn.expand("%:p")
@@ -53,8 +54,6 @@ map("v", "<M-c>", function()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
 end, opt)
 
-
-
 vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
 
 map({ "n", "v", "i" }, "<c-a>", "<esc>ggVG", opt)
@@ -80,16 +79,18 @@ map("n", "<C-Down>", "<cmd>resize -2<CR>", opt)
 map("n", "<C-Up>", "<cmd>resize +2<CR>", opt)
 map("n", "<C-Right>", "<cmd>vertical resize +2<CR>", opt)
 map("n", "<C-Left>", "<cmd>vertical resize -2<CR>", opt)
+
 -- Terminal相关
 -- 打开terminal
-map("n", "<leader>h", "<cmd>sp | terminal<CR>", opt)
-map("n", "<leader>v", "<cmd>vsp | terminal<CR>", opt)
-map("t", "<esc>", "<C-\\><C-n>", opt)
-map("t", "<M-h>", [[ <C-\><C-N><C-w>h ]], opt)
-map("t", "<M-j>", [[ <C-\><C-N><C-w>j ]], opt)
-map("t", "<M-k>", [[ <C-\><C-N><C-w>k ]], opt)
-map("t", "<M-l>", [[ <C-\><C-N><C-w>l ]], opt)
+map("n", "<leader>h", function()
+	vim.cmd("sp | terminal")
+	vim.cmd("startinsert")
+end, opt)
 
+map("n", "<leader>v", function()
+	vim.cmd("vsp | terminal")
+	vim.cmd("startinsert")
+end, opt)
 
 -- visual模式下缩进代码
 map("v", "<", "<gv", opt)
