@@ -65,7 +65,6 @@ config.colors.tab_bar = {
 config.disable_default_key_bindings = true
 
 config.keys = {
-
   { key = "=", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
   { key = "-", mods = "CTRL|SHIFT", action = act.DecreaseFontSize },
   { key = "0", mods = "CTRL|SHIFT", action = act.ResetFontSize },
@@ -153,6 +152,6 @@ config.window_padding = {
   bottom = 0,
 }
 
---config.enable_kitty_keyboard = true
+config.enable_kitty_keyboard = true
 
 return config

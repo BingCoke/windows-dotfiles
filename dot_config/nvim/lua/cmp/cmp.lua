@@ -285,7 +285,6 @@ cmp.setup.filetype("css", {
 	sources = cmp.config.sources({
 		{ name = "nvim_lsp" },
 		{ name = "luasnip" },
-		{ name = "cmp-tw2css" },
 		{ name = "buffer" }, -- text within current buffer
 		{ name = "path" }, -- file system paths
 	}),

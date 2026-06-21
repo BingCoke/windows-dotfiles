@@ -7,7 +7,6 @@ return {
     dependencies = {
       "saadparwaiz1/cmp_luasnip",
       "honza/vim-snippets",
-      "jcha0713/cmp-tw2css",
     },
     event = "BufReadPre",
     config = function()
