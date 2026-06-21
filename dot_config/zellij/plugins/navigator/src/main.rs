@@ -13,6 +13,13 @@ struct State {
     // Timing: when we dispatched list_clients() for the current pending command.
     list_clients_sent_at: Option<Instant>,
 
+    // Singleton election: keep only the lowest plugin id active when duplicate navigator
+    // instances exist in the same Zellij session.
+    plugin_id: Option<u32>,
+    plugin_url: Option<String>,
+    is_leader: bool,
+    close_requested: bool,
+
     // Configuration
     move_mod: Vec<Mod>,
     resize_mod: Vec<Mod>,
@@ -45,13 +52,20 @@ impl ZellijPlugin for State {
         let t = Instant::now();
         eprintln!("[navigator][timing] load() called — plugin (re)initializing");
         self.parse_configuration(configuration);
+        let plugin_ids = get_plugin_ids();
+        self.plugin_id = Some(plugin_ids.plugin_id);
+        eprintln!("[navigator][singleton] plugin_id={}", plugin_ids.plugin_id);
 
         request_permission(&[
             PermissionType::WriteToStdin,
             PermissionType::ChangeApplicationState,
             PermissionType::ReadApplicationState,
         ]);
-        subscribe(&[EventType::PermissionRequestResult, EventType::ListClients]);
+        subscribe(&[
+            EventType::PermissionRequestResult,
+            EventType::ListClients,
+            EventType::PaneUpdate,
+        ]);
         if self.permissions_granted {
             hide_self();
         }
@@ -119,6 +133,9 @@ impl ZellijPlugin for State {
                     hide_self();
                 }
             }
+            Event::PaneUpdate(pane_manifest) => {
+                self.reconcile_singleton(pane_manifest);
+            }
             _ => {}
         }
         true
@@ -133,6 +150,13 @@ impl ZellijPlugin for State {
                 "[navigator][timing] pipe() received: name={:?}, payload={:?}",
                 name, payload_dbg
             );
+            if !self.is_leader {
+                eprintln!(
+                    "[navigator][singleton] ignoring pipe in non-leader instance: plugin_id={:?}",
+                    self.plugin_id
+                );
+                return true;
+            }
             self.pending_since = Some(pipe_at);
             self.handle_command(command);
             eprintln!(
@@ -157,6 +181,10 @@ impl Default for State {
             command_queue: VecDeque::new(),
             pending_since: None,
             list_clients_sent_at: None,
+            plugin_id: None,
+            plugin_url: None,
+            is_leader: true,
+            close_requested: false,
 
             move_mod: vec![Mod::Ctrl],
             resize_mod: vec![Mod::Alt],
@@ -167,6 +195,49 @@ impl Default for State {
 }
 
 impl State {
+    fn reconcile_singleton(&mut self, pane_manifest: PaneManifest) {
+        let Some(plugin_id) = self.plugin_id else {
+            return;
+        };
+
+        if self.plugin_url.is_none() {
+            self.plugin_url = plugin_url_for_pane(&pane_manifest, plugin_id);
+            if let Some(plugin_url) = &self.plugin_url {
+                eprintln!("[navigator][singleton] plugin_url={}", plugin_url);
+            }
+        }
+
+        let Some(plugin_url) = self.plugin_url.clone() else {
+            return;
+        };
+
+        let navigator_ids = navigator_plugin_ids(&pane_manifest, &plugin_url);
+        let leader_id = leader_plugin_id(navigator_ids.iter().copied());
+        self.is_leader = leader_id.map_or(true, |leader_id| leader_id == plugin_id);
+
+        if self.is_leader {
+            for duplicate_id in navigator_ids.into_iter().filter(|id| *id != plugin_id) {
+                eprintln!(
+                    "[navigator][singleton] closing duplicate navigator plugin: leader_id={}, duplicate_id={}",
+                    plugin_id, duplicate_id
+                );
+                close_plugin_pane(duplicate_id);
+            }
+        } else {
+            self.command_queue.clear();
+            self.pending_since = None;
+            self.list_clients_sent_at = None;
+            if !self.close_requested {
+                self.close_requested = true;
+                eprintln!(
+                    "[navigator][singleton] closing non-leader navigator plugin: plugin_id={}, leader_id={:?}",
+                    plugin_id, leader_id
+                );
+                close_self();
+            }
+        }
+    }
+
     fn handle_command(&mut self, command: Command) {
         self.command_queue.push_back(command);
         let before = Instant::now();
@@ -274,6 +345,32 @@ impl State {
 
         kitty_keybinding(direction, modifiers)
     }
+}
+
+fn plugin_url_for_pane(pane_manifest: &PaneManifest, plugin_id: u32) -> Option<String> {
+    pane_manifest
+        .panes
+        .values()
+        .flatten()
+        .find(|pane| pane.is_plugin && pane.id == plugin_id)
+        .and_then(|pane| pane.plugin_url.clone())
+}
+
+fn navigator_plugin_ids(pane_manifest: &PaneManifest, plugin_url: &str) -> Vec<u32> {
+    pane_manifest
+        .panes
+        .values()
+        .flatten()
+        .filter(|pane| pane.is_plugin && pane.plugin_url.as_deref() == Some(plugin_url))
+        .map(|pane| pane.id)
+        .collect()
+}
+
+fn leader_plugin_id<I>(pane_ids: I) -> Option<u32>
+where
+    I: IntoIterator<Item = u32>,
+{
+    pane_ids.into_iter().min()
 }
 
 fn term_command_from_client_list(clients: Vec<ClientInfo>) -> Option<String> {
@@ -449,5 +546,24 @@ fn parse_command(pipe_message: PipeMessage) -> Option<Command> {
         "move_focus_or_tab" => Some(Command::MoveFocusOrTab(direction)),
         "resize" => Some(Command::Resize(direction)),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lowest_navigator_plugin_id_becomes_leader() {
+        let pane_ids = vec![4, 2, 7];
+
+        assert_eq!(leader_plugin_id(pane_ids), Some(2));
+    }
+
+    #[test]
+    fn no_leader_without_navigator_plugin_panes() {
+        let pane_ids = Vec::new();
+
+        assert_eq!(leader_plugin_id(pane_ids), None);
     }
 }
