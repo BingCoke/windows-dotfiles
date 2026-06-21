@@ -11,8 +11,9 @@ map("i", "<c-`>", "`", opt)
 -- 取消 s 默认功能
 map("n", "s", "", opt)
 
-vim.keymap.set({ "i", "v" }, "<C-;>", "<esc>", { noremap = true, silent = true })
-vim.keymap.set({ "t" }, "<C-;>", "<c-\\><c-n>", { noremap = true, silent = true })
+-- ctrl+l 回到正常模式
+vim.keymap.set({ "i", "v" }, "<C-l>", "<esc>", { noremap = true, silent = true })
+vim.keymap.set({ "t" }, "<C-l>", "<c-\\><c-n>", { noremap = true, silent = true })
 -- 插入模式
 vim.keymap.set({ "i" }, "<C-v>", "<C-r>+", { noremap = true, silent = true })
 vim.keymap.set("c", "<C-v>", function()

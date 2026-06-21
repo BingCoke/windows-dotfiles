@@ -116,6 +116,14 @@ vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to de
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 
-
-
-
+-- 所有的 dump 文件 不能配置任何 column 
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = "*.dump",
+  callback = function()
+    vim.wo.number = false
+    vim.wo.relativenumber = false
+    vim.wo.signcolumn = "no"
+    vim.wo.foldcolumn = "0"
+    vim.wo.statuscolumn = ""
+  end,
+})
