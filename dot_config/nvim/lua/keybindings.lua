@@ -120,14 +120,6 @@ map("n", "<leader>W", "<cmd>w !sudo tee %<CR>", {})
 
 -- 设置插件快捷键
 local pluginKeys = {}
---translate
-
--- 设置文件搜索
--- Telescope
--- 查找文件
--- dap
-
-map("n", "<c-w>", "<c-w>w", opt)
 
 -- 跳转到下一个错误（仅 ERROR）
 vim.keymap.set("n", "]e", function()
