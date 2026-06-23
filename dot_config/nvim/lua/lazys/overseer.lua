@@ -24,7 +24,7 @@ return {
           cmd = cmd,
           components = {
             -- 不用 dock，避免 task list
-            { "open_output",         direction = "horizontal", on_start = "always", focus = false },
+            { "open_output",         direction = "horizontal", on_start = "always", focus = true },
 
             "on_exit_set_status",
             "on_complete_notify",
