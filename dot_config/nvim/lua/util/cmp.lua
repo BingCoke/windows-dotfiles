@@ -1,6 +1,6 @@
 local M = {}
 
-M.blinkCmp = true
+M.blinkCmp = false
 
 function M.getCapabilites()
 	local cap
