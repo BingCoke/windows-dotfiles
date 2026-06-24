@@ -13,9 +13,15 @@ map("n", "s", "", opt)
 
 vim.keymap.set({ "n" }, "gf", "gF", { remap = true })
 
--- ctrl+l 回到正常模式
-vim.keymap.set({ "i", "v" }, "<C-l>", "<esc>", { noremap = true, silent = true })
-vim.keymap.set({ "t" }, "<C-l>", "<c-\\><c-n>", { noremap = true, silent = true })
+-- Keep the normal <C-;> mapping for terminals that can report it directly.
+vim.keymap.set({ "i", "v" }, "<C-;>", "<esc>", { noremap = true, silent = true })
+vim.keymap.set({ "t" }, "<C-;>", "<c-\\><c-n>", { noremap = true, silent = true })
+
+-- WezTerm sends Ctrl+; as CSI-u without requiring Zellij/Kitty keyboard mode.
+local ctrl_semicolon_csi_u = "\27[59;5u"
+vim.keymap.set({ "i", "v" }, ctrl_semicolon_csi_u, "<esc>", { noremap = true, silent = true })
+vim.keymap.set({ "t" }, ctrl_semicolon_csi_u, "<c-\\><c-n>", { noremap = true, silent = true })
+
 -- 插入模式
 vim.keymap.set({ "i" }, "<C-v>", "<C-r>+", { noremap = true, silent = true })
 vim.keymap.set("c", "<C-v>", function()
@@ -58,6 +64,7 @@ map("v", "<M-c>", function()
 end, opt)
 
 vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
+
 
 map({ "n", "v", "i" }, "<c-a>", "<esc>ggVG", opt)
 
@@ -129,7 +136,7 @@ local pluginKeys = {}
 -- 查找文件
 -- dap
 
-map("n", "<c-w>", "<c-w>w", opt)
+--map("n", "<c-w>", "<c-w>w", opt)
 
 -- 跳转到下一个错误（仅 ERROR）
 vim.keymap.set("n", "]e", function()
