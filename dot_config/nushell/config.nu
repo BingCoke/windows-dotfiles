@@ -16,6 +16,8 @@
 # options using:
 #     config nu --doc | nu-highlight | less -R
 # #
+source local.nu
+
 $env.config.buffer_editor = 'nvim'
 
 $env.EDITOR = "nvim"
@@ -48,21 +50,53 @@ def --env y [...args] {
 	rm -fp $tmp
 }
 
-{{ if eq .chezmoi.os "windows" }}
-$env.YAZI_CONFIG_HOME = '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/yazi'
-$env.PATH ++= [ '{{ .chezmoi.homeDir | replace "\\" "/" }}/scoop/apps/mingw/current/bin', '{{ .chezmoi.homeDir | replace "\\" "/" }}/.cargo/bin' , '{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/bin', '{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/script' ]
-{{ end }}
-
-$env.HTTP_PROXY = "http://127.0.0.1:7890"
-$env.HTTPS_PROXY = "http://127.0.0.1:7890"
-$env.NO_PROXY = "localhost,127.0.0.1,.local"
 
 # 启用外部命令路径解析高亮
 $env.config.highlight_resolved_externals = true
 
 
 
+# --- starship ---
 # mkdir ($nu.data-dir | path join "vendor/autoload")
 # starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
-# tv init nu | save -f ($nu.data-dir | path join "vendor/autoload/tv.nu")
+# --- zoxide ---
+# zoxide init nushell | save -f ~/.zoxide.nu 
+# source ~/.zoxide.nu
 
+
+# --- keybindings ---
+const ctrl_r = {
+  name: history_menu
+  modifier: CONTROL
+  keycode: Char_r
+  mode: [emacs, vi_insert, vi_normal]
+  event: [
+    {
+      send: executehostcommand
+      cmd: "
+        let result = history
+          | get command
+          | reverse
+          | uniq
+          | each { |cmd| $cmd | str replace --all (char newline) ' ' }
+          | str join (char nl)
+          | fzf;
+        commandline edit --append $result;
+        commandline set-cursor --end
+      "
+    }
+  ]
+}
+
+$env.config.keybindings ++= [{
+  name: change_dir_with_fzf
+  modifier: CONTROL
+  keycode: Char_y
+  mode: emacs
+  event: {
+    send: executehostcommand,
+    cmd: "let result = fd --type d --hidden --exclude .git | str join (char nl) | fzf | decode utf-8 | str trim; commandline edit --insert $result"
+  }
+}]
+
+$env.config.keybindings ++= [$ctrl_r]

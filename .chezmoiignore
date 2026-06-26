@@ -43,3 +43,5 @@ onchange-after_setup-symlinks.ps1
 .agents/skills/**/node_modules/
 .agents/skills/**/dist/
 .agents/skills/**/build/
+.config/nushell/local.nu
+.config/nushell/local-env.nu

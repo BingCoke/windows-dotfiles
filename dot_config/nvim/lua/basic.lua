@@ -64,7 +64,7 @@ vim.o.swapfile = false
 -- smaller updatetime
 vim.o.updatetime = 300
 -- 设置 timeoutlen 为等待键盘快捷键连击时间500毫秒，可根据需要设置
-vim.o.timeoutlen = 100
+vim.o.timeoutlen = 500
 vim.o.ttimeout = true
 -- split window 从下边和右边出现
 vim.o.splitbelow = true
@@ -93,10 +93,10 @@ vim.cmd("autocmd BufEnter *.css setlocal formatoptions-=cro")
 vim.cmd("autocmd BufEnter *.lua setlocal formatoptions-=cro")
 
 vim.filetype.add({
-  extension = {
-    astro = "astro",
-    max = "mdx",
-  },
+	extension = {
+		astro = "astro",
+		max = "mdx",
+	},
 })
 
 vim.wo.cursorline = true
@@ -106,25 +106,22 @@ vim.cmd([[
 	set jumpoptions+=stack
 	]])
 
-
-
-
 -- use fold
 vim.o.fillchars = "eob: ,fold: ,foldopen:,foldsep: ,foldinner: ,foldclose:"
 
-vim.o.foldcolumn = '1' -- '0' is not bad
-vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldcolumn = "1" -- '0' is not bad
+vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 
--- 所有的 dump 文件 不能配置任何 column 
+-- 所有的 dump 文件 不能配置任何 column
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = "*.dump",
-  callback = function()
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-    vim.wo.signcolumn = "no"
-    vim.wo.foldcolumn = "0"
-    vim.wo.statuscolumn = ""
-  end,
+	pattern = "*.dump",
+	callback = function()
+		vim.wo.number = false
+		vim.wo.relativenumber = false
+		vim.wo.signcolumn = "no"
+		vim.wo.foldcolumn = "0"
+		vim.wo.statuscolumn = ""
+	end,
 })
