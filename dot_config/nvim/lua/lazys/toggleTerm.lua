@@ -17,6 +17,10 @@ return {
 
       local Terminal = require("toggleterm.terminal").Terminal
 
+      local function global_cwd()
+        return vim.fn.getcwd(-1, -1)
+      end
+
       local map = vim.keymap.set
       -- 复用 opt 参数
       local opt = { noremap = true, silent = true }
@@ -24,6 +28,7 @@ return {
 
       M.term = Terminal:new({
         direction = "float",
+        dir = global_cwd(),
         close_on_exit = true,
         display_name = "term",
         on_open = function()
@@ -32,6 +37,12 @@ return {
       })
 
       map({ "n", "i", "t" }, "<M-e>", function()
+        local dir = global_cwd()
+        if M.term.job_id and M.term.bufnr and vim.api.nvim_buf_is_valid(M.term.bufnr) then
+          M.term:change_dir(dir)
+        else
+          M.term.dir = dir
+        end
         M.term:toggle()
       end, opt)
 
@@ -39,6 +50,7 @@ return {
       M.git = Terminal:new({
         cmd = "lazygit",
         direction = "float",
+        dir = global_cwd(),
         close_on_exit = true,
         display_name = "git",
         on_open = function(term)
@@ -47,6 +59,11 @@ return {
       })
 
       map({ "n", "i", "t" }, "<M-g>", function()
+        local dir = global_cwd()
+        if M.git.dir ~= dir and M.git.bufnr and vim.api.nvim_buf_is_valid(M.git.bufnr) then
+          M.git:shutdown()
+        end
+        M.git.dir = dir
         M.git:toggle()
       end, opt)
 

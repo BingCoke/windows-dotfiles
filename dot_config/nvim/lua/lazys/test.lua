@@ -30,7 +30,7 @@ return {
 				go_test_args = {
 					"-v",
 					"-race",
-					"-coverprofile=" .. vim.fn.getcwd() .. "/coverage.out",
+					"-coverprofile=" .. vim.fn.getcwd(-1, -1) .. "/coverage.out",
 				},
 			}
 		end,
@@ -84,7 +84,7 @@ return {
 			{
 				"<leader>tA",
 				function()
-					require("neotest").run.run(vim.uv.cwd())
+					require("neotest").run.run(vim.fn.getcwd(-1, -1))
 				end,
 				desc = "[t]est [A]ll files",
 			},

@@ -17,7 +17,7 @@ require("dashboard").setup({
         desc = "current                            ",
         action = function()
           vim.cmd([[NvimTreeClose]])
-          vim.cmd([[Telescope find_files]])
+          require("telescope.builtin").find_files({ cwd = vim.fn.getcwd(-1, -1) })
         end,
       },
       {

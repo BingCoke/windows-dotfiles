@@ -22,6 +22,7 @@ $env.config.buffer_editor = 'nvim'
 
 $env.EDITOR = "nvim"
 $env.VISUAL = "nvim"
+$env.GIT_EDITOR = "nvim"
 
 $env.config = ($env.config | upsert shell_integration {
   osc2: true
@@ -31,6 +32,14 @@ $env.config = ($env.config | upsert shell_integration {
   osc133: false
   osc633: false
 })
+
+$env.config = (
+  $env.config | upsert hooks.pre_prompt [{
+    code: {||
+      print -n $"\e]7;file://($env.PWD)\e\\"
+    }
+  }]
+)
 
 $env.config.history = {
   file_format: sqlite
@@ -60,8 +69,8 @@ $env.config.highlight_resolved_externals = true
 # mkdir ($nu.data-dir | path join "vendor/autoload")
 # starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
 # --- zoxide ---
-# zoxide init nushell | save -f ~/.zoxide.nu 
-# source ~/.zoxide.nu
+# zoxide init nushell | save -f ~/.zoxide.nu
+source ~/.zoxide.nu
 
 
 # --- keybindings ---
