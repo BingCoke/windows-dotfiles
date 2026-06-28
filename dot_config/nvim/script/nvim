@@ -1,0 +1,36 @@
+#!/bin/sh
+
+if [ "$1" = "debug" ]; then
+  if [ -n "${NVIM:-}" ]; then
+    printf '\033]777;pi-nvim-debug\033\\'
+    exit 0
+  fi
+
+  echo "nvim shim debug" >&2
+  echo "NVIM: ${NVIM:-}" >&2
+  echo "script_dir: $(CDPATH= cd -- "$(dirname -- "$0")" && pwd)" >&2
+  echo "mode: normal terminal; this shim is only injected into managed Neovim terminals" >&2
+  exit 0
+fi
+
+if [ -z "${NVIM:-}" ]; then
+  echo "nvim shim is only for managed Neovim terminals; use your system nvim externally" >&2
+  exit 127
+fi
+
+sent=0
+for target in "$@"; do
+  case "$target" in
+    -* ) continue ;;
+    /*) path=$target ;;
+    *) path=$PWD/$target ;;
+  esac
+
+  sent=1
+  printf '\033]777;pi-nvim;%s\033\\' "$path"
+done
+
+if [ "$sent" -eq 0 ]; then
+  echo "Usage: nvim <file> [file ...]" >&2
+  exit 2
+fi
