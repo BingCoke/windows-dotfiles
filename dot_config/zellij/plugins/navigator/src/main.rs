@@ -2,7 +2,7 @@ use zellij_tile::prelude::*;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::str::FromStr;
-use std::time::Instant;
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 struct State {
     permissions_granted: bool,
@@ -17,14 +17,34 @@ struct State {
     // instances exist in the same Zellij session.
     plugin_id: Option<u32>,
     plugin_url: Option<String>,
-    is_leader: bool,
+    is_pane_leader: bool,
+    is_runtime_leader: bool,
     close_requested: bool,
+    runtime_token: Option<String>,
+    last_seen_lease: Option<RuntimeLease>,
 
     // Configuration
     move_mod: Vec<Mod>,
     resize_mod: Vec<Mod>,
     use_arrow_keys: bool,
     editor_commands: Vec<String>,
+}
+
+const LEASE_TITLE_PREFIX: &str = "navigator|leader=";
+const LEASE_EXPIRES_SEPARATOR: &str = "|expires=";
+const LEASE_REFRESH_SECONDS: f64 = 0.5;
+const LEASE_TTL_MS: u128 = 2_000;
+
+#[derive(Clone, Debug)]
+struct RuntimeLease {
+    token: String,
+    expires_at_ms: u128,
+}
+
+impl RuntimeLease {
+    fn is_valid(&self, now_ms: u128) -> bool {
+        self.expires_at_ms > now_ms
+    }
 }
 
 enum Command {
@@ -50,10 +70,12 @@ register_plugin!(State);
 impl ZellijPlugin for State {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
         let t = Instant::now();
-        eprintln!("[navigator][timing] load() called — plugin (re)initializing");
         self.parse_configuration(configuration);
         let plugin_ids = get_plugin_ids();
         self.plugin_id = Some(plugin_ids.plugin_id);
+        if self.runtime_token.is_none() {
+            self.runtime_token = Some(runtime_token(plugin_ids.plugin_id));
+        }
         eprintln!("[navigator][singleton] plugin_id={}", plugin_ids.plugin_id);
 
         request_permission(&[
@@ -65,7 +87,10 @@ impl ZellijPlugin for State {
             EventType::PermissionRequestResult,
             EventType::ListClients,
             EventType::PaneUpdate,
+            EventType::Timer,
         ]);
+        self.schedule_lease_timer();
+
         if self.permissions_granted {
             hide_self();
         }
@@ -134,7 +159,12 @@ impl ZellijPlugin for State {
                 }
             }
             Event::PaneUpdate(pane_manifest) => {
-                self.reconcile_singleton(pane_manifest);
+                self.reconcile_singleton(&pane_manifest);
+                self.observe_runtime_lease(&pane_manifest);
+            }
+            Event::Timer(_) => {
+                self.reconcile_runtime_leadership();
+                self.schedule_lease_timer();
             }
             _ => {}
         }
@@ -150,10 +180,11 @@ impl ZellijPlugin for State {
                 "[navigator][timing] pipe() received: name={:?}, payload={:?}",
                 name, payload_dbg
             );
-            if !self.is_leader {
+            self.sync_runtime_lease_from_pane_info();
+            if !self.is_effective_leader() {
                 eprintln!(
-                    "[navigator][singleton] ignoring pipe in non-leader instance: plugin_id={:?}",
-                    self.plugin_id
+                    "[navigator][singleton] ignoring pipe in follower runtime: plugin_id={:?}, pane_leader={}, runtime_leader={}",
+                    self.plugin_id, self.is_pane_leader, self.is_runtime_leader
                 );
                 return true;
             }
@@ -183,8 +214,11 @@ impl Default for State {
             list_clients_sent_at: None,
             plugin_id: None,
             plugin_url: None,
-            is_leader: true,
+            is_pane_leader: true,
+            is_runtime_leader: false,
             close_requested: false,
+            runtime_token: None,
+            last_seen_lease: None,
 
             move_mod: vec![Mod::Ctrl],
             resize_mod: vec![Mod::Alt],
@@ -195,7 +229,132 @@ impl Default for State {
 }
 
 impl State {
-    fn reconcile_singleton(&mut self, pane_manifest: PaneManifest) {
+    fn is_effective_leader(&self) -> bool {
+        self.is_pane_leader && self.is_runtime_leader
+    }
+
+    fn schedule_lease_timer(&self) {
+        set_timeout(LEASE_REFRESH_SECONDS);
+    }
+
+    fn observe_runtime_lease(&mut self, pane_manifest: &PaneManifest) {
+        if !self.is_pane_leader {
+            self.is_runtime_leader = false;
+            return;
+        }
+
+        let Some(plugin_id) = self.plugin_id else {
+            return;
+        };
+
+        let now = now_ms();
+        self.last_seen_lease =
+            plugin_title_for_pane(pane_manifest, plugin_id).and_then(runtime_lease_from_title);
+
+        match self.last_seen_lease.as_ref() {
+            Some(lease)
+                if lease.is_valid(now)
+                    && Some(lease.token.as_str()) == self.runtime_token.as_deref() =>
+            {
+                if !self.is_runtime_leader {
+                    eprintln!(
+                        "[navigator][lease] runtime became leader: token={}",
+                        lease.token
+                    );
+                }
+                self.is_runtime_leader = true;
+            }
+            Some(lease) if lease.is_valid(now) => {
+                if self.is_runtime_leader {
+                    eprintln!(
+                        "[navigator][lease] runtime became follower: leader_token={}",
+                        lease.token
+                    );
+                }
+                self.is_runtime_leader = false;
+            }
+            _ => {
+                self.is_runtime_leader = false;
+                self.write_runtime_lease(now);
+            }
+        }
+    }
+
+    fn sync_runtime_lease_from_pane_info(&mut self) {
+        if !self.is_pane_leader {
+            self.is_runtime_leader = false;
+            return;
+        }
+
+        let Some(plugin_id) = self.plugin_id else {
+            return;
+        };
+
+        let now = now_ms();
+        self.last_seen_lease = get_pane_info(PaneId::Plugin(plugin_id))
+            .and_then(|pane| runtime_lease_from_title(&pane.title));
+
+        match self.last_seen_lease.as_ref() {
+            Some(lease)
+                if lease.is_valid(now)
+                    && Some(lease.token.as_str()) == self.runtime_token.as_deref() =>
+            {
+                self.is_runtime_leader = true;
+            }
+            Some(lease) if lease.is_valid(now) => {
+                if self.is_runtime_leader {
+                    eprintln!(
+                        "[navigator][lease] runtime became follower from sync pane info: leader_token={}",
+                        lease.token
+                    );
+                }
+                self.is_runtime_leader = false;
+            }
+            _ => {
+                self.write_runtime_lease(now);
+            }
+        }
+    }
+
+    fn reconcile_runtime_leadership(&mut self) {
+        if !self.is_pane_leader {
+            self.is_runtime_leader = false;
+            return;
+        }
+
+        let now = now_ms();
+        if self.is_runtime_leader {
+            self.write_runtime_lease(now);
+            return;
+        }
+
+        if self
+            .last_seen_lease
+            .as_ref()
+            .is_none_or(|lease| !lease.is_valid(now))
+        {
+            self.write_runtime_lease(now);
+        }
+    }
+
+    fn write_runtime_lease(&mut self, now: u128) {
+        let (Some(plugin_id), Some(token)) = (self.plugin_id, self.runtime_token.as_deref()) else {
+            return;
+        };
+        let token = token.to_string();
+        let expires_at_ms = now + LEASE_TTL_MS;
+        rename_plugin_pane(plugin_id, runtime_lease_title(&token, expires_at_ms));
+        self.last_seen_lease = Some(RuntimeLease {
+            token: token.clone(),
+            expires_at_ms,
+        });
+        if !self.is_runtime_leader {
+            eprintln!("[navigator][lease] runtime became leader: token={}", token);
+        }
+        self.is_runtime_leader = true;
+    }
+
+    fn reconcile_singleton(&mut self, pane_manifest: &PaneManifest) {
         let Some(plugin_id) = self.plugin_id else {
             return;
         };
@@ -211,11 +370,11 @@ impl State {
             return;
         };
 
-        let navigator_ids = navigator_plugin_ids(&pane_manifest, &plugin_url);
+        let navigator_ids = navigator_plugin_ids(pane_manifest, &plugin_url);
         let leader_id = leader_plugin_id(navigator_ids.iter().copied());
-        self.is_leader = leader_id.map_or(true, |leader_id| leader_id == plugin_id);
+        self.is_pane_leader = leader_id.map_or(true, |leader_id| leader_id == plugin_id);
 
-        if self.is_leader {
+        if self.is_pane_leader {
             for duplicate_id in navigator_ids.into_iter().filter(|id| *id != plugin_id) {
                 eprintln!(
                     "[navigator][singleton] closing duplicate navigator plugin: leader_id={}, duplicate_id={}",
@@ -224,6 +383,7 @@ impl State {
                 close_plugin_pane(duplicate_id);
             }
         } else {
+            self.is_runtime_leader = false;
             self.command_queue.clear();
             self.pending_since = None;
             self.list_clients_sent_at = None;
@@ -345,6 +505,46 @@ impl State {
 
         kitty_keybinding(direction, modifiers)
     }
+}
+
+fn now_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis())
+        .unwrap_or_default()
+}
+
+fn runtime_token(plugin_id: u32) -> String {
+    let now_ns = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_nanos())
+        .unwrap_or_default();
+    format!("{}-{}", plugin_id, now_ns)
+}
+
+fn runtime_lease_title(token: &str, expires_at_ms: u128) -> String {
+    format!(
+        "{}{}{}{}",
+        LEASE_TITLE_PREFIX, token, LEASE_EXPIRES_SEPARATOR, expires_at_ms
+    )
+}
+
+fn runtime_lease_from_title(title: &str) -> Option<RuntimeLease> {
+    let lease = title.strip_prefix(LEASE_TITLE_PREFIX)?;
+    let (token, expires_at_ms) = lease.split_once(LEASE_EXPIRES_SEPARATOR)?;
+    Some(RuntimeLease {
+        token: token.to_string(),
+        expires_at_ms: expires_at_ms.parse().ok()?,
+    })
+}
+
+fn plugin_title_for_pane(pane_manifest: &PaneManifest, plugin_id: u32) -> Option<&str> {
+    pane_manifest
+        .panes
+        .values()
+        .flatten()
+        .find(|pane| pane.is_plugin && pane.id == plugin_id)
+        .map(|pane| pane.title.as_str())
 }
 
 fn plugin_url_for_pane(pane_manifest: &PaneManifest, plugin_id: u32) -> Option<String> {
