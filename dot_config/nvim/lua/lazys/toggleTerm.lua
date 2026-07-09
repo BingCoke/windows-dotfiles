@@ -37,7 +37,6 @@ return {
 			_G.terms = {
 				-- 1. 主终端 - 日常命令
 				main = Terminal:new({
-					cmd = "bash",
 					display_name = "Main",
 					direction = "float",
 					dir = global_cwd(),
@@ -69,7 +68,6 @@ return {
 
 				-- 3. 编译终端 - 长时间运行
 				build = Terminal:new({
-					cmd = "bash",
 					display_name = "Build",
 					direction = "horizontal",
 					size = 15,
@@ -81,7 +79,6 @@ return {
 
 				-- 4. 开发服务器终端
 				dev = Terminal:new({
-					cmd = "bash",
 					display_name = "Dev",
 					direction = "horizontal",
 					size = 15,
@@ -127,20 +124,6 @@ return {
 			map({ "n", "i", "t" }, "<leader>ed", function()
 				_G.terms.dev:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Dev Terminal" }))
-
-			-- ========================================
-			-- 终端模式按键映射
-			-- ========================================
-			function _G.set_terminal_keymaps()
-				local opts = { buffer = 0 }
-				-- Ctrl+hjkl 在窗口间导航
-				vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
-				vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
-				vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
-				vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
-			end
-
-			vim.cmd("autocmd! TermOpen term://* lua set_terminal_keymaps()")
 		end,
 	},
 }
