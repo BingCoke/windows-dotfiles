@@ -1,149 +1,146 @@
 return {
+	{
+		"akinsho/toggleterm.nvim",
+		version = "*",
+		event = "VeryLazy",
+		config = function()
+			-- ========================================
+			-- 基础配置
+			-- ========================================
+			require("toggleterm").setup({
+				shade_terminals = false,
+				size = function(term)
+					if term.direction == "horizontal" then
+						return 15
+					elseif term.direction == "vertical" then
+						return vim.o.columns * 0.4
+					end
+				end,
+				float_opts = {
+					border = "curved",
+					title_pos = "center",
+				},
+			})
 
-  {
-    "akinsho/toggleterm.nvim",
-    version = "*",
-    event = "VeryLazy",
-    config = function()
-      local M = {}
+			local Terminal = require("toggleterm.terminal").Terminal
 
-      require("toggleterm").setup({
-        shade_terminals = false,
-        float_opts = {
-          border = "curved",
-          title_pos = "center",
-        },
-      })
+			-- ========================================
+			-- 工具函数
+			-- ========================================
+			local function global_cwd()
+				return vim.fn.getcwd(-1, -1)
+			end
 
-      local Terminal = require("toggleterm.terminal").Terminal
+			-- ========================================
+			-- 终端实例配置
+			-- ========================================
+			_G.terms = {
+				-- 1. 主终端 - 日常命令
+				main = Terminal:new({
+					cmd = "bash",
+					display_name = "Main",
+					direction = "float",
+					dir = global_cwd(),
+					float_opts = {
+						border = "curved",
+					},
+					on_open = function(term)
+						vim.cmd("startinsert!")
+					end,
+				}),
 
-      local toggle_origins = {}
+				-- 2. Git 终端
+				git = Terminal:new({
+					cmd = "lazygit",
+					display_name = "Git",
+					direction = "float",
+					dir = global_cwd(),
+					float_opts = {
+						border = "curved",
+					},
+					on_open = function(term)
+						vim.cmd("startinsert!")
+					end,
+					on_close = function(term)
+						-- Git 关闭时重新加载目录以刷新状态
+						vim.cmd("checktime")
+					end,
+				}),
 
-      local function terminal_state()
-        local bufnr = vim.api.nvim_get_current_buf()
+				-- 3. 编译终端 - 长时间运行
+				build = Terminal:new({
+					cmd = "bash",
+					display_name = "Build",
+					direction = "horizontal",
+					size = 15,
+					dir = global_cwd(),
+					on_open = function(term)
+						vim.cmd("startinsert!")
+					end,
+				}),
 
-        if not vim.api.nvim_buf_is_valid(bufnr) or vim.bo[bufnr].buftype ~= "terminal" then
-          return nil
-        end
+				-- 4. 开发服务器终端
+				dev = Terminal:new({
+					cmd = "bash",
+					display_name = "Dev",
+					direction = "horizontal",
+					size = 15,
+					dir = global_cwd(),
+					on_open = function(term)
+						vim.cmd("startinsert!")
+					end,
+				}),
+			}
 
-        return {
-          bufnr = bufnr,
-          mode = vim.fn.mode(1),
-          cursor = vim.api.nvim_win_get_cursor(0),
-        }
-      end
+			-- ========================================
+			-- 快捷键配置
+			-- ========================================
+			local map = vim.keymap.set
+			local opt = { noremap = true, silent = true }
 
-      local function remember_origin(name, term)
-        local origin = terminal_state()
+			-- 终端管理快捷键（使用 leader+e 前缀，e = execute/terminal）
+			map("n", "<leader>ee", "<Cmd>TermSelect<CR>", { desc = "Select Terminal" })
 
-        if term:is_open() then
-          if origin and vim.api.nvim_get_current_buf() ~= term.bufnr then
-            toggle_origins[name] = origin
-          end
-          return
-        end
+			map({ "n", "i", "t" }, "<M-e>", function()
+				_G.terms.main:toggle()
+			end, vim.tbl_extend("force", opt, { desc = "Toggle Main Terminal" }))
 
-        toggle_origins[name] = origin
-      end
+			-- 快速访问各个终端（使用 leader+e 前缀）
+			map({ "n", "i", "t" }, "<leader>em", function()
+				_G.terms.main:toggle()
+			end, vim.tbl_extend("force", opt, { desc = "Toggle Main Terminal" }))
 
-      local function restore_origin(name)
-        local origin = toggle_origins[name]
-        toggle_origins[name] = nil
+			map({ "n", "i", "t" }, "<leader>eg", function()
+				-- 每次打开 git 时更新工作目录
+				local dir = global_cwd()
+				if _G.terms.git.dir ~= dir and _G.terms.git.bufnr and vim.api.nvim_buf_is_valid(_G.terms.git.bufnr) then
+					_G.terms.git:shutdown()
+				end
+				_G.terms.git.dir = dir
+				_G.terms.git:toggle()
+			end, vim.tbl_extend("force", opt, { desc = "Toggle Git Terminal" }))
 
-        if not origin or origin.mode ~= "t" then
-          return
-        end
+			map({ "n", "i", "t" }, "<leader>eb", function()
+				_G.terms.build:toggle()
+			end, vim.tbl_extend("force", opt, { desc = "Toggle Build Terminal" }))
 
-        vim.schedule(function()
-          if
-            vim.api.nvim_get_current_buf() ~= origin.bufnr
-            or not vim.api.nvim_buf_is_valid(origin.bufnr)
-            or vim.bo[origin.bufnr].buftype ~= "terminal"
-          then
-            return
-          end
+			map({ "n", "i", "t" }, "<leader>ed", function()
+				_G.terms.dev:toggle()
+			end, vim.tbl_extend("force", opt, { desc = "Toggle Dev Terminal" }))
 
-          if origin.cursor then
-            pcall(vim.api.nvim_win_set_cursor, 0, origin.cursor)
-          end
-          vim.b[origin.bufnr].terminal_restore_insert = true
-          vim.cmd("startinsert")
-        end)
-      end
+			-- ========================================
+			-- 终端模式按键映射
+			-- ========================================
+			function _G.set_terminal_keymaps()
+				local opts = { buffer = 0 }
+				-- Ctrl+hjkl 在窗口间导航
+				vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
+				vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
+				vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
+				vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
+			end
 
-      local function global_cwd()
-        return vim.fn.getcwd(-1, -1)
-      end
-
-      local map = vim.keymap.set
-      -- 复用 opt 参数
-      local opt = { noremap = true, silent = true }
-
-
-      M.term = Terminal:new({
-        direction = "float",
-        dir = global_cwd(),
-        close_on_exit = true,
-        display_name = "term",
-        on_open = function()
-          vim.cmd("startinsert!")
-        end,
-        on_close = function()
-          restore_origin("term")
-        end,
-      })
-
-      map({ "n", "i", "t" }, "<M-e>", function()
-        remember_origin("term", M.term)
-
-        local dir = global_cwd()
-        if M.term.job_id and M.term.bufnr and vim.api.nvim_buf_is_valid(M.term.bufnr) then
-          M.term:change_dir(dir)
-        else
-          M.term.dir = dir
-        end
-        M.term:toggle()
-      end, opt)
-
-
-      M.git = Terminal:new({
-        cmd = "lazygit",
-        direction = "float",
-        dir = global_cwd(),
-        close_on_exit = true,
-        display_name = "git",
-        on_open = function(term)
-          vim.cmd("startinsert!")
-        end,
-        on_close = function()
-          restore_origin("git")
-        end,
-      })
-
-      map({ "n", "i", "t" }, "<M-g>", function()
-        remember_origin("git", M.git)
-
-        local dir = global_cwd()
-        if M.git.dir ~= dir and M.git.bufnr and vim.api.nvim_buf_is_valid(M.git.bufnr) then
-          M.git:shutdown()
-        end
-        M.git.dir = dir
-        M.git:toggle()
-      end, opt)
-
-      function _G.set_terminal_keymaps()
-        local opts = { buffer = 0 }
-        vim.api.nvim_buf_set_keymap(0, "t", "<Esc>", "<Esc>", { noremap = true, silent = true })
-
-        -- 使用 <C-\><C-n> 退出终端模式
-        vim.api.nvim_buf_set_keymap(0, "t", "<C-\\><C-n>", "<C-\\><C-n>", { noremap = true, silent = true })
-        -- vim.api.nvim_buf_set_keymap(0, "t", "<leader><Esc>", "<C-\\><C-n>", { noremap = true, silent = true })
-      end
-
-      -- if you only want these mappings for toggle term use term://*toggleterm#* instead
-      vim.cmd("autocmd! TermOpen term://* lua set_terminal_keymaps()")
-
-      return M
-    end,
-  },
+			vim.cmd("autocmd! TermOpen term://* lua set_terminal_keymaps()")
+		end,
+	},
 }

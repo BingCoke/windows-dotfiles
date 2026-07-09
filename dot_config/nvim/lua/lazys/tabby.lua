@@ -3,10 +3,10 @@ return {
   event = "VeryLazy",
   config = function()
     
-    vim.api.nvim_set_keymap("n", "<leader>oa", "<cmd>tabnew<CR>", { noremap = true })
-    vim.api.nvim_set_keymap("n", "<leader>oo", "<cmd>tabonly<CR>", { noremap = true })
+    vim.api.nvim_set_keymap("n", "<leader>na", "<cmd>tabnew<CR>", { noremap = true })
+    vim.api.nvim_set_keymap("n", "<leader>no", "<cmd>tabonly<CR>", { noremap = true })
 
-    vim.keymap.set("n", "<leader>of", "<cmd>tabnew %<cr>", { noremap = true })
+    vim.keymap.set("n", "<leader>nf", "<cmd>tabnew %<cr>", { noremap = true })
 
     vim.api.nvim_set_keymap("n", "<M-w>", ":tabclose<CR>", { noremap = true })
 
