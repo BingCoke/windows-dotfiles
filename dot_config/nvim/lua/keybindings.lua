@@ -68,14 +68,8 @@ vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, 
 
 map({ "n", "v", "i" }, "<c-a>", "<esc>ggVG", opt)
 
--- 关闭当前
-map("n", "<leader>sc", "<C-w>c", opt)
-
 map("n", "<M-d>", "<C-w>c", opt)
 map("i", "<M-d>", "<C-w>c", opt)
-
--- 关闭其他
-map("n", "<leader>so", "<C-w>o", opt)
 
 -- 左右比例控制
 

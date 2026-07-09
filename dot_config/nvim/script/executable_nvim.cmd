@@ -3,7 +3,7 @@ setlocal
 
 if "%~1"=="debug" (
   if not "%NVIM%"=="" (
-    <nul set /p "=]777;pi-nvim-debug\"
+    <nul set /p "="
     exit /b 0
   )
 
@@ -29,7 +29,7 @@ if "%arg:~0,1%"=="-" (
   goto emit_targets
 )
 set "sent=1"
-for %%I in ("%~1") do <nul set /p "=]777;pi-nvim;%%~fI\"
+for %%I in ("%~1") do <nul set /p "="
 shift
 goto emit_targets
 
@@ -37,3 +37,4 @@ goto emit_targets
 if not "%sent%"=="" exit /b 0
 echo Usage: nvim ^<file^> [file ...] 1>&2
 exit /b 2
+

@@ -18,22 +18,9 @@ return {
     -- move current tab to next position
     vim.api.nvim_set_keymap("n", "<M-o>", ":+tabmove<CR>", { noremap = true })
 
-    vim.keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" })
-    -- split window vertically
-    vim.keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
     for i = 1, 8, 1 do
       vim.keymap.set("n", "<leader>" .. i, i .. "gt")
     end
-
-    local theme = {
-      fill = "TabLineFill",
-      -- Also you can do this: fill = { fg='#f2e9de', bg='#907aa9', style='italic' }
-      head = "TabLine",
-      current_tab = "TabLineSel",
-      tab = "TabLine",
-      win = "TabLine",
-      tail = "TabLine",
-    }
 
     local function get_special_buf_name(bufid)
       local ft = vim.bo[bufid].filetype

@@ -28,6 +28,7 @@ local simple_lsp_by_filetype = {
 
 local lsp_by_filetype = {
 	lua = { "lua" },
+	dart = { "flutter" },
 	typescript = { "ts", "eslint", "tailwind" },
 	javascript = { "ts", "eslint", "tailwind" },
 	typescriptreact = { "ts", "eslint", "tailwind" },
