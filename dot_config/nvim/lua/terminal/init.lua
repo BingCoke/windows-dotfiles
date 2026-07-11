@@ -54,6 +54,7 @@ function M.setup()
 	require("terminal.cwd_sync").setup()
 	require("terminal.edit").setup()
 	require("terminal.pool").setup()
+	require("terminal.preview").setup()
 	require("terminal.keymaps").setup()
 end
 

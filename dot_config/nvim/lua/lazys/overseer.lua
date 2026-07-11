@@ -35,7 +35,7 @@ return {
         task:start()
       end, {
         nargs = "*",
-        complete = "shellcmd",
+        -- complete = "shellcmd",  -- 移除以避免 Vim 原生补全，让 cmp 接管
       })
 
       vim.keymap.set("n", "!", ":Compile ", { desc = "Compile command" })

@@ -1,7 +1,7 @@
 -- import nvim-cmp plugin safely
 local cmp_status, cmp = pcall(require, "cmp")
 if not cmp_status then
-  return
+	return
 end
 
 local luasnip = require("luasnip")
@@ -9,23 +9,23 @@ local luasnip = require("luasnip")
 -- import lspkind plugin safely
 local lspkind_status, lspkind = pcall(require, "lspkind")
 if not lspkind_status then
-  return
+	return
 end
 
 local types = require("cmp.types")
 local compare = cmp.config.compare
 
 local function border(hl_name)
-  return {
-    { "╭", hl_name },
-    { "─", hl_name },
-    { "╮", hl_name },
-    { "│", hl_name },
-    { "╯", hl_name },
-    { "─", hl_name },
-    { "╰", hl_name },
-    { "│", hl_name },
-  }
+	return {
+		{ "╭", hl_name },
+		{ "─", hl_name },
+		{ "╮", hl_name },
+		{ "│", hl_name },
+		{ "╯", hl_name },
+		{ "─", hl_name },
+		{ "╰", hl_name },
+		{ "│", hl_name },
+	}
 end
 
 -- load snippets from path/of/your/nvim/config/my-cool-snippets
@@ -53,279 +53,280 @@ vim.api.nvim_set_hl(0, "CmpItemKindProperty", { link = "CmpItemKindKeyword" })
 vim.api.nvim_set_hl(0, "CmpItemKindUnit", { link = "CmpItemKindKeyword" })
 
 local function select_next_item_or_complete()
-  if cmp.visible() then
-    cmp.select_next_item()
-  else
-    cmp.complete()
-  end
+	if cmp.visible() then
+		cmp.select_next_item()
+	else
+		cmp.complete()
+	end
 end
 
 local function select_prev_item_or_complete()
-  if cmp.visible() then
-    cmp.select_prev_item()
-  else
-    cmp.complete()
-  end
+	if cmp.visible() then
+		cmp.select_prev_item()
+	else
+		cmp.complete()
+	end
 end
 
-
 cmp.setup({
-  snippet = {
-    expand = function(args)
-      require("luasnip").lsp_expand(args.body)
-    end,
-  },
-  mapping = {
-    ["<c-j>"] = cmp.mapping(select_next_item_or_complete),
-    ["<c-k>"] = cmp.mapping(select_prev_item_or_complete),
-    ["<C-u>"] = cmp.mapping.scroll_docs(-4),
-    ["<C-d>"] = cmp.mapping.scroll_docs(4),
+	snippet = {
+		expand = function(args)
+			require("luasnip").lsp_expand(args.body)
+		end,
+	},
+	mapping = {
+		["<c-j>"] = cmp.mapping(select_next_item_or_complete),
+		["<c-k>"] = cmp.mapping(select_prev_item_or_complete),
+		["<C-u>"] = cmp.mapping.scroll_docs(-4),
+		["<C-d>"] = cmp.mapping.scroll_docs(4),
 
-    ["<M-s>"] = cmp.mapping.complete(), -- show completion suggestions
+		["<M-s>"] = cmp.mapping.complete(), -- show completion suggestions
 
-    ["<C-e>"] = cmp.mapping.abort(),    -- close completion window
-    ["<Tab>"] = cmp.mapping.confirm({ select = true }),
+		["<C-e>"] = cmp.mapping.abort(), -- close completion window
+		["<Tab>"] = cmp.mapping.confirm({ select = true }),
 
-    ["<c-l>"] = cmp.mapping(function(fallback)
-      if luasnip.jumpable(1) then
-        luasnip.jump(1)
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
+		["<c-l>"] = cmp.mapping(function(fallback)
+			if luasnip.jumpable(1) then
+				luasnip.jump(1)
+			else
+				fallback()
+			end
+		end, { "i", "s" }),
 
-    ["<c-h>"] = cmp.mapping(function(fallback)
-      if luasnip.jumpable(-1) then
-        luasnip.jump(-1)
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-  },
-  preselect = cmp.PreselectMode.None,
-  -- sources for autocompletion
-  sources = cmp.config.sources({
-    {
-      name = "nvim_lsp",
-    },
-    {
-      name = "luasnip",
-    },
-    {
-      name = "path",
-    },
-    {
-      name = "filemention"
-    }
-  }, {
-    { name = "buffer" },
-  }),
-  formatting = {
-    fields = { --[["menu",]]
-      "abbr",
-      "kind",
-    },
-    format = function(entry, item)
-      local entryItem = entry:get_completion_item()
-      local color = entryItem.documentation
+		["<c-h>"] = cmp.mapping(function(fallback)
+			if luasnip.jumpable(-1) then
+				luasnip.jump(-1)
+			else
+				fallback()
+			end
+		end, { "i", "s" }),
+	},
+	preselect = cmp.PreselectMode.None,
+	-- sources for autocompletion
+	sources = cmp.config.sources({
+		{
+			name = "nvim_lsp",
+		},
+		{
+			name = "luasnip",
+		},
+		{
+			name = "path",
+		},
+		{
+			name = "filemention",
+		},
+	}, {
+		{ name = "buffer" },
+	}),
+	formatting = {
+		fields = { --[["menu",]]
+			"abbr",
+			"kind",
+		},
+		format = function(entry, item)
+			local entryItem = entry:get_completion_item()
+			local color = entryItem.documentation
 
-      if color and type(color) == "string" and color:match("^#%x%x%x%x%x%x$") then
-        local hl = "hex-" .. color:sub(2)
-        if #vim.api.nvim_get_hl(0, { name = hl }) == 0 then
-          vim.api.nvim_set_hl(0, hl, { fg = color })
-        end
-        item.menu = " "
-        item.menu_hl_group = hl
-      end
+			if color and type(color) == "string" and color:match("^#%x%x%x%x%x%x$") then
+				local hl = "hex-" .. color:sub(2)
+				if #vim.api.nvim_get_hl(0, { name = hl }) == 0 then
+					vim.api.nvim_set_hl(0, hl, { fg = color })
+				end
+				item.menu = " "
+				item.menu_hl_group = hl
+			end
 
-      local kind = require("lspkind").cmp_format({
-        maxwidth = 50,
-      })(entry, item)
+			local kind = require("lspkind").cmp_format({
+				maxwidth = 50,
+			})(entry, item)
 
-      kind.kind = kind.kind .. " "
-      return kind
-    end,
-  },
-  window = {
-    completion = { border = border("CmpDocBorder"), winhighlight = "FloatBorder:BorderBG" },
-    documentation = {
-      border = border("CmpDocBorder"),
-      winhighlight = "FloatBorder:BorderBG",
-      max_width = 20,
-    },
-  },
+			kind.kind = kind.kind .. " "
+			return kind
+		end,
+	},
+	window = {
+		completion = { border = border("CmpDocBorder"), winhighlight = "FloatBorder:BorderBG" },
+		documentation = {
+			border = border("CmpDocBorder"),
+			winhighlight = "FloatBorder:BorderBG",
+			max_width = 20,
+		},
+	},
 })
 
 cmp.setup.filetype("TelescopePrompt", {
-  enabled = false,
+	enabled = false,
 })
 
 local cmdmap = {
-  ["<C-z>"] = {
-    c = function()
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        cmp.complete()
-      end
-    end,
-  },
-  ["<A-Space>"] = {
-    c = cmp.mapping.complete(),
-  }, -- show completion suggestions
-  ["<Tab>"] = {
-    c = function()
-      if cmp.visible() then
-        cmp.confirm({ select = true, behavior = cmp.ConfirmBehavior.Insert })
-      else
-        cmp.complete()
-      end
-    end,
-  },
-  ["<S-Tab>"] = {
-    c = function()
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        cmp.complete()
-      end
-    end,
-  },
-  ["<C-j>"] = {
-    c = function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        fallback()
-      end
-    end,
-  },
-  ["<C-k>"] = {
-    c = function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        fallback()
-      end
-    end,
-  },
-  ["<C-e>"] = {
-    c = cmp.mapping.abort(),
-  },
-  ["<C-y>"] = {
-    c = cmp.mapping.confirm({ select = false }),
-  },
+	["<C-z>"] = {
+		c = function()
+			if cmp.visible() then
+				cmp.select_next_item()
+			else
+				cmp.complete()
+			end
+		end,
+	},
+	["<A-Space>"] = {
+		c = cmp.mapping.complete(),
+	}, -- show completion suggestions
+	["<Tab>"] = {
+		c = function()
+			if cmp.visible() then
+				cmp.confirm({ select = true, behavior = cmp.ConfirmBehavior.Insert })
+			else
+				cmp.complete()
+			end
+		end,
+	},
+	["<S-Tab>"] = {
+		c = function()
+			if cmp.visible() then
+				cmp.select_prev_item()
+			else
+				cmp.complete()
+			end
+		end,
+	},
+	["<C-j>"] = {
+		c = function(fallback)
+			if cmp.visible() then
+				cmp.select_next_item()
+			else
+				fallback()
+			end
+		end,
+	},
+	["<C-k>"] = {
+		c = function(fallback)
+			if cmp.visible() then
+				cmp.select_prev_item()
+			else
+				fallback()
+			end
+		end,
+	},
+	["<C-e>"] = {
+		c = cmp.mapping.abort(),
+	},
+	["<C-y>"] = {
+		c = cmp.mapping.confirm({ select = false }),
+	},
 }
-
 
 -- / 查找模式使用 buffer 源
 cmp.setup.cmdline("/", {
-  mapping = cmdmap,
-  sources = {
-    { name = "buffer" },
-  },
+	mapping = cmdmap,
+	sources = {
+		{ name = "buffer" },
+	},
 })
 
 -- : 命令行模式中使用 path 和 cmdline 源.
 cmp.setup.cmdline(":", {
-  mapping = cmdmap,
-  sources = cmp.config.sources({
-    { name = "path" },
-    { name = "cmdline" },
-  }),
+	--completion = {
+	--	autocomplete = true,
+	--},
+	mapping = cmdmap,
+	sources = cmp.config.sources({
+		{ name = "cmdline" },
+		{ name = "path" },
+	}),
 })
 
 cmp.setup.filetype("dart", {
-  sorting = {
-    comparators = {
-      compare.score,                    -- based on :  score = score + ((#sources - (source_index - 1)) * sorting.priority_weight)
-      function(entry1, entry2)
-        local kind1 = entry1:get_kind() --- @type lsp.CompletionItemKind | number
-        local kind2 = entry2:get_kind() --- @type lsp.CompletionItemKind | number
+	sorting = {
+		comparators = {
+			compare.score, -- based on :  score = score + ((#sources - (source_index - 1)) * sorting.priority_weight)
+			function(entry1, entry2)
+				local kind1 = entry1:get_kind() --- @type lsp.CompletionItemKind | number
+				local kind2 = entry2:get_kind() --- @type lsp.CompletionItemKind | number
 
-        if kind1 == types.lsp.CompletionItemKind.Method and kind2 == types.lsp.CompletionItemKind.Method then
-          return nil
-        end
-        if kind1 ~= types.lsp.CompletionItemKind.Method and kind2 ~= types.lsp.CompletionItemKind.Method then
-          return nil
-        end
-        if kind1 == types.lsp.CompletionItemKind.Method then
-          return true
-        end
-        if kind2 == types.lsp.CompletionItemKind.Method then
-          return false
-        end
-        return nil
-      end,
-      compare.offset,
-      compare.exact,
-      compare.score,
-      compare.recently_used,
-      compare.locality,
-      compare.kind,
-      compare.sort_text,
-      compare.length,
-      compare.order,
-      compare.scopes, -- what?
-      -- compare.sort_text,
-    },
-  },
+				if kind1 == types.lsp.CompletionItemKind.Method and kind2 == types.lsp.CompletionItemKind.Method then
+					return nil
+				end
+				if kind1 ~= types.lsp.CompletionItemKind.Method and kind2 ~= types.lsp.CompletionItemKind.Method then
+					return nil
+				end
+				if kind1 == types.lsp.CompletionItemKind.Method then
+					return true
+				end
+				if kind2 == types.lsp.CompletionItemKind.Method then
+					return false
+				end
+				return nil
+			end,
+			compare.offset,
+			compare.exact,
+			compare.score,
+			compare.recently_used,
+			compare.locality,
+			compare.kind,
+			compare.sort_text,
+			compare.length,
+			compare.order,
+			compare.scopes, -- what?
+			-- compare.sort_text,
+		},
+	},
 })
 
 cmp.setup.filetype("css", {
-  sources = cmp.config.sources({
-    { name = "nvim_lsp" },
-    { name = "luasnip" },
-    { name = "buffer" }, -- text within current buffer
-    { name = "path" },   -- file system paths
-  }),
+	sources = cmp.config.sources({
+		{ name = "nvim_lsp" },
+		{ name = "luasnip" },
+		{ name = "buffer" }, -- text within current buffer
+		{ name = "path" }, -- file system paths
+	}),
 })
 
 local js = { "javascript", "typescript", "typescriptreact", "javascriptreact" }
 
 cmp.setup.filetype("go", {
-  completion = {
-    autocomplete = { "TextChanged" }
-  },
+	completion = {
+		autocomplete = { "TextChanged" },
+	},
 })
 
 for key, value in pairs(js) do
-  cmp.setup.filetype(value, {
-    sorting = {
-      comparators = {
-        compare.exact,
-        compare.offset,
-        compare.score, -- based on :  score = score + ((#sources - (source_index - 1)) * sorting.priority_weight)
-        compare.recently_used,
-        compare.locality,
-        compare.kind,
-        compare.length,
-        compare.order,
-        compare.sort_text,
-      },
-    },
-  })
+	cmp.setup.filetype(value, {
+		sorting = {
+			comparators = {
+				compare.exact,
+				compare.offset,
+				compare.score, -- based on :  score = score + ((#sources - (source_index - 1)) * sorting.priority_weight)
+				compare.recently_used,
+				compare.locality,
+				compare.kind,
+				compare.length,
+				compare.order,
+				compare.sort_text,
+			},
+		},
+	})
 end
 
 local api = vim.api
 
 local function generate_highlight()
-  -- gray
-  api.nvim_command("highlight! CmpItemAbbrDeprecated guibg=NONE gui=strikethrough guifg=#808080")
-  -- blue
-  api.nvim_command("highlight! CmpItemAbbrMatch guibg=NONE guifg=#569CD6")
-  api.nvim_command("highlight! link CmpItemAbbrMatchFuzzy CmpItemAbbrMatch")
-  -- light blue
-  api.nvim_command("highlight! CmpItemKindVariable guibg=NONE guifg=#9CDCFE")
-  api.nvim_command("highlight! link CmpItemKindInterface CmpItemKindVariable")
-  api.nvim_command("highlight! link CmpItemKindText CmpItemKindVariable")
-  -- pink
-  api.nvim_command("highlight! CmpItemKindFunction guibg=NONE guifg=#C586C0")
-  api.nvim_command("highlight! link CmpItemKindMethod CmpItemKindFunction")
-  -- front
-  api.nvim_command("highlight! CmpItemKindKeyword guibg=NONE guifg=#D4D4D4")
-  api.nvim_command("highlight! link CmpItemKindProperty CmpItemKindKeyword")
-  api.nvim_command("highlight! link CmpItemKindUnit CmpItemKindKeyword")
+	-- gray
+	api.nvim_command("highlight! CmpItemAbbrDeprecated guibg=NONE gui=strikethrough guifg=#808080")
+	-- blue
+	api.nvim_command("highlight! CmpItemAbbrMatch guibg=NONE guifg=#569CD6")
+	api.nvim_command("highlight! link CmpItemAbbrMatchFuzzy CmpItemAbbrMatch")
+	-- light blue
+	api.nvim_command("highlight! CmpItemKindVariable guibg=NONE guifg=#9CDCFE")
+	api.nvim_command("highlight! link CmpItemKindInterface CmpItemKindVariable")
+	api.nvim_command("highlight! link CmpItemKindText CmpItemKindVariable")
+	-- pink
+	api.nvim_command("highlight! CmpItemKindFunction guibg=NONE guifg=#C586C0")
+	api.nvim_command("highlight! link CmpItemKindMethod CmpItemKindFunction")
+	-- front
+	api.nvim_command("highlight! CmpItemKindKeyword guibg=NONE guifg=#D4D4D4")
+	api.nvim_command("highlight! link CmpItemKindProperty CmpItemKindKeyword")
+	api.nvim_command("highlight! link CmpItemKindUnit CmpItemKindKeyword")
 end
 
 generate_highlight()

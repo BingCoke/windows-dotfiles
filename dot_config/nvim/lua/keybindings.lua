@@ -151,4 +151,13 @@ end, {
 	silent = true,
 })
 
+-- Symbol search (gs - go to symbol)
+vim.keymap.set("n", "gs", function()
+	require("util.symbol_search").go_to_symbol()
+end, {
+	desc = "Go to symbol definition (treesitter + ripgrep)",
+	noremap = true,
+	silent = true,
+})
+
 return pluginKeys

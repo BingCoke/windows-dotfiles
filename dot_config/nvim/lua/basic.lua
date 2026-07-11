@@ -117,6 +117,9 @@ vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decr
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 
+vim.opt.wildmenu = false
+vim.opt.wildmode = ""
+
 -- 所有的 dump 文件 不能配置任何 column
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 	pattern = "*.dump",
