@@ -83,17 +83,18 @@ cmp.setup({
 		["<M-s>"] = cmp.mapping.complete(), -- show completion suggestions
 
 		["<C-e>"] = cmp.mapping.abort(), -- close completion window
-		["<Tab>"] = cmp.mapping.confirm({ select = true }),
-
-		["<c-l>"] = cmp.mapping(function(fallback)
-			if luasnip.jumpable(1) then
-				luasnip.jump(1)
+		--["<Tab>"] = cmp.mapping.confirm({ select = true }),
+		["<Tab>"] = cmp.mapping(function(fallback)
+			if cmp.visible() then
+				cmp.confirm({ select = true })
+			elseif luasnip.expand_or_jumpable() then
+				luasnip.expand_or_jump()
 			else
 				fallback()
 			end
 		end, { "i", "s" }),
 
-		["<c-h>"] = cmp.mapping(function(fallback)
+		["<S-Tab>"] = cmp.mapping(function(fallback)
 			if luasnip.jumpable(-1) then
 				luasnip.jump(-1)
 			else
@@ -106,6 +107,11 @@ cmp.setup({
 	sources = cmp.config.sources({
 		{
 			name = "nvim_lsp",
+			option = {
+				markdown_oxide = {
+					keyword_pattern = [[\(\k\| \|\/\|#\)\+]],
+				},
+			},
 		},
 		{
 			name = "luasnip",

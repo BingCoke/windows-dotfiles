@@ -11,9 +11,9 @@ return {
 			anti_conceal = {
 				enabled = true,
 				-- 在 normal 模式(n)下禁用 anti_conceal，只在 insert 和 visual 模式生效
-				disabled_modes = { "n" },
-				above = 3,
-				below = 3,
+				--disabled_modes = { "n" },
+				above = 0,
+				below = 0,
 				ignore = {
 					code_background = true,
 					indent = true,
