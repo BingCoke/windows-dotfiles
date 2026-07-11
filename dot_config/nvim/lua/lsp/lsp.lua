@@ -34,7 +34,6 @@ end
 
 vim.cmd("hi LspSignatureActiveParameter guibg=#3b4261")
 
-vim.lsp.codelens.enable(true)
 -- 开启 hint
 vim.lsp.inlay_hint.enable(true)
 

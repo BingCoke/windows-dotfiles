@@ -1,9 +1,12 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
+
+rem Create ESC character (ASCII 27)
+for /f %%A in ('echo prompt $E ^| cmd') do set "ESC=%%A"
 
 if "%~1"=="debug" (
   if not "%NVIM%"=="" (
-    <nul set /p "="
+    <nul set /p "=!ESC!]777;pi-nvim-debug!ESC!\"
     exit /b 0
   )
 
@@ -29,7 +32,9 @@ if "%arg:~0,1%"=="-" (
   goto emit_targets
 )
 set "sent=1"
-for %%I in ("%~1") do <nul set /p "="
+rem Convert to absolute path
+for %%I in ("%~1") do set "path=%%~fI"
+<nul set /p "=!ESC!]777;pi-nvim;!path!!ESC!\"
 shift
 goto emit_targets
 
@@ -37,4 +42,3 @@ goto emit_targets
 if not "%sent%"=="" exit /b 0
 echo Usage: nvim ^<file^> [file ...] 1>&2
 exit /b 2
-

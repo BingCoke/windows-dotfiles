@@ -70,6 +70,10 @@ return {
 			require("oil").toggle_float(vim.fn.getcwd(-1, -1))
 		end, { desc = "Open global cwd" })
 
+		vim.keymap.set({ "n" }, "_", function()
+			require("oil").open(vim.fn.getcwd(-1, -1))
+		end, { desc = "Open global cwd" })
+
 		vim.keymap.set({ "n", "i", "t" }, "<M-v>", function()
 			local dir = nil
 
