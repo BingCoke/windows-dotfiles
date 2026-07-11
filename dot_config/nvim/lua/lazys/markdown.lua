@@ -24,4 +24,12 @@ return {
 		},
 		event = "VeryLazy",
 	},
+	{
+		"iwe-org/iwe.nvim",
+		dependencies = {
+			"nvim-telescope/telescope.nvim",
+		},
+		-- 配置已移至 lua/lsp/codes/iwes.lua，通过 FileType markdown 自动加载
+		lazy = true, -- 不自动加载，由 lsp/codes/iwes.lua 控制
+	},
 }

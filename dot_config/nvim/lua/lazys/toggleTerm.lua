@@ -103,11 +103,11 @@ return {
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Main Terminal" }))
 
 			-- 快速访问各个终端（使用 leader+e 前缀）
-			map({ "n", "i", "t" }, "<leader>em", function()
+			map({ "n",  "t" }, "<leader>em", function()
 				_G.terms.main:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Main Terminal" }))
 
-			map({ "n", "i", "t" }, "<leader>eg", function()
+			map({ "n",  "t" }, "<leader>eg", function()
 				-- 每次打开 git 时更新工作目录
 				local dir = global_cwd()
 				if _G.terms.git.dir ~= dir and _G.terms.git.bufnr and vim.api.nvim_buf_is_valid(_G.terms.git.bufnr) then
@@ -117,11 +117,11 @@ return {
 				_G.terms.git:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Git Terminal" }))
 
-			map({ "n", "i", "t" }, "<leader>eb", function()
+			map({ "n",  "t" }, "<leader>eb", function()
 				_G.terms.build:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Build Terminal" }))
 
-			map({ "n", "i", "t" }, "<leader>ed", function()
+			map({ "n",  "t" }, "<leader>ed", function()
 				_G.terms.dev:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Dev Terminal" }))
 		end,

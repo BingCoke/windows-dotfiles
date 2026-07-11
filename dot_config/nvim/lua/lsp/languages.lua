@@ -43,7 +43,7 @@ local lsp_by_filetype = {
 	php = { "php" },
 	json = { "json" },
 	jsonc = { "json" },
-	markdown = { "markdown" },
+	markdown = { "markdown_oxide" },
 }
 
 local loaded_code_lsps = {}
