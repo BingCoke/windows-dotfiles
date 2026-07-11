@@ -40,6 +40,9 @@ return {
 			vim.cmd("highlight! BufferLineSeparatorSelected guifg=#82aaff guibg=NONE")
 			vim.cmd("highlight! BufferLineSeparator guifg=#82aaff guibg=NONE")
 
+			vim.api.nvim_set_hl(0, "StatusLine", { bg = "NONE" })
+			vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "NONE" })
+
 			--23:50:13 msg_show.list_cmd TabLineSel     xxx guifg=#1d202f guibg=#7aa2f7
 			--23:50:35 msg_show.list_cmd TabLineFill    xxx cleared
 			--23:50:44 msg_show.list_cmd TabLine      xxx guifg=#3b4261 guibg=#1f2335
@@ -70,7 +73,7 @@ return {
 	},
 	{
 		"xiyaowong/transparent.nvim",
-		dependencies = { "folke/tokyonight.nvim" },
+		dependencies = { "folke/tokyonight.nvim",  },
 		--enabled = false,
 		config = function()
 			require("transparent").setup({
