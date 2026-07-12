@@ -1,8 +1,5 @@
 local M = {}
 
-local lsp = require("lsp.lsp")
-local on_attach = lsp.on_attach
-
 M.setup = function()
 	vim.lsp.config("tailwindcss", {
 		settings = {

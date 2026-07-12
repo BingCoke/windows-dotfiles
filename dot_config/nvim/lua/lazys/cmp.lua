@@ -1,8 +1,10 @@
-require("util.cmp").blinkCmp = false
+local use_blink = require("config.completion").use_blink
+
 return {
   {
     "L3MON4D3/LuaSnip",
-    version = "2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+    enabled = not use_blink,
+    version = "2.*",
     build = "make install_jsregexp",
     dependencies = {
       "saadparwaiz1/cmp_luasnip",
@@ -18,8 +20,9 @@ return {
   -- cmp
   {
     "hrsh7th/nvim-cmp",
+    enabled = not use_blink,
     dependencies = {
-      "hrsh7th/cmp-nvim-lsp", -- for autocompletion
+      "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-nvim-lua",
       "hrsh7th/cmp-cmdline",
       "hrsh7th/cmp-buffer",
@@ -32,14 +35,19 @@ return {
   },
   {
     "saecki/crates.nvim",
+    enabled = not use_blink,
     tag = "v0.3.0",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       local cmp = require("cmp")
       cmp.setup.buffer({ sources = { { name = "crates" } } })
     end,
-    --  event = "BufEnter Cargo.toml",
     ft = { "toml" },
   },
-  { "not-manu/filemention.nvim", event = "InsertEnter", opts = {} }
+  {
+    "not-manu/filemention.nvim",
+    enabled = not use_blink,
+    event = "InsertEnter",
+    opts = {}
+  }
 }

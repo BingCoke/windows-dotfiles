@@ -96,6 +96,15 @@ local on_attach = function(client, bufnr)
 	--end, opts)
 end
 
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("lsp_global", { clear = true }),
+	callback = function(ev)
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		on_attach(client, ev.buf)
+	end,
+})
+
+
 vim.diagnostic.config({
 	update_in_insert = true,
 	signs = {
@@ -108,11 +117,6 @@ vim.diagnostic.config({
 	},
 })
 
-local capabilities = require("util.cmp").getCapabilites()
-
 local M = {}
-
-M.on_attach = on_attach
-M.capabilities = capabilities
 
 return M

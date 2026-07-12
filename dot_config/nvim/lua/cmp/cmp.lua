@@ -12,6 +12,11 @@ if not lspkind_status then
 	return
 end
 
+local cmp_lsp = require("cmp_nvim_lsp")
+vim.lsp.config("*", {
+	capabilities = cmp_lsp.default_capabilities(),
+})
+
 local types = require("cmp.types")
 local compare = cmp.config.compare
 

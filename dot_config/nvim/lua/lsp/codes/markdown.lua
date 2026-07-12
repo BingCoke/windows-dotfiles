@@ -1,9 +1,5 @@
 local M = {}
 
-local util = require("lspconfig/util")
-local lsp = require("lsp.lsp")
-local on_attach = lsp.on_attach
-local capabilities = lsp.capabilities
 
 function M.markdown_head()
 	local line = vim.api.nvim_get_current_line()
@@ -45,10 +41,7 @@ end
 function M.setup()
 	vim.lsp.enable("marksman")
 	vim.lsp.config("marksman", {
-		capabilities = capabilities,
 		on_attach = function(client, bufnr)
-			--print(vim.json.encode(v1))
-			on_attach(client, bufnr)
 			if client.name == "marksman" then
 				local keymap = vim.keymap
 				-- 复用 opt 参数

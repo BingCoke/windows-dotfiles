@@ -40,62 +40,70 @@ local function markdown_head()
 end
 
 function M.setup()
-	-- 确保 capabilities 包含 dynamicRegistration
-	local capabilities = vim.tbl_deep_extend("force", lsp.capabilities, {
-		workspace = {
-			didChangeWatchedFiles = {
-				dynamicRegistration = true,
-			},
-		},
+	vim.api.nvim_create_autocmd("LspAttach", {
+		callback = function(ev)
+			local client = vim.lsp.get_client_by_id(ev.data.client_id)
+
+			if not client then
+				return
+			end
+
+			if client.name == "markdown_oxide" then
+				local bufnr = ev.buf
+
+				-- Markdown 快捷键（从 markdown.lua 迁移）
+				local opts = { silent = true, buffer = bufnr, noremap = true }
+				vim.keymap.set("i", "<c-l>", markdown_todo, opts)
+				vim.keymap.set("i", "<c-h>", markdown_head, opts)
+				vim.keymap.set("n", "<leader>m", ":MarkdownPreview<CR>", opts)
+
+				-- 注册 Daily Notes 命令
+				if client.server_capabilities.executeCommandProvider then
+					-- :Daily <relative_date>
+					vim.api.nvim_buf_create_user_command(bufnr, "Daily", function(args)
+						local params = {
+							command = "jump",
+							arguments = { args.args },
+						}
+						client.request("workspace/executeCommand", params, function(err, result)
+							if err then
+								vim.notify("Daily command failed: " .. vim.inspect(err), vim.log.levels.ERROR)
+							end
+						end, bufnr)
+					end, { nargs = "*", desc = "Open daily note" })
+
+					-- :Today
+					vim.api.nvim_buf_create_user_command(bufnr, "Today", function()
+						vim.cmd("Daily today")
+					end, { desc = "Open today's daily note" })
+
+					-- :Tomorrow
+					vim.api.nvim_buf_create_user_command(bufnr, "Tomorrow", function()
+						vim.cmd("Daily tomorrow")
+					end, { desc = "Open tomorrow's daily note" })
+
+					-- :Yesterday
+					vim.api.nvim_buf_create_user_command(bufnr, "Yesterday", function()
+						vim.cmd("Daily yesterday")
+					end, { desc = "Open yesterday's daily note" })
+				end
+			end
+		end,
 	})
 
 	vim.lsp.config("markdown_oxide", {
 		cmd = { "markdown-oxide" },
 		filetypes = { "markdown" },
 		root_markers = { ".moxide.toml", ".obsidian", ".git" },
-		capabilities = capabilities,
-		on_attach = function(client, bufnr)
-			-- 调用你的通用 on_attach
-			lsp.on_attach(client, bufnr)
-
-			-- Markdown 快捷键（从 markdown.lua 迁移）
-			local opts = { silent = true, buffer = bufnr, noremap = true }
-			vim.keymap.set("i", "<c-l>", markdown_todo, opts)
-			vim.keymap.set("i", "<c-h>", markdown_head, opts)
-			vim.keymap.set("n", "<leader>m", ":MarkdownPreview<CR>", opts)
-
-			-- 注册 Daily Notes 命令
-			if client.server_capabilities.executeCommandProvider then
-				-- :Daily <relative_date>
-				vim.api.nvim_buf_create_user_command(bufnr, "Daily", function(args)
-					local params = {
-						command = "jump",
-						arguments = { args.args },
-					}
-					client.request("workspace/executeCommand", params, function(err, result)
-						if err then
-							vim.notify("Daily command failed: " .. vim.inspect(err), vim.log.levels.ERROR)
-						end
-					end, bufnr)
-				end, { nargs = "*", desc = "Open daily note" })
-
-				-- :Today
-				vim.api.nvim_buf_create_user_command(bufnr, "Today", function()
-					vim.cmd("Daily today")
-				end, { desc = "Open today's daily note" })
-
-				-- :Tomorrow
-				vim.api.nvim_buf_create_user_command(bufnr, "Tomorrow", function()
-					vim.cmd("Daily tomorrow")
-				end, { desc = "Open tomorrow's daily note" })
-
-				-- :Yesterday
-				vim.api.nvim_buf_create_user_command(bufnr, "Yesterday", function()
-					vim.cmd("Daily yesterday")
-				end, { desc = "Open yesterday's daily note" })
-			end
-		end,
+		capabilities = {
+			workspace = {
+				didChangeWatchedFiles = {
+					dynamicRegistration = true,
+				},
+			},
+		},
 	})
+
 	vim.lsp.enable("markdown_oxide")
 end
 

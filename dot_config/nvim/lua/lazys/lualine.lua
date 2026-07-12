@@ -80,6 +80,7 @@ return {
 				tabline = {},
 				extensions = { "fugitive", "neo-tree", "nvim-dap-ui", "mason", "lazy", "man" },
 			})
+      
 			require("transparent").clear_prefix("lualine")
 		end,
 		event = "VeryLazy",
