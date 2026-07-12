@@ -14,10 +14,17 @@ return {
 			vim.diagnostic.config({ virtual_text = false }) -- Disable Neovim's default virtual text diagnostics
 		end,
 	},
+	{
+		"nvimdev/lspsaga.nvim",
+		event = { "BufReadPre", "BufNewFile" },
+		config = function()
+			require("config.lspsaga")
+		end,
+	},
 
 	{
 		"mason-org/mason-lspconfig.nvim",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "BufReadPre", "BufNewFile", "CmdlineEnter" },
 		dependencies = {
 			"mason-org/mason.nvim",
 			"neovim/nvim-lspconfig",
@@ -27,7 +34,6 @@ return {
 			},
 		},
 		config = function()
-			require("config.lspsaga")
 			require("lsp.mason")
 			require("lsp.lsp")
 			require("lsp.languages")
