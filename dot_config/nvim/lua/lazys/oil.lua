@@ -14,6 +14,7 @@ return {
 			keymaps = {
 				["g?"] = { "actions.show_help", mode = "n" },
 				["<CR>"] = "actions.select",
+				["<2-LeftMouse>"] = "actions.select",
 				["gd"] = "actions.select",
 				["gp"] = { "actions.parent", mode = "n" },
 
@@ -33,6 +34,7 @@ return {
 				["gs"] = { "actions.change_sort", mode = "n" },
 				["gx"] = "actions.open_external",
 				["g."] = { "actions.toggle_hidden", mode = "n" },
+				["H"] = { "actions.toggle_hidden", mode = "n" },
 				["g\\"] = { "actions.toggle_trash", mode = "n" },
 			},
 			delete_to_trash = true,

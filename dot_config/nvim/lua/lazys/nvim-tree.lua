@@ -1,6 +1,7 @@
 return {
   {
     "nvim-tree/nvim-tree.lua",
+    enabled = false,
     event = "VeryLazy",
     config = function()
       local tree_api = require("nvim-tree.api")
@@ -153,13 +154,16 @@ return {
         tree_api.tree.toggle({
           find_file = false,
           update_root = true,
+          path = vim.fn.getcwd(),
         })
       end, opt)
+
       vim.keymap.set("n", "<M-m>", function()
         tree_api.tree.toggle({
           find_file = false,
           update_root = true,
           position = "left",
+          path = vim.fn.getcwd(),
         })
       end, opt)
 
@@ -167,6 +171,7 @@ return {
         tree_api.tree.toggle({
           find_file = true,
           update_root = true,
+          path = vim.fn.getcwd(),
         })
       end, opt)
     end,

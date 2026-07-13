@@ -1,5 +1,4 @@
 local c = require("language")
-local language = c.language
 local js = c.ts
 
 return {
@@ -18,7 +17,11 @@ return {
 		"nvimdev/lspsaga.nvim",
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
-			require("config.lspsaga")
+			require("lspsaga").setup({
+				lightbulb = {
+					enable = false,
+				},
+			})
 		end,
 	},
 
@@ -29,9 +32,6 @@ return {
 			"mason-org/mason.nvim",
 			"neovim/nvim-lspconfig",
 			"onsails/lspkind.nvim",
-			{
-				"nvimdev/lspsaga.nvim",
-			},
 		},
 		config = function()
 			require("lsp.mason")
@@ -68,29 +68,6 @@ return {
 			"jsonc",
 		},
 	},
-	-- enhanced lsp uis
-	{
-		"jinzhongjia/LspUI.nvim",
-		ft = language,
-		branch = "main",
-		config = function()
-			require("LspUI").setup({
-				-- config options go here
-				lightbulb = { enable = false },
-				inlay_hint = { enable = false },
-			})
-		end,
-		enabled = false,
-	},
-	{
-		"DNLHC/glance.nvim",
-		config = function()
-			--require("plugin-config.glance")
-		end,
-		enabled = false,
-		ft = language,
-	},
-
 	{
 		"olexsmir/gopher.nvim",
 		ft = "go",
