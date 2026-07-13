@@ -8,7 +8,6 @@ return {
 		"rafamadriz/friendly-snippets",
 		"L3MON4D3/LuaSnip",
 	},
-  commit = "cfe100ccac24b0a622d7b9f04aa8c9f3e7624a16",
 	build = function()
 		require("blink.cmp").build():pwait()
 	end,
