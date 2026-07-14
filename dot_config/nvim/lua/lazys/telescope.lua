@@ -1,21 +1,5 @@
 return {
 	{
-		"stevearc/dressing.nvim",
-		lazy = true,
-		init = function()
-			---@diagnostic disable-next-line: duplicate-set-field
-			vim.ui.select = function(...)
-				require("lazy").load({ plugins = { "dressing.nvim" } })
-				return vim.ui.select(...)
-			end
-			---@diagnostic disable-next-line: duplicate-set-field
-			vim.ui.input = function(...)
-				require("lazy").load({ plugins = { "dressing.nvim" } })
-				return vim.ui.input(...)
-			end
-		end,
-	},
-	{
 		"nvim-telescope/telescope.nvim",
 		event = "VeryLazy",
 		dependencies = {
@@ -128,7 +112,6 @@ return {
 			vim.keymap.set("n", "<C-f>", function()
 				builtin.live_grep({ cwd = global_cwd() })
 			end, opt)
-
 		end,
 	},
 }

@@ -1,7 +1,13 @@
 vim.g.root_spec = { "lsp", { ".git", "lua" }, "cwd" }
+
+vim.opt.laststatus = 0
+
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
+
+vim.opt.confirm = true
+vim.opt.winbar = ""
 
 -- utf8
 vim.g.encoding = "UTF-8"
@@ -58,6 +64,7 @@ vim.o.hidden = true
 -- 鼠标支持
 vim.o.mouse = "a"
 -- 禁止创建备份文件
+vim.opt.undofile = true
 vim.o.backup = false
 vim.o.writebackup = false
 vim.o.swapfile = false

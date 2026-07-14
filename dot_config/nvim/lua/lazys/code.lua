@@ -1,5 +1,4 @@
 local language = require("language").language
-local ts = require("language").ts
 
 return {
 	{
@@ -7,10 +6,6 @@ return {
 		dependencies = {},
 		config = function()
 			local npairs = require("nvim-autopairs")
-			local Rule = require("nvim-autopairs.rule")
-
-			local ts_conds = require("nvim-autopairs.ts-conds")
-
 			npairs.setup({
 				check_ts = true,
 			})
@@ -111,7 +106,7 @@ return {
 		config = function()
 			require("config.ufo")
 		end,
-		event = { "VeryLazy" },
+		event = { "BufReadPre", "BufNewFile" },
 	},
 
 	{
@@ -153,7 +148,7 @@ return {
 	},
 	{
 		"folke/todo-comments.nvim",
-    -- FIX this is a 
+		-- FIX this is a
 		event = "VeryLazy",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = {
@@ -162,9 +157,4 @@ return {
 			-- refer to the configuration section below
 		},
 	},
-	-- {
-	--   "nabekou29/js-i18n.nvim",
-	--   event = { "BufReadPre", "BufNewFile" },
-	--   opts = {},
-	-- },
 }

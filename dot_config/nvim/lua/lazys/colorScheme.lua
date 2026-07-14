@@ -1,6 +1,8 @@
 return {
 	{
 		"folke/tokyonight.nvim",
+		lazy = false,
+		priority = 1000,
 		config = function()
 			local colorscheme = "tokyonight"
 			--local colorscheme = "neofusion"
@@ -73,15 +75,15 @@ return {
 	},
 	{
 		"xiyaowong/transparent.nvim",
-		dependencies = { "folke/tokyonight.nvim",  },
+		dependencies = { "folke/tokyonight.nvim" },
+		lazy = false,
+		priority = 1000,
 		--enabled = false,
 		config = function()
 			require("transparent").setup({
 				exclude_groups = {
 					"CursorLine",
 					"CursorLineNr",
-					--"NoiceCursor",
-					--"Underlined",
 				},
 			})
 

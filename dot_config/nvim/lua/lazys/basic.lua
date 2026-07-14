@@ -11,12 +11,6 @@ return {
 		event = "VeryLazy",
 	},
 	{
-		"glepnir/dashboard-nvim",
-		config = function()
-			require("config.dashboard")
-		end,
-	},
-	{
 		"axkirillov/hbac.nvim",
 		event = "VeryLazy",
 		config = function()

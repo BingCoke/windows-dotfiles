@@ -8,7 +8,6 @@ return {
     -- 复用 opt 参数
     local opt = { noremap = true, silent = true }
     local flash = require("flash")
-    local function fm() end
     flash.setup({
       search = {
         filetype_exclude = { "notiy", "noice", "cmp_menu", "neo-tree", "popup-menu", "Pmenu", "pmenu" },

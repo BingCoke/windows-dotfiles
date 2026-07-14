@@ -21,6 +21,9 @@ return {
 				lightbulb = {
 					enable = false,
 				},
+				symbol_in_winbar = {
+					enable = false,
+				},
 			})
 		end,
 	},
@@ -129,7 +132,6 @@ return {
 		lazy = true,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
-			"stevearc/dressing.nvim", -- optional for vim.ui.select
 		},
 	},
 }
