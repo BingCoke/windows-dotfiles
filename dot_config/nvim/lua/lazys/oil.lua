@@ -1,6 +1,8 @@
 return {
 	"stevearc/oil.nvim",
 	enabled = true,
+	lazy = false,
+
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 
 	config = function()
@@ -9,8 +11,12 @@ return {
 			cleanup_delay_ms = 60000,
 			columns = {
 				"icon",
+				"permissions",
+				"size",
+				"mtime",
 			},
 			use_default_keymaps = false,
+			watch_for_changes = true,
 			keymaps = {
 				["g?"] = { "actions.show_help", mode = "n" },
 				["<CR>"] = "actions.select",
@@ -25,11 +31,24 @@ return {
 
 				["q"] = { "actions.close", mode = "n" },
 				["K"] = { "actions.preview", mode = "n" },
+				["Y"] = {
+					callback = function()
+						local oil = require("oil")
+						local entry = oil.get_cursor_entry()
+						local dir = oil.get_current_dir()
+						if entry and dir then
+							require("util.copy_relative_path")(vim.fs.joinpath(dir, entry.name))
+						end
+					end,
+					desc = "Copy relative path",
+					mode = "n",
+				},
 
 				["<C-r>"] = "actions.refresh",
 
 				["_"] = { "actions.open_cwd", mode = "n" },
 				["`"] = { "actions.cd", mode = "n" },
+				["cd"] = { "actions.cd", mode = "n" },
 				["gl"] = { "actions.cd", opts = { scope = "win" }, mode = "n" },
 				["gs"] = { "actions.change_sort", mode = "n" },
 				["gx"] = "actions.open_external",

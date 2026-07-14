@@ -53,6 +53,15 @@ return {
 							action = "select",
 							args = { pick = true },
 						},
+						["Y"] = {
+							action = function(instance)
+								local entry = require("fyler.finder").parse_cursor_line(instance)
+								if entry then
+									require("util.copy_relative_path")(entry.path)
+								end
+							end,
+							opts = { desc = "Copy relative path" },
+						},
 						["="] = {
 							action = "visit",
 						},

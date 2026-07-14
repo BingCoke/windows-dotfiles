@@ -13,6 +13,47 @@ return {
 				return
 			end
 
+			local function relative_to_global_cwd(path)
+				if not path or path == "" then
+					return ""
+				end
+
+				local absolute_path = vim.fs.normalize(vim.fn.fnamemodify(path, ":p"))
+				local relative_path = vim.fs.relpath(vim.fn.getcwd(-1, -1), absolute_path)
+
+				return relative_path or vim.fn.fnamemodify(absolute_path, ":~")
+			end
+
+			local function global_filename_component()
+				return {
+					"filename",
+					file_status = false,
+					path = 2,
+					shorting_target = 0,
+					fmt = function(default_name)
+						local path = vim.api.nvim_buf_get_name(0)
+						local name = path == "" and default_name or relative_to_global_cwd(path)
+						local symbols = {}
+
+						if vim.bo.modified then
+							table.insert(symbols, "[+]")
+						end
+						if not vim.bo.modifiable or vim.bo.readonly then
+							table.insert(symbols, "[-]")
+						end
+
+						return name .. (#symbols > 0 and " " .. table.concat(symbols) or "")
+					end,
+				}
+			end
+
+			local oil_extension = vim.deepcopy(require("lualine.extensions.oil"))
+			oil_extension.sections.lualine_a[1] = {
+				oil_extension.sections.lualine_a[1],
+				fmt = relative_to_global_cwd,
+				color = "Normal",
+			}
+
 			lualine.setup({
 				options = {
 					icons_enabled = true,
@@ -33,20 +74,14 @@ return {
 						"branch",
 					},
 					lualine_c = {
-						{
-							"filename",
-							file_status = true, -- displays file status (readonly status, modified status)
-							path = 1, -- 0 = just filename, 1 = relative path, 2 = absolute path
-						},
+						global_filename_component(),
 					},
 					lualine_x = {
-						"rest",
 						{
 							"diagnostics",
 							sources = { "nvim_diagnostic" },
 							symbols = { error = " ", warn = " ", info = " ", hint = " " },
 						},
-						{ "filetype", color = { bg = "" } },
 					},
 					lualine_z = {
 						{
@@ -68,21 +103,14 @@ return {
 						"branch",
 					},
 					lualine_c = {
-						{
-							"filename",
-							file_status = true, -- displays file status (readonly status, modified status)
-							path = 1, -- 0 = just filename, 1 = relative path, 2 = absolute path
-						},
+						global_filename_component(),
 					},
 					lualine_x = {
-						"rest",
 						{
 							"diagnostics",
 							sources = { "nvim_diagnostic" },
 							symbols = { error = " ", warn = " ", info = " ", hint = " " },
 						},
-						--"encoding",
-						{ "filetype", color = { bg = "" } },
 					},
 					lualine_z = {
 						{
@@ -92,7 +120,17 @@ return {
 					},
 				},
 				tabline = {},
-				extensions = { "fugitive", "neo-tree", "nvim-dap-ui", "mason", "lazy", "man" },
+				extensions = {
+					"fugitive",
+					"neo-tree",
+					"nvim-dap-ui",
+					"mason",
+					"lazy",
+					"man",
+					"toggleterm",
+					"trouble",
+					oil_extension,
+				},
 			})
 
 			local ok, t = pcall(require, "transparent")
