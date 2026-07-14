@@ -3,6 +3,9 @@ return {
   event = "VeryLazy",
   config = function()
     local osys = require("cmake-tools.osys")
+    if not vim.uv.fs_realpath(".") then
+      vim.uv.chdir(vim.uv.os_homedir())
+    end
     require("cmake-tools").setup {
       cmake_command = "cmake",                                          -- this is used to specify cmake command path
       ctest_command = "ctest",                                          -- this is used to specify ctest command path

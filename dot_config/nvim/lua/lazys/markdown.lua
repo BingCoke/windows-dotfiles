@@ -1,8 +1,6 @@
 return {
 	{
 		"MeanderingProgrammer/render-markdown.nvim",
-		--dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' }, -- if you use the mini.nvim suite
-		-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
 		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
 		---@module 'render-markdown'
 		---@type render.md.UserConfig
@@ -23,13 +21,5 @@ return {
 			},
 		},
 		event = "VeryLazy",
-	},
-	{
-		"iwe-org/iwe.nvim",
-		dependencies = {
-			"nvim-telescope/telescope.nvim",
-		},
-		-- 配置已移至 lua/lsp/codes/iwes.lua，通过 FileType markdown 自动加载
-		lazy = true, -- 不自动加载，由 lsp/codes/iwes.lua 控制
 	},
 }

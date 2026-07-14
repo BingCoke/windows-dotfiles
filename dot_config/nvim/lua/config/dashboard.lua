@@ -5,18 +5,10 @@ require("dashboard").setup({
     center = {
       {
         icon = "  ",
-        desc = "Projects                            ",
-        key = "p",
-        action = function()
-          require 'telescope'.extensions.project.project {}
-        end,
-      },
-      {
-        icon = "  ",
         key = "<c-p>",
         desc = "current                            ",
         action = function()
-          vim.cmd([[NvimTreeClose]])
+          -- vim.cmd([[NvimTreeClose]])
           require("telescope.builtin").find_files({ cwd = vim.fn.getcwd(-1, -1) })
         end,
       },

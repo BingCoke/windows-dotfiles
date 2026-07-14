@@ -80,6 +80,14 @@ return {
 						width = "60%",
 						col = "center",
 						row = "center",
+						mappings = {
+							n = {
+								["t"] = {
+									action = "select",
+									args = { tabedit = true, close = true },
+								},
+							},
+						},
 					},
 					split_left = {
 						width = "25%",
@@ -95,13 +103,14 @@ return {
 
 			local opt = { noremap = true, silent = true }
 
-			-- Floating window toggle
-			vim.keymap.set("n", "\\", function()
-				fyler.toggle({
-					kind = "floating",
-					path = vim.fn.getcwd(),
-				})
-			end, opt)
+			local function toggle_floating(opts)
+				if fyler.getcwd() ~= nil then
+					fyler.close()
+					return
+				end
+
+				fyler.open(opts)
+			end
 
 			-- Left split toggle
 			vim.keymap.set("n", "<M-m>", function()
@@ -119,9 +128,17 @@ return {
 				})
 			end, opt)
 
+			-- Floating window toggle
+			vim.keymap.set("n", "\\", function()
+				toggle_floating({
+					kind = "floating",
+					path = vim.fn.getcwd(),
+				})
+			end, opt)
+
 			-- Floating window toggle with follow current file
 			vim.keymap.set("n", "|", function()
-				fyler.toggle({
+				toggle_floating({
 					kind = "floating",
 					path = vim.fn.getcwd(),
 					follow_current_file = true,
