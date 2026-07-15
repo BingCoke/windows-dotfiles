@@ -6,6 +6,83 @@ return {
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 
 	config = function()
+		local function oil_find_descendant()
+			local oil = require("oil")
+			local root = oil.get_current_dir()
+			if not root then
+				vim.notify("Oil: current directory is unavailable", vim.log.levels.WARN)
+				return
+			end
+
+			local fd = vim.fn.executable("fd") == 1 and "fd" or "fdfind"
+			if vim.fn.executable(fd) ~= 1 then
+				vim.notify("Oil: install fd to search descendant directories", vim.log.levels.ERROR)
+				return
+			end
+
+			local pickers = require("telescope.pickers")
+			local finders = require("telescope.finders")
+			local sorters = require("telescope.config").values
+			local actions = require("telescope.actions")
+			local action_state = require("telescope.actions.state")
+
+			pickers.new({}, {
+				prompt_title = "Oil descendant directories",
+				finder = finders.new_oneshot_job({
+					fd,
+					"--type",
+					"d",
+					"--hidden",
+					"--exclude",
+					".git",
+					"--absolute-path",
+					".",
+					root,
+				}, {}),
+				sorter = sorters.file_sorter({}),
+				attach_mappings = function(prompt_bufnr)
+					actions.select_default:replace(function()
+						local entry = action_state.get_selected_entry()
+						actions.close(prompt_bufnr)
+						if entry then
+							oil.open(vim.trim(entry.value))
+						end
+					end)
+					return true
+				end,
+			}):find()
+		end
+
+		local function oil_pick_ancestor()
+			local oil = require("oil")
+			local dir = oil.get_current_dir()
+			if not dir then
+				vim.notify("Oil: current directory is unavailable", vim.log.levels.WARN)
+				return
+			end
+
+			local ancestors = {}
+			for parent in vim.fs.parents(vim.fs.normalize(dir)) do
+				ancestors[#ancestors + 1] = parent
+			end
+
+			if #ancestors == 0 then
+				vim.notify("Oil: no ancestor directory", vim.log.levels.INFO)
+				return
+			end
+
+			vim.ui.select(ancestors, {
+				prompt = "Oil ancestor directory",
+				format_item = function(path)
+					return vim.fn.fnamemodify(path, ":~")
+				end,
+			}, function(parent)
+				if parent then
+					oil.open(parent)
+				end
+			end)
+		end
+
 		require("oil").setup({
 			default_file_explorer = true, -- start up nvim with oil instead of netrw
 			cleanup_delay_ms = 60000,
@@ -23,6 +100,16 @@ return {
 				["<2-LeftMouse>"] = "actions.select",
 				["gd"] = "actions.select",
 				["gp"] = { "actions.parent", mode = "n" },
+				["<C-p>"] = {
+					callback = oil_find_descendant,
+					desc = "Find descendant directory",
+					mode = "n",
+				},
+				["gP"] = {
+					callback = oil_pick_ancestor,
+					desc = "Choose ancestor directory",
+					mode = "n",
+				},
 
 				["s"] = { "actions.select", opts = { vertical = true } },
 				["S"] = { "actions.select", opts = { horizontal = true } },
