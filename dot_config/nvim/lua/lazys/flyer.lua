@@ -3,6 +3,7 @@ return {
 		"A7Lavinraj/fyler.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		event = "VeryLazy",
+		enabled = false,
 		config = function()
 			local fyler = require("fyler")
 

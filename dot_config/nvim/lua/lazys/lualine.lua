@@ -54,6 +54,31 @@ return {
 				color = "Normal",
 			}
 
+			local function fre_metadata(bufnr)
+				if vim.bo[bufnr].filetype ~= "fre" then
+					return nil
+				end
+				local metadata = vim.b[bufnr].fre
+				return type(metadata) == "table" and metadata or nil
+			end
+
+			local function is_fre_buffer()
+				return fre_metadata(vim.api.nvim_get_current_buf()) ~= nil
+			end
+
+			local function fre_lualine_path()
+				local metadata = fre_metadata(vim.api.nvim_get_current_buf())
+				if not metadata then
+					return ""
+				end
+
+				local global_cwd = vim.fs.normalize(vim.fn.getcwd(-1, -1))
+				local relative = vim.fs.relpath(global_cwd, metadata.root)
+				local display = relative or metadata.root
+				display = display:gsub("%%", "%%%%")
+				return display .. (vim.bo.modified and " [+]" or "")
+			end
+
 			lualine.setup({
 				options = {
 					icons_enabled = true,
@@ -75,6 +100,7 @@ return {
 					},
 					lualine_c = {
 						global_filename_component(),
+						{ fre_lualine_path, cond = is_fre_buffer },
 					},
 					lualine_x = {
 						{
@@ -103,6 +129,7 @@ return {
 						"branch",
 					},
 					lualine_c = {
+						{ fre_lualine_path, cond = is_fre_buffer },
 						global_filename_component(),
 					},
 					lualine_x = {
