@@ -1,10 +1,11 @@
+local global_cwd_path = require("util.global_cwd_path")
+
 return function(path)
-	local relative_path = vim.fs.relpath(vim.fn.getcwd(-1, -1), vim.fs.normalize(path))
-	if not relative_path then
-		vim.notify("Unable to make path relative to global cwd", vim.log.levels.WARN)
+	local display_path = global_cwd_path.display(path)
+	if display_path == "" then
 		return
 	end
 
-	vim.fn.setreg("+", relative_path)
-	vim.notify("Copied: " .. relative_path)
+	vim.fn.setreg("+", display_path)
+	vim.notify("Copied: " .. display_path)
 end

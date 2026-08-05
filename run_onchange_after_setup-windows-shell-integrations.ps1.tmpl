@@ -1,0 +1,218 @@
+{{- if eq .chezmoi.os "windows" -}}
+if ($Env:OS -ne "Windows_NT") { exit 0 }
+<#
+  run_onchange_after_setup-windows-shell-integrations - Windows Explorer shell setup
+
+  Auto-run by chezmoi on apply. run_onchange: re-runs only when the rendered content
+  changes (e.g. when you edit $exts); first apply always runs. On non-Windows the
+  template renders empty and the script is skipped.
+
+  Manual setup:   chezmoi execute-template --file .\run_onchange_after_setup-windows-shell-integrations.ps1.tmpl | Set-Content -Encoding ASCII "$env:TEMP\windows-shell-integrations.ps1"
+                  pwsh -NoProfile -File "$env:TEMP\windows-shell-integrations.ps1"
+  Uninstall:      pwsh -NoProfile -File "$HOME\.config\script\uninstall-windows-shell-integrations.ps1"
+
+  Executables are resolved strictly from the environment, in order:
+    1. $env:WEZTERM / $env:NVIM explicit overrides (may contain %VAR% or full paths)
+    2. PATH lookup via Get-Command (wezterm-gui.exe -> wezterm.exe / nvim.exe)
+  If WezTerm is not in the environment: WezTerm menu entries are skipped (stale ones
+  removed). If WezTerm or Neovim is missing: Neovim menu entries and file associations
+  are skipped (Neovim needs a terminal, so the nvim group requires both). Nothing is
+  hardcoded to install paths.
+
+  Idempotent: safe to run repeatedly; entries for binaries no longer resolvable and
+  extensions removed from $exts are cleaned up. Existing per-user default ProgIDs are
+  preserved. Writes only HKCU, no admin required.
+
+  Encoding: this file is pure ASCII on purpose. Chinese menu titles are built at
+  runtime from [char] code points for Windows PowerShell 5.1 and pwsh compatibility.
+#>
+$ErrorActionPreference = "Stop"
+
+# ---- editable: file extensions to associate with WezTerm + Neovim ----
+$exts = @(
+  'txt','log','md','markdown','json','jsonc','json5','yaml','yml','toml',
+  'ini','conf','cfg','csv','tsv','xml','sql','rss','opml','properties',
+  'tex','rst','adoc','org','mdx',
+  'sh','bash','zsh','ps1','psm1','lua','vim',
+  'py','rb','pl','js','mjs','cjs','ts','tsx','jsx',
+  'html','htm','css','scss','less','sass',
+  'c','h','cpp','hpp','cc','cxx','java','kt','go','rs','php','swift',
+  'scala','dart','fs','cs','vue','svelte','gradle'
+)
+
+# ---- Chinese menu titles built from code points (keeps the file ASCII) ----
+$tOpen      = [string][char]0x6B64 + [string][char]0x5904 + [string][char]0x6253 + [string][char]0x5F00
+$titleTerm  = "$tOpen WezTerm"
+$titleNvim  = "$tOpen nvim"
+$titleFile  = [string][char]0x7528 + " nvim " + [string][char]0x6253 + [string][char]0x5F00
+
+# ---- 1. resolve executables from the environment ----
+function Resolve-App {
+  param(
+    [Parameter(Mandatory)][string]$EnvName,
+    [Parameter(Mandatory)][string[]]$Names
+  )
+  $override = [Environment]::GetEnvironmentVariable($EnvName)
+  if ($override) {
+    $override = [Environment]::ExpandEnvironmentVariables($override)
+    if (Test-Path -LiteralPath $override -PathType Leaf) { return (Resolve-Path -LiteralPath $override).Path }
+  }
+  foreach ($n in $Names) {
+    $cmd = Get-Command $n -CommandType Application -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+  }
+  return $null
+}
+
+$wt = Resolve-App "WEZTERM" @("wezterm-gui.exe", "wezterm.exe")
+$nv = Resolve-App "NVIM" @("nvim.exe")
+
+$wtPresent = [bool]$wt
+$nvPresent = [bool]$nv
+$nvGroup   = $wtPresent -and $nvPresent   # nvim entries need a terminal
+
+Write-Host ("WezTerm : {0}" -f $(if ($wtPresent) { $wt } else { 'NOT FOUND' }))
+Write-Host ("Neovim  : {0}" -f $(if ($nvPresent) { $nv } else { 'NOT FOUND' }))
+
+$hcu = [Microsoft.Win32.Registry]::CurrentUser
+
+$wtMenuKeys = @(
+  'Software\Classes\Directory\shell\WezTermHere',
+  'Software\Classes\Directory\Background\shell\WezTermHere'
+)
+$nvMenuKeys = @(
+  'Software\Classes\Directory\shell\NvimHere',
+  'Software\Classes\Directory\Background\shell\NvimHere',
+  'Software\Classes\*\shell\NvimHere'
+)
+
+# ---- registry helpers ----
+function Remove-KeyTree([string]$SubKey) {
+  $k = $hcu.OpenSubKey($SubKey)
+  if ($k) { $k.Close(); $hcu.DeleteSubKeyTree($SubKey, $false) }
+}
+
+function Remove-OwnedExtAssociations([string[]]$KeepList) {
+  # Remove default-value and OpenWithProgids entries we own, for every extension
+  # not in $KeepList ($null = remove all). Scan both roots so orphaned OpenWith
+  # registrations are also removed.
+  $names = @()
+  $classes = $hcu.OpenSubKey('Software\Classes')
+  if ($classes) {
+    $names += $classes.GetSubKeyNames()
+    $classes.Close()
+  }
+
+  $fileExtsPath = 'Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts'
+  $fileExts = $hcu.OpenSubKey($fileExtsPath)
+  if ($fileExts) {
+    $names += $fileExts.GetSubKeyNames()
+    $fileExts.Close()
+  }
+
+  foreach ($name in ($names | Sort-Object -Unique)) {
+    if (-not $name.StartsWith('.')) { continue }
+    $ext = $name.Substring(1)
+    if ($KeepList -and ($KeepList -contains $ext)) { continue }
+    $sub = $hcu.OpenSubKey("Software\Classes\$name", $true)
+    if ($sub) {
+      if ($sub.GetValue('') -eq 'WezTerm.Nvim') { $sub.DeleteValue('', $false) }
+      $sub.Close()
+    }
+    $opw = $hcu.OpenSubKey("$fileExtsPath\$name\OpenWithProgids", $true)
+    if ($opw) { $opw.DeleteValue('WezTerm.Nvim', $false); $opw.Close() }
+  }
+}
+
+function New-ShellMenu([string]$Parent, [string]$Name, [string]$Title, [string]$Icon, [string]$Cmd) {
+  $base = "Software\Classes\$Parent\$Name"
+  $k = $hcu.CreateSubKey($base)
+  $k.SetValue('', $Title)
+  $k.SetValue('Icon', $Icon)
+  $k.Close()
+  $k = $hcu.CreateSubKey("$base\command")
+  $k.SetValue('', $Cmd)
+  $k.Close()
+}
+
+# ================= install / refresh =================
+$wtQ  = '"' + $wt + '"'
+$nvQ  = '"' + $nv + '"'
+$openTermCmd = "$wtQ start --cwd `"%V`""
+$openFileCmd = "$wtQ start -- $nvQ `"%1`""
+$openDirCmd  = "$wtQ start -- $nvQ `"%V`""
+
+# 1) clean up stale state (idempotency: remove what should not exist)
+if (-not $wtPresent) { foreach ($p in $wtMenuKeys) { Remove-KeyTree $p } }
+if (-not $nvGroup) {
+  foreach ($p in $nvMenuKeys) { Remove-KeyTree $p }
+  Remove-KeyTree 'Software\Classes\WezTerm.Nvim'
+  Remove-OwnedExtAssociations $null
+} else {
+  Remove-OwnedExtAssociations $exts   # prune extensions removed from $exts
+}
+
+# 2) WezTerm context menus (folder + background)
+if ($wtPresent) {
+  New-ShellMenu 'Directory\shell'            'WezTermHere' $titleTerm $wt $openTermCmd
+  New-ShellMenu 'Directory\Background\shell' 'WezTermHere' $titleTerm $wt $openTermCmd
+  Write-Host '[ok] WezTerm context menus (2 entries)'
+} else {
+  Write-Host '[skip] WezTerm not in environment - WezTerm menu entries not configured'
+}
+
+# 3) Neovim context menus + ProgID + file associations (need both wezterm and nvim)
+if ($nvGroup) {
+  New-ShellMenu 'Directory\shell'            'NvimHere' $titleNvim $nv $openDirCmd
+  New-ShellMenu 'Directory\Background\shell' 'NvimHere' $titleNvim $nv $openDirCmd
+  New-ShellMenu '*\shell'                    'NvimHere' $titleFile $nv $openFileCmd
+
+  $prog = $hcu.CreateSubKey('Software\Classes\WezTerm.Nvim')
+  $prog.SetValue('', 'WezTerm + Neovim')
+  $di = $prog.CreateSubKey('DefaultIcon')
+  $di.SetValue('', $nv)
+  $di.Close()
+  $open = $prog.CreateSubKey('shell\open\command')
+  $open.SetValue('', $openFileCmd)
+  $open.Close()
+  $prog.Close()
+
+  $conflicts = @()
+  $preserved = @()
+  foreach ($e in $exts) {
+    $ek = $hcu.CreateSubKey("Software\Classes\.$e")
+    $currentProgId = $ek.GetValue('')
+    if (-not $currentProgId -or $currentProgId -eq 'WezTerm.Nvim') {
+      $ek.SetValue('', 'WezTerm.Nvim')
+    } else {
+      $preserved += $e
+    }
+    $ek.Close()
+    $opw = $hcu.CreateSubKey("Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.$e\OpenWithProgids")
+    $opw.SetValue('WezTerm.Nvim', [byte[]]@(), [Microsoft.Win32.RegistryValueKind]::None)
+    $opw.Close()
+    $uc = $hcu.OpenSubKey("Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.$e\UserChoice")
+    if ($uc) { $conflicts += $e; $uc.Close() }
+  }
+  Write-Host "[ok] Neovim context menus (3 entries) + ProgID + $($exts.Count) Open With registrations"
+
+  if ($preserved.Count) {
+    Write-Host ''
+    Write-Host 'Existing HKCU default ProgIDs preserved for:'
+    Write-Host ('  ' + ($preserved -join ', '))
+  }
+
+  if ($conflicts.Count) {
+    Write-Host ''
+    Write-Host "Win11 UserChoice locked extensions (double-click still uses the old default):"
+    Write-Host ('  ' + ($conflicts -join ', '))
+    Write-Host 'Fix: right-click the file -> Open with -> WezTerm + Neovim -> Always.'
+  }
+} else {
+  Write-Host '[skip] WezTerm or Neovim not in environment - nvim menu entries and file associations not configured'
+}
+
+Write-Host ''
+Write-Host 'Done. If context menus do not appear: restart explorer (taskkill /f /im explorer.exe && start explorer.exe)'
+Write-Host 'On Windows 11 the entries live under "Show more options" (Shift+F10).'
+{{- end }}

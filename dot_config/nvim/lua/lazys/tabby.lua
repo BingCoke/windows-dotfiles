@@ -2,6 +2,7 @@ return {
   "nanozuki/tabby.nvim",
   event = "VeryLazy",
   config = function()
+    local fre_ui = require("config.fre_ui")
     
     vim.api.nvim_set_keymap("n", "<leader>na", "<cmd>tabnew<CR>", { noremap = true })
     vim.api.nvim_set_keymap("n", "<leader>no", "<cmd>tabonly<CR>", { noremap = true })
@@ -36,10 +37,6 @@ return {
       if ft == "NvimTree" then
         return "󰙅 Files"
       end
-      if ft == "oil" then
-        local path = vim.api.nvim_buf_get_name(bufid):gsub("^oil://", ""):gsub("/$", "")
-        return "󰉋 " .. vim.fn.fnamemodify(path, ":t") .. "/"
-      end
       if ft == "fugitive" then
         return " Git"
       end
@@ -56,7 +53,8 @@ return {
           name_fallback = function(tabid)
             local winid = vim.api.nvim_tabpage_get_win(tabid)
             local bufid = vim.api.nvim_win_get_buf(winid)
-            local r = get_special_buf_name(bufid)
+            local r = fre_ui.tabby_name(bufid)
+                or get_special_buf_name(bufid)
                 or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufid), ":t")
             return r == "" and "none" or r
           end,
@@ -66,7 +64,7 @@ return {
           name_fallback = function(bufid)
             return "[No Name]"
           end,
-          override = nil,
+          override = fre_ui.tabby_name,
         },
       },
       line = function(line)

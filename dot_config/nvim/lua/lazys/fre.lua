@@ -2,6 +2,7 @@ return {
 	{
 		"BingCoke/fre.nvim",
 		lazy = false,
+		branch = "refactor/instance-decomposition",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 
 		config = function()
@@ -87,7 +88,7 @@ return {
 			local function cd_to_root(instance)
 				if root_instance ~= instance then
 					discard_root()
-					instance:setGroup("root")
+					fre.set_group(instance, "root")
 					root_instance, root_cursor = instance, nil
 				end
 				vim.cmd("cd " .. vim.fn.fnameescape(instance.root))
@@ -111,14 +112,30 @@ return {
 				return origin
 			end
 
+			local function file_target(view)
+				local origin = view.origin_winid
+				if not origin or not vim.api.nvim_win_is_valid(origin)
+					or vim.api.nvim_win_get_config(origin).relative ~= "" then
+					return nil
+				end
+				if fre.get_instance(vim.api.nvim_win_get_buf(origin)) then
+					return nil
+				end
+				return origin
+			end
+
 			local function select(ctx)
 				local view = source_view(ctx)
 				local directory = ctx.row_kind == "navigation" or (ctx.entry and ctx.entry.kind == "directory")
-				if directory or view.layout.position == "current" then
+				if directory or view.layout.position ~= "float" then
+					return actions.select(ctx)
+				end
+				local target_winid = file_target(view)
+				if not target_winid then
 					return actions.select(ctx)
 				end
 				return actions.select(ctx, {
-					target_winid = origin_for(view),
+					target_winid = target_winid,
 					hide_source = view.layout.position == "float",
 				})
 			end

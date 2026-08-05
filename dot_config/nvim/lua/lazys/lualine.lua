@@ -13,16 +13,9 @@ return {
 				return
 			end
 
-			local function relative_to_global_cwd(path)
-				if not path or path == "" then
-					return ""
-				end
+			local fre_ui = require("config.fre_ui")
+			local global_cwd_path = require("util.global_cwd_path")
 
-				local absolute_path = vim.fs.normalize(vim.fn.fnamemodify(path, ":p"))
-				local relative_path = vim.fs.relpath(vim.fn.getcwd(-1, -1), absolute_path)
-
-				return relative_path or vim.fn.fnamemodify(absolute_path, ":~")
-			end
 
 			local function global_filename_component()
 				return {
@@ -30,9 +23,12 @@ return {
 					file_status = false,
 					path = 2,
 					shorting_target = 0,
+					cond = function()
+						return not fre_ui.is_buffer()
+					end,
 					fmt = function(default_name)
 						local path = vim.api.nvim_buf_get_name(0)
-						local name = path == "" and default_name or relative_to_global_cwd(path)
+						local name = path == "" and default_name or global_cwd_path.display(path)
 						local symbols = {}
 
 						if vim.bo.modified then
@@ -47,37 +43,6 @@ return {
 				}
 			end
 
-			local oil_extension = vim.deepcopy(require("lualine.extensions.oil"))
-			oil_extension.sections.lualine_a[1] = {
-				oil_extension.sections.lualine_a[1],
-				fmt = relative_to_global_cwd,
-				color = "Normal",
-			}
-
-			local function fre_metadata(bufnr)
-				if vim.bo[bufnr].filetype ~= "fre" then
-					return nil
-				end
-				local metadata = vim.b[bufnr].fre
-				return type(metadata) == "table" and metadata or nil
-			end
-
-			local function is_fre_buffer()
-				return fre_metadata(vim.api.nvim_get_current_buf()) ~= nil
-			end
-
-			local function fre_lualine_path()
-				local metadata = fre_metadata(vim.api.nvim_get_current_buf())
-				if not metadata then
-					return ""
-				end
-
-				local global_cwd = vim.fs.normalize(vim.fn.getcwd(-1, -1))
-				local relative = vim.fs.relpath(global_cwd, metadata.root)
-				local display = relative or metadata.root
-				display = display:gsub("%%", "%%%%")
-				return display .. (vim.bo.modified and " [+]" or "")
-			end
 
 			lualine.setup({
 				options = {
@@ -100,7 +65,7 @@ return {
 					},
 					lualine_c = {
 						global_filename_component(),
-						{ fre_lualine_path, cond = is_fre_buffer },
+						fre_ui.lualine_component(),
 					},
 					lualine_x = {
 						{
@@ -129,8 +94,8 @@ return {
 						"branch",
 					},
 					lualine_c = {
-						{ fre_lualine_path, cond = is_fre_buffer },
 						global_filename_component(),
+						fre_ui.lualine_component(),
 					},
 					lualine_x = {
 						{
@@ -156,7 +121,6 @@ return {
 					"man",
 					"toggleterm",
 					"trouble",
-					oil_extension,
 				},
 			})
 
