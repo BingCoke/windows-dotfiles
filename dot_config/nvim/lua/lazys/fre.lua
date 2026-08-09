@@ -170,6 +170,22 @@ return {
 				return true
 			end
 
+			local function sync_window_cwd()
+				local winid = vim.api.nvim_get_current_win()
+				local instance = fre.get_instance(vim.api.nvim_win_get_buf(winid))
+				if not instance then
+					return
+				end
+
+				local root = vim.fs.normalize(instance.root)
+				local cwd = vim.fs.normalize(vim.fn.getcwd(0, 0))
+				if vim.fn.haslocaldir(0, 0) == 1 and cwd == root then
+					return
+				end
+
+				vim.cmd.lcd(vim.fn.fnameescape(root))
+			end
+
 			fre.setup({
 				default_file_explorer = true,
 				hidden_file = true,
@@ -208,6 +224,13 @@ return {
 				},
 				window = { options = { cursorline = true } },
 			})
+
+			vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
+				group = vim.api.nvim_create_augroup("FreAutoLcd", { clear = true }),
+				desc = "Sync window cwd to Fre root",
+				callback = sync_window_cwd,
+			})
+			sync_window_cwd()
 
 			local function reveal(instance, file)
 				local relative = file and vim.fs.relpath(instance.root, vim.fs.normalize(file))

@@ -22,7 +22,7 @@ config.color_scheme = "Tokyo Night Moon"
 
 config.window_decorations = "RESIZE"
 
-config.window_background_opacity = 0.9
+config.window_background_opacity = 0.98
 
 config.font = wezterm.font_with_fallback({
   "IntoneMono Nerd Font Mono",
