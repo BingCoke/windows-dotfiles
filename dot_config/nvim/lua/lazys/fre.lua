@@ -2,7 +2,7 @@ return {
 	{
 		"BingCoke/fre.nvim",
 		lazy = false,
-		branch = "refactor/instance-decomposition",
+		branch = "master",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 
 		config = function()
@@ -114,8 +114,11 @@ return {
 
 			local function file_target(view)
 				local origin = view.origin_winid
-				if not origin or not vim.api.nvim_win_is_valid(origin)
-					or vim.api.nvim_win_get_config(origin).relative ~= "" then
+				if
+					not origin
+					or not vim.api.nvim_win_is_valid(origin)
+					or vim.api.nvim_win_get_config(origin).relative ~= ""
+				then
 					return nil
 				end
 				if fre.get_instance(vim.api.nvim_win_get_buf(origin)) then

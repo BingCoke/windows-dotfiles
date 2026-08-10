@@ -9,7 +9,7 @@ return {
 		"L3MON4D3/LuaSnip",
 	},
 	build = function()
-		require("blink.cmp").build():pwait()
+		require("blink.cmp").build({ dev = true, force = true }):pwait()
 	end,
 	event = { "InsertEnter", "CmdlineEnter" },
 	config = function()
