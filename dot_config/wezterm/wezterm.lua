@@ -157,6 +157,6 @@ config.window_padding = {
   bottom = 0,
 }
 
---config.enable_kitty_keyboard = true
+config.enable_kitty_keyboard = true
 
 return config
