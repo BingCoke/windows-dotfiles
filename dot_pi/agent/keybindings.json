@@ -1,6 +1,10 @@
 {
-  "tui.altScreen.lineUp": ["ctrl+up", "up"],
-  "tui.altScreen.lineDown": ["ctrl+down", "down"],
+  "tui.altScreen.lineUp": [
+    "ctrl+up"
+  ],
+  "tui.altScreen.lineDown": [
+    "ctrl+down"
+  ],
   "tui.altScreen.halfPageUp": "alt+pageUp",
   "tui.altScreen.halfPageDown": "alt+pageDown",
   "tui.editor.historyPrevious": "ctrl+p",
