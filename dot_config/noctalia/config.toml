@@ -1,0 +1,87 @@
+[accessibility]
+ui_scale = 1.2
+
+[bar.default]
+background_opacity = 0.54
+border = "primary"
+center = ["active_window"]
+end = [
+    "media",
+    "notifications",
+    "clipboard",
+    "network",
+    "bluetooth",
+    "volume",
+    "brightness",
+    "battery",
+    "tray",
+    "clock",
+    "session",
+]
+font_weight = 700
+margin_ends = 10
+radius = 4
+radius_bottom_left = 8
+radius_bottom_right = 8
+radius_top_left = 0
+radius_top_right = 0
+start = ["control-center", "workspaces"]
+thickness = 37
+
+[brightness]
+enable_ddcutil = true
+
+[lockscreen]
+allow_empty_password = false
+enabled = true
+fingerprint = true
+lock_before_suspend = true
+
+[notification]
+background_opacity = 0.69
+border = false
+layer = "overlay"
+
+[osd]
+background_opacity = 0.84
+border = false
+
+[osd.kinds]
+keyboard_layout = false
+volume = false
+
+[shell]
+font_family = "IntoneMono NF"
+polkit_agent = true
+
+[shell.launcher]
+compact = true
+show_app_actions = true
+
+[shell.panel]
+list_item_background = true
+
+[theme]
+builtin = "Tokyo-Night"
+community_palette = "Tokyo Night Storm"
+mode = "dark"
+source = "community"
+wallpaper_scheme = "m3-rainbow"
+
+[theme.templates]
+builtin_ids = [
+    "btop",
+    "foot",
+    "gtk3",
+    "gtk4",
+    "ghostty",
+    "kitty",
+    "mango",
+    "qt",
+    "sway",
+]
+community_ids = [
+    "discord",
+    "telegram",
+    "vscode",
+]

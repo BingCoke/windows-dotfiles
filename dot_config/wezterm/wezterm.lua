@@ -18,7 +18,6 @@ if configured_shell and configured_shell ~= "" and executable_exists(configured_
   config.default_prog = { configured_shell }
 end
 
-config.color_scheme = "Tokyo Night Moon"
 
 config.window_decorations = "RESIZE"
 
@@ -26,7 +25,11 @@ config.window_background_opacity = 0.98
 
 config.font = wezterm.font_with_fallback({
   "IntoneMono Nerd Font Mono",
+  "Noto Sans Mono CJK SC",
+  "Noto Sans CJK SC",
+  "Noto Color Emoji",
 })
+config.use_cap_height_to_scale_fallback_fonts = true
 
 config.background = {}
 
@@ -70,9 +73,9 @@ config.keys = {
     mods = "CTRL",
     action = act.SendString("\x1c\x0e"),
   },
-  { key = "=", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
-  { key = "-", mods = "CTRL|SHIFT", action = act.DecreaseFontSize },
-  { key = "0", mods = "CTRL|SHIFT", action = act.ResetFontSize },
+  { key = "=", mods = "CTRL", action = act.IncreaseFontSize },
+  { key = "-", mods = "CTRL", action = act.DecreaseFontSize },
+  { key = "0", mods = "CTRL", action = act.ResetFontSize },
 
   {
     key = "F13",
@@ -159,4 +162,5 @@ config.window_padding = {
 
 config.enable_kitty_keyboard = true
 
+config.color_scheme = "Tokyo Night Storm"
 return config

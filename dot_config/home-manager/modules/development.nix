@@ -2,9 +2,11 @@
 
 {
   home.packages = with pkgs; [
-    go
+    cargo
     fnm
-    uv
+    go
     lazygit
+    rustc
+    uv
   ];
 }

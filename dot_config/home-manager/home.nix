@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./modules/mango.nix
     ./modules/neovim.nix
     ./modules/development.nix
   ];
@@ -13,6 +12,5 @@
 
   home.packages = with pkgs; [
     git
-    wl-clipboard
   ];
 }

@@ -14,6 +14,11 @@ target/
 dist/
 build/
 
+# Home Manager/Nix build result links are not configuration.
+.config/result
+.config/result-*
+.config/home-manager/result
+.config/home-manager/result-*
 
 {{- if ne .chezmoi.os "windows" }}
 .config/ahk/
