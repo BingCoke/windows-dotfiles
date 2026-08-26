@@ -80,7 +80,25 @@ Cargo 用户工具脚本是可选步骤：
 
 该脚本安装到 `~/.cargo/bin`，不属于 Nix store；需要单独更新或删除时按 [开发工具说明](docs/development-tools.md) 处理。
 
-### 4. 桌面主机的人工收尾
+### 4. 在 GDM 中登录 Nix Mango
+
+桌面 profile 首次 `switch` 成功后，安装 Nix Mango 登录入口：
+
+```bash
+mango-desktop install
+```
+
+这个命令内部会调用 `sudo`，把 Nix 生成的会话文件安装到 GDM 的系统会话目录。注销当前会话，在 Ubuntu 登录界面点击齿轮图标，选择 `Nix Mango` 后登录。系统自带的 `mango.desktop` 不会被修改。
+
+卸载 Nix Mango 登录入口：
+
+```bash
+mango-desktop uninstall
+```
+
+Home Manager 更新 Mango 会话文件后，重新执行 `mango-desktop install`。
+
+### 5. 桌面主机的人工收尾
 
 Nix 已经安装桌面软件，但以下两项依赖新主机的宿主系统或显示器硬件，需要手动执行：
 
