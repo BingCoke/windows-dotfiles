@@ -3,7 +3,16 @@ vim.g.root_spec = { "lsp", { ".git", "lua" }, "cwd" }
 vim.opt.laststatus = 0
 
 
-vim.opt.guicursor = ""
+vim.opt.guicursor = table.concat({
+	"n:block-NormalCursor",
+	"i:block-InsertCursor",
+	"v-ve:block-VisualCursor",
+	"c:block-NormalCursor",
+	"o:block-NormalCursor",
+	"r:block-InsertCursor",
+	"t:block-NormalCursor",
+	"sm:block-VisualCursor",
+}, ",")
 
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1

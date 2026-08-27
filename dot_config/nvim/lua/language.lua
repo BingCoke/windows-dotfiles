@@ -6,6 +6,7 @@ local language = {
   "ruby",
   "awk",
   "c",
+  "h",
   "cpp",
   "dart",
   "rust",
