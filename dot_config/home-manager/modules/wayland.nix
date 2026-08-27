@@ -2,7 +2,7 @@
 
 {
   home.packages = with pkgs; [
-    wezterm
+    kitty
     poweralertd
     wl-clipboard
     satty

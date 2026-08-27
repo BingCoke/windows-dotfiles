@@ -6,7 +6,7 @@
       addons = [
         pkgs.qt6Packages.fcitx5-chinese-addons
         pkgs.fcitx5-lua
-        pkgs.fcitx5-tokyonight
+        pkgs.catppuccin-fcitx5
       ];
     })
   ];
