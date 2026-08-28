@@ -56,11 +56,11 @@ return {
 
 			--vim.cmd("highlight! MatchParen guifg=#f7768e guibg=#7980ab gui=bold cterm=bold")
 
-			vim.cmd("highlight! MatchParen guifg=None guibg=#7980ab gui=bold cterm=bold")
-			vim.cmd("highlight! Cursor guifg=#222436 guibg=#96a2d6")
-			vim.api.nvim_set_hl(0, "NormalCursor", { fg = "#222436", bg = "#96a2d6" })
+			vim.cmd("highlight! MatchParen guifg=#1a1b26 guibg=#ff9e64 gui=bold cterm=bold")
+			vim.cmd("highlight! Cursor guifg=#1a1b26 guibg=#7dcfff")
+			vim.api.nvim_set_hl(0, "NormalCursor", { fg = "#1a1b26", bg = "#7dcfff" })
 			vim.api.nvim_set_hl(0, "InsertCursor", { fg = "#222436", bg = "#ffffff" })
-			vim.api.nvim_set_hl(0, "VisualCursor", { fg = "#222436", bg = "#ff9e64" })
+			vim.api.nvim_set_hl(0, "VisualCursor", { fg = "#1a1b26", bg = "#9ece6a" })
 			--vim.cmd("highlight! TermCursor guifg=#222436 guibg=#8291bf")
 
 			--vim.cmd("highlight! CursorIM guifg=#222436 guibg=#8291bf ")
