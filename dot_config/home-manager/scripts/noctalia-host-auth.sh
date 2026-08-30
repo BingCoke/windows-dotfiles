@@ -6,7 +6,6 @@ export PATH
 
 program=${0##*/}
 config=/etc/tmpfiles.d/noctalia-host-auth.conf
-legacy_config=/etc/tmpfiles.d/noctalia-pam.conf
 unix_link=/run/wrappers/bin/unix_chkpwd
 polkit_link=/run/wrappers/bin/polkit-agent-helper-1
 socket_unit=polkit-agent-helper.socket
@@ -169,18 +168,6 @@ check_command() {
   return 1
 }
 
-legacy_config_matches() {
-  local unix_helper=$1 target
-  [[ -f $legacy_config ]] || return 1
-  [[ $(wc -l <"$legacy_config") -eq 3 ]] || return 1
-  grep -Fxq 'd /run/wrappers 0755 root root -' "$legacy_config" || return 1
-  grep -Fxq 'd /run/wrappers/bin 0755 root root -' "$legacy_config" || return 1
-
-  target=$(awk '$1 == "L+" && $2 == "/run/wrappers/bin/unix_chkpwd" { print $NF }' "$legacy_config")
-  [[ -n $target ]] || return 1
-  [[ $(readlink -f "$target") == "$(readlink -f "$unix_helper")" ]]
-}
-
 ensure_link_available() {
   local link=$1 target=$2
 
@@ -233,10 +220,6 @@ install_command() {
   unix_helper=$(find_unix_helper) || die 'a trusted host unix_chkpwd was not found'
   ensure_link_available "$unix_link" "$unix_helper"
 
-  if [[ -f $legacy_config ]] && ! legacy_config_matches "$unix_helper"; then
-    die "$legacy_config exists but was not created by the previous setup tool"
-  fi
-
   if [[ -f $config ]]; then
     grep -Fxq '# Managed by noctalia-host-auth' "$config" || die "$config is not managed by this tool"
     old_polkit_target=$(managed_link_target "$polkit_link" || true)
@@ -251,7 +234,6 @@ install_command() {
   fi
 
   write_tmpfiles_config "$unix_helper" "$polkit_helper"
-  rm -f "$legacy_config"
   if [[ $mode == socket && -n $old_polkit_target ]] &&
     [[ -L $polkit_link ]] && [[ $(readlink "$polkit_link") == "$old_polkit_target" ]]; then
     rm -f "$polkit_link"
