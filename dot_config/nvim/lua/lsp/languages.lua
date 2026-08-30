@@ -1,5 +1,6 @@
 -- Simple LSP servers (using vim.lsp.enable)
 local simple_lsps = {
+  --"nixd",
   "qmlls",
   "neocmake",
   "bashls",
@@ -18,6 +19,7 @@ local simple_lsps = {
 
 -- Complex LSP servers (using lsp.codes.<name>.setup())
 local code_lsps = {
+  "nix",
   "flutter",
   "ts",
   "eslint",

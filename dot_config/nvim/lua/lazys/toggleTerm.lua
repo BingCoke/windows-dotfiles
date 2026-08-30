@@ -95,19 +95,12 @@ return {
 			local map = vim.keymap.set
 			local opt = { noremap = true, silent = true }
 
-			-- 终端管理快捷键（使用 leader+e 前缀，e = execute/terminal）
-			map("n", "<leader>ee", "<Cmd>TermSelect<CR>", { desc = "Select Terminal" })
-
-			map({ "n", "i", "t" }, "<M-e>", function()
+			-- 终端管理快捷键：M-e 作为前缀
+			map({ "n", "i", "t" }, "<M-e><M-m>", function()
 				_G.terms.main:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Main Terminal" }))
 
-			-- 快速访问各个终端（使用 leader+e 前缀）
-			map({ "n",  "t" }, "<leader>em", function()
-				_G.terms.main:toggle()
-			end, vim.tbl_extend("force", opt, { desc = "Toggle Main Terminal" }))
-
-			map({ "n",  "t" }, "<leader>eg", function()
+			map({ "n", "t" }, "<M-e><M-g>", function()
 				-- 每次打开 git 时更新工作目录
 				local dir = global_cwd()
 				if _G.terms.git.dir ~= dir and _G.terms.git.bufnr and vim.api.nvim_buf_is_valid(_G.terms.git.bufnr) then
@@ -117,13 +110,16 @@ return {
 				_G.terms.git:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Git Terminal" }))
 
-			map({ "n",  "t" }, "<leader>eb", function()
+			map({ "n", "t" }, "<M-e><M-b>", function()
 				_G.terms.build:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Build Terminal" }))
 
-			map({ "n",  "t" }, "<leader>ed", function()
+			map({ "n", "t" }, "<M-e><M-d>", function()
 				_G.terms.dev:toggle()
 			end, vim.tbl_extend("force", opt, { desc = "Toggle Dev Terminal" }))
+
+			map({ "n", "t" }, "<M-e><M-s>", "<Cmd>TermSelect<CR>", { desc = "Select Terminal" })
+
 		end,
 	},
 }

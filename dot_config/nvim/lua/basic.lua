@@ -4,14 +4,14 @@ vim.opt.laststatus = 0
 
 
 vim.opt.guicursor = table.concat({
-	"n:block-NormalCursor",
-	"i:block-InsertCursor",
-	"v-ve:block-VisualCursor",
-	"c:block-NormalCursor",
-	"o:block-NormalCursor",
-	"r:block-InsertCursor",
-	"t:block-NormalCursor",
-	"sm:block-VisualCursor",
+  "n:block-NormalCursor",
+  "i:block-InsertCursor",
+  "v-ve:block-VisualCursor",
+  "c:block-NormalCursor",
+  "o:block-NormalCursor",
+  "r:block-InsertCursor",
+  "t:block-NormalCursor",
+  "sm:block-VisualCursor",
 }, ",")
 
 -- disable netrw at the very start of your init.lua
@@ -115,10 +115,10 @@ vim.cmd("autocmd BufEnter *.css setlocal formatoptions-=cro")
 vim.cmd("autocmd BufEnter *.lua setlocal formatoptions-=cro")
 
 vim.filetype.add({
-	extension = {
-		astro = "astro",
-		max = "mdx",
-	},
+  extension = {
+    astro = "astro",
+    max = "mdx",
+  },
 })
 
 vim.wo.cursorline = true
@@ -132,21 +132,9 @@ vim.cmd([[
 vim.o.fillchars = "eob: ,fold: ,foldopen:,foldsep: ,foldinner: ,foldclose:"
 
 vim.o.foldcolumn = "1" -- '0' is not bad
-vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 
 vim.opt.wildmenu = false
 vim.opt.wildmode = ""
-
--- 所有的 dump 文件 不能配置任何 column
-vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-	pattern = "*.dump",
-	callback = function()
-		vim.wo.number = false
-		vim.wo.relativenumber = false
-		vim.wo.signcolumn = "no"
-		vim.wo.foldcolumn = "0"
-		vim.wo.statuscolumn = ""
-	end,
-})

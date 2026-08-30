@@ -44,6 +44,7 @@ local language = {
   "typespec",
   "ps1",
   "svelte",
+  "nix"
 }
 local ts = {
   "html",

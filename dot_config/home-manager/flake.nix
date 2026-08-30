@@ -32,6 +32,7 @@
             ./home.nix
             hostModule
           ] ++ (if desktop then [ ./modules/desktop.nix ] else [ ]);
+
         };
     in {
       homeConfigurations = {

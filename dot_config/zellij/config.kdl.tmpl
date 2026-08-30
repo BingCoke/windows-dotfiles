@@ -4,14 +4,15 @@ default_shell "{{ env "DOTFILES_USE_SHELL" }}"
 
 keybinds clear-defaults=true {
     normal {
-        bind "Ctrl b" { SwitchToMode "tmux"; }
+        bind "Ctrl a" { SwitchToMode "tmux"; }
     }
 
 
     // ========== TMUX 模式（主力操作 + 子模式入口）==========
     tmux {
         // ---- 退出 tmux ----
-        bind "Ctrl b" { Write 2; SwitchToMode "normal"; }  // 发送真正的 Ctrl-b
+        bind "Ctrl a" { Write 2; SwitchToMode "normal"; }  // 发送真正的 Ctrl-a
+
         bind "esc" { SwitchToMode "normal"; }
         // bind "Ctrl g" { SwitchToMode "normal"; }
         bind "q" { Quit; }
@@ -52,7 +53,14 @@ keybinds clear-defaults=true {
         bind "x" { CloseFocus; SwitchToMode "normal"; }        // 关闭当前 pane
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; } // 放大/还原 pane
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }   // 浮动窗口切换
-        bind "e" { EditScrollback; SwitchToMode "normal"; } // 用编辑器打开 scrollback
+
+        bind "e" {
+          EditScrollback {
+            ansi true
+          }
+          SwitchToMode "normal";
+        } // 用编辑器打开 scrollback
+
         bind "i" { TogglePanePinned; SwitchToMode "normal"; }         // 固定 pane
         bind "o" { FocusNextPane; }                            // 轮转焦点（不退出，可连续按）
         bind "b" { BreakPane; SwitchToMode "normal"; }         // 拆出 pane 为新 tab
@@ -181,7 +189,13 @@ keybinds clear-defaults=true {
     }
 
     scroll {
-        bind "e" { EditScrollback; SwitchToMode "normal"; }
+        bind "e" {
+            EditScrollback {
+                ansi true
+            }
+            SwitchToMode "normal"
+        } // 用编辑器打开 scrollback
+
         bind "s" { SwitchToMode "entersearch"; SearchInput 0; }
     }
 

@@ -8,5 +8,6 @@
     lazygit
     rustc
     uv
+    nixd
   ];
 }
