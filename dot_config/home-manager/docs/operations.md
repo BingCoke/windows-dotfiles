@@ -7,22 +7,22 @@
 ```bash
 PROFILE=bingcoke@home
 nix flake check
-home-manager build --impure --flake ".#$PROFILE"
-home-manager switch --impure --flake ".#$PROFILE"
+home-manager build --flake ".#$PROFILE"
+home-manager switch --flake ".#$PROFILE"
 ```
 
-纯 Shell profile 不需要 `--impure`。构建失败时不要继续执行 `switch`，先根据错误定位到 flake、模块、包或宿主依赖。
+构建失败时不要继续执行 `switch`，先根据错误定位到 flake、模块、包或宿主依赖。
 
 ## 更新输入
 
-`flake.lock` 锁定 nixpkgs、Home Manager 和 nixGL 的版本。普通 `switch` 不会自动更新远端版本。
+`flake.lock` 锁定 nixpkgs 和 Home Manager 的版本。普通 `switch` 不会自动更新远端版本。
 
 更新前先保留当前可用状态，然后执行：
 
 ```bash
 nix flake update
-home-manager build --impure --flake '.#bingcoke@home'
-home-manager switch --impure --flake '.#bingcoke@home'
+home-manager build --flake '.#bingcoke@home'
+home-manager switch --flake '.#bingcoke@home'
 ```
 
 只更新某个输入：

@@ -51,14 +51,24 @@ Nix profile 不会安装或修改以下 root 级组件：
 
 Noctalia 的认证桥是唯一需要额外 root 操作的桌面收尾步骤，见 [Noctalia 宿主认证](noctalia-host-auth.md)。
 
-## `--impure` 的区别
+## 非 NixOS GPU 集成
 
-桌面 profile 使用 `nixGLDefault` 连接宿主 GPU，需要在求值时读取宿主环境，所以 `build` 和 `switch` 都使用 `--impure`。
+桌面 profile 使用 Home Manager 的 `targets.genericLinux.gpu` 集成。它把 Nix 构建的 GPU 库注册到宿主系统的 `/run/opengl-driver`，因此 Mango 和其他 Nix 图形程序不需要 `nixGL` 包装，也不会把 Nix 图形库路径传给宿主 GUI 应用。
 
-纯 Shell profile 不导入桌面模块和 nixGL 图形包装器，可以使用纯 flake 命令：
+首次切换桌面 profile 后，执行下面的命令安装 GPU 库：
+
+```bash
+sudo "$(command -v non-nixos-gpu-setup)"
+```
+
+该命令安装 `/etc/tmpfiles.d/non-nixos-gpu.conf`，让 `/run/opengl-driver` 在启动时自动创建。如果希望以后直接使用 `sudo non-nixos-gpu-setup`，可在切换后创建一次系统入口：
+
+```bash
+sudo ln -sfn "$(command -v non-nixos-gpu-setup)" /usr/local/bin/non-nixos-gpu-setup
+```
+
+纯 Shell profile 不导入桌面模块和 GPU 集成，可以使用纯 flake 命令：
 
 ```bash
 home-manager switch --flake '.#bingcoke@home-shell'
 ```
-
-不要为了绕过其他构建错误随意添加 `--impure`；先查看错误对应的 profile 和模块。

@@ -9,13 +9,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixgl = {
-      url = "git+https://github.com/nix-community/nixGL.git";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { nixpkgs, home-manager, nixgl, ... }:
+  outputs = { nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -23,10 +19,6 @@
       mkHome = { hostModule, desktop }:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
-
-          extraSpecialArgs = {
-            inherit nixgl;
-          };
 
           modules = [
             ./home.nix

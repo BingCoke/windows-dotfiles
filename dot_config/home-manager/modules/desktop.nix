@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   imports = [
@@ -8,7 +8,14 @@
     ./fonts.nix
   ];
 
+  targets.genericLinux.enable = true;
+
+  home.activation.setThunarDirectoryDefault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${pkgs.xdg-utils}/bin/xdg-mime default thunar.desktop inode/directory
+  '';
+
   home.packages = [
+    pkgs.thunar
     # GTK3/GTK4 theme used by Noctalia's GTK templates.
     pkgs.adw-gtk3
 

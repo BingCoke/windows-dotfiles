@@ -50,17 +50,29 @@ profile 名称不是自动探测结果。它决定 Home Manager 使用的用户�
 
 ### 3. 首次构建和应用
 
-先只构建，确认配置可以求值并下载依赖。桌面 profile 因为使用宿主 GPU 的 `nixGL`，必须使用 `--impure`：
+先只构建，确认配置可以求值并下载依赖：
 
 ```bash
 PROFILE=bingcoke@home
 nix run github:nix-community/home-manager -- \
-  build --impure --flake ".#$PROFILE"
+  build --flake ".#$PROFILE"
 nix run github:nix-community/home-manager -- \
-  switch --impure --flake ".#$PROFILE"
+  switch --flake ".#$PROFILE"
 ```
 
-纯 Shell profile 不使用 GPU 探测：
+首次切换桌面 profile 时，Home Manager 可能会提示执行类似下面的命令，把 Nix GPU 库注册到宿主系统：
+
+```bash
+sudo "$(command -v non-nixos-gpu-setup)"
+```
+
+该命令只需在首次安装或 GPU 库更新后执行一次。它创建 `/run/opengl-driver`，不会修改宿主 glibc，也不会给系统 GUI 应用注入 `LD_LIBRARY_PATH`。如果希望固定使用 `sudo non-nixos-gpu-setup`，可在切换后创建一次系统入口：
+
+```bash
+sudo ln -sfn "$(command -v non-nixos-gpu-setup)" /usr/local/bin/non-nixos-gpu-setup
+```
+
+纯 Shell profile 不导入 GPU 和桌面模块：
 
 ```bash
 PROFILE=bingcoke@home-shell
@@ -118,11 +130,11 @@ noctalia-host-auth test
 
 ```bash
 PROFILE=bingcoke@home
-home-manager build --impure --flake ".#$PROFILE"
-home-manager switch --impure --flake ".#$PROFILE"
+home-manager build --flake ".#$PROFILE"
+home-manager switch --flake ".#$PROFILE"
 ```
 
-纯 Shell profile 去掉 `--impure`。完整的更新、锁文件、generation 和回滚规则见 [日常运维](docs/operations.md)。
+纯 Shell profile 使用同样的命令，但选择对应的 `-shell` profile。完整的更新、锁文件、generation 和回滚规则见 [日常运维](docs/operations.md)。
 
 查看软件和 generation：
 

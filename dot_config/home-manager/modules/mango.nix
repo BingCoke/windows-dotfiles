@@ -1,8 +1,6 @@
-{ config, pkgs, nixgl, ... }:
+{ config, pkgs, ... }:
 
 let
-  system = pkgs.stdenv.hostPlatform.system;
-
   mangoSession = pkgs.writeTextFile {
     name = "nix-mango-session";
     destination = "/share/wayland-sessions/nix-mango.desktop";
@@ -49,11 +47,6 @@ let
     esac
   '';
 
-  mangoDirect = pkgs.runCommand "mango-direct" {} ''
-    mkdir -p "$out/bin"
-    ln -s ${pkgs.mango}/bin/mango "$out/bin/mango-direct"
-  '';
-
   # Host authentication crosses the root boundary and stays explicit.
   noctaliaHostAuth = pkgs.writeShellScriptBin "noctalia-host-auth" ''
     if [ "$(id -u)" -ne 0 ]; then
@@ -68,14 +61,7 @@ let
 
 in {
   home.packages = [
-    # Nix Mango needs the host EGL bridge on non-NixOS systems.
-    (pkgs.writeShellScriptBin "mango" ''
-      exec ${nixgl.packages.${system}.nixGLDefault}/bin/nixGL \
-        ${pkgs.mango}/bin/mango "$@"
-    '')
-
-    # Direct binary for diagnosing host graphics integration.
-    mangoDirect
+    pkgs.mango
 
     # GDM reads session entries from /usr/share/wayland-sessions.
     mangoSession
