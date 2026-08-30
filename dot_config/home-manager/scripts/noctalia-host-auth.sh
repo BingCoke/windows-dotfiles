@@ -62,7 +62,7 @@ package_owns() {
 }
 
 validate_helper() {
-  local path=$1 target mode permissions
+  local path=$1 required_bits=$2 target mode permissions
 
   target=$(readlink -f "$path" 2>/dev/null) || return 1
   [[ -f $target ]] || return 1
@@ -70,15 +70,17 @@ validate_helper() {
 
   mode=$(stat -c '%a' "$target")
   permissions=$((8#$mode))
-  ((permissions & 04000)) || return 1
+  ((permissions & required_bits)) || return 1
   (((permissions & 0022) == 0)) || return 1
   package_owns "$target" || return 1
 }
 
 find_helper() {
-  local candidate
+  local required_bits=$1 candidate
+  shift
+
   for candidate in "$@"; do
-    if validate_helper "$candidate"; then
+    if validate_helper "$candidate" "$required_bits"; then
       printf '%s\n' "$candidate"
       return 0
     fi
@@ -88,14 +90,15 @@ find_helper() {
 }
 
 find_unix_helper() {
-  find_helper \
+  # Ubuntu ships unix_chkpwd as setgid shadow (2755); other systems may use setuid.
+  find_helper 06000 \
     /usr/sbin/unix_chkpwd \
     /usr/bin/unix_chkpwd \
     /sbin/unix_chkpwd
 }
 
 find_polkit_helper() {
-  find_helper \
+  find_helper 04000 \
     /usr/lib/polkit-1/polkit-agent-helper-1 \
     /usr/libexec/polkit-1/polkit-agent-helper-1 \
     /usr/libexec/polkit-agent-helper-1
