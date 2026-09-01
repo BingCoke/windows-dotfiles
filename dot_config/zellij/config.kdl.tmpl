@@ -4,14 +4,14 @@ default_shell "{{ env "DOTFILES_USE_SHELL" }}"
 
 keybinds clear-defaults=true {
     normal {
-        bind "Ctrl a" { SwitchToMode "tmux"; }
+        bind "Alt a" { SwitchToMode "tmux"; }
     }
 
 
     // ========== TMUX 模式（主力操作 + 子模式入口）==========
     tmux {
         // ---- 退出 tmux ----
-        bind "Ctrl a" { Write 2; SwitchToMode "normal"; }  // 发送真正的 Ctrl-a
+        bind "Alt a" {  SwitchToMode "normal"; }  // 发送真正的 Ctrl-a
 
         bind "esc" { SwitchToMode "normal"; }
         // bind "Ctrl g" { SwitchToMode "normal"; }
@@ -41,8 +41,9 @@ keybinds clear-defaults=true {
         bind "j" { MoveFocus "down"; SwitchToMode "normal"; }
         bind "k" { MoveFocus "up"; SwitchToMode "normal"; }
         bind "l" { MoveFocus "right"; SwitchToMode "normal"; }
-        bind "Ctrl j" { MoveTab "right"; }                     // 移动 tab 位置
-        bind "Ctrl k" { MoveTab "left"; }
+
+        bind "Alt j" { MoveTab "right"; }                     // 移动 tab 位置
+        bind "Alt k" { MoveTab "left"; }
 
         // ---- Pane 操作 ----
         bind "-" { NewPane "down"; SwitchToMode "normal"; }   // 水平分屏

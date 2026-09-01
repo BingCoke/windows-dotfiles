@@ -1,6 +1,7 @@
 local M = {}
 
 local language = {
+  "cs",
   "cmake",
   "proto",
   "ruby",

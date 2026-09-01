@@ -1,0 +1,168 @@
+input {
+    keyboard {
+        xkb {
+            layout "us"
+        }
+        repeat-delay 600
+        repeat-rate 25
+    }
+
+    touchpad {
+        tap
+        drag true
+        drag-lock
+    }
+
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+overview {
+    backdrop-color "#24283b"
+}
+
+blur {
+    passes 2
+    offset 3.0
+    noise 0.02
+    saturation 1.0
+}
+
+layout {
+    gaps 10
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.5
+        proportion 0.8
+        proportion 1.0
+    }
+
+    default-column-width { proportion 0.8; }
+
+    focus-ring {
+        width 2
+        active-color "#7aa2f7"
+        inactive-color "#66709b"
+    }
+
+    border {
+        off
+    }
+}
+
+environment {
+    LANG "zh_CN.UTF-8"
+    LC_ALL "C.UTF-8"
+    SDL_IM_MODULE "fcitx"
+    XMODIFIERS "@im=fcitx"
+    GTK_IM_MODULE null
+    QT_IM_MODULE "fcitx"
+    http_proxy "http://127.0.0.1:7890"
+    https_proxy "http://127.0.0.1:7890"
+    all_proxy "http://127.0.0.1:7890"
+    HTTP_PROXY "http://127.0.0.1:7890"
+    HTTPS_PROXY "http://127.0.0.1:7890"
+    ALL_PROXY "http://127.0.0.1:7890"
+    no_proxy "127.0.0.1,localhost,::1"
+    NO_PROXY "127.0.0.1,localhost,::1"
+}
+
+spawn-at-startup "/opt/clash-party/mihomo-party"
+spawn-at-startup "fcitx5"
+spawn-at-startup "kanshi"
+spawn-sh-at-startup "setpriv --pdeathsig TERM noctalia"
+spawn-sh-at-startup "echo 'Xft.dpi: 120' | xrdb -merge"
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+cursor {
+    xcursor-size 24
+}
+
+include "rules.kdl"
+
+debug {
+    honor-xdg-activation-with-invalid-serial
+}
+
+binds {
+    Mod+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+S { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+Comma { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+Return { spawn "kitty"; }
+    Mod+E { spawn "kitty" "--class" "float"; }
+
+    Mod+Shift+A { spawn "noctalia" "msg" "screenshot-fullscreen"; }
+    Mod+Shift+S { spawn "noctalia" "msg" "screenshot-region"; }
+    Mod+V { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
+    Mod+Shift+C { spawn "hyprpicker" "-a"; }
+    Alt+Tab { spawn "noctalia" "msg" "window-switcher"; }
+
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
+    XF86AudioMute allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
+
+    Mod+Q repeat=false { close-window; }
+    Mod+M { quit; }
+    Mod+Tab repeat=false { toggle-overview; }
+    Mod+W { toggle-window-floating; }
+    Mod+F { maximize-column; }
+    Mod+A { fullscreen-window; }
+    Mod+X { switch-preset-column-width; }
+
+    Mod+Shift+H { focus-column-left; }
+    Mod+Shift+J { focus-window-down; }
+    Mod+Shift+K { focus-window-up; }
+    Mod+Shift+L { focus-column-right; }
+
+    Mod+Ctrl+H { spawn "~/.config/niri/move-focused-window.sh" "left"; }
+    Mod+Ctrl+J { spawn "~/.config/niri/move-focused-window.sh" "down"; }
+    Mod+Ctrl+K { spawn "~/.config/niri/move-focused-window.sh" "up"; }
+    Mod+Ctrl+L { spawn "~/.config/niri/move-focused-window.sh" "right"; }
+
+    Mod+Left { focus-workspace-up; }
+    Mod+Right { focus-workspace-down; }
+
+    Ctrl+Left { focus-workspace-up; }
+    Ctrl+Right { focus-workspace-down; }
+
+
+    // P = previous workspace
+    Mod+Shift+P { focus-workspace-up; }
+    // N = next workspace
+    Mod+Shift+N { focus-workspace-down; }
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+
+    Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+Shift+WheelScrollUp { focus-column-left; }
+    Mod+Shift+WheelScrollDown { focus-column-right; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+
+    Mod+Ctrl+1 { move-column-to-workspace 1; }
+    Mod+Ctrl+2 { move-column-to-workspace 2; }
+    Mod+Ctrl+3 { move-column-to-workspace 3; }
+    Mod+Ctrl+4 { move-column-to-workspace 4; }
+    Mod+Ctrl+5 { move-column-to-workspace 5; }
+    Mod+Ctrl+6 { move-column-to-workspace 6; }
+    Mod+Ctrl+7 { move-column-to-workspace 7; }
+    Mod+Ctrl+8 { move-column-to-workspace 8; }
+    Mod+Ctrl+9 { move-column-to-workspace 9; }
+}
+
+include "noctalia.kdl"

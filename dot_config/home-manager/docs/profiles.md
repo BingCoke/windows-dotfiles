@@ -19,7 +19,7 @@ nix eval --json '.#homeConfigurations' --apply builtins.attrNames
 
 ## 桌面和纯 Shell 的区别
 
-桌面 profile 在共享开发环境之外，还导入 Mango、Noctalia、Wayland 工具、显示器工具、输入法和字体配置。它需要宿主图形驱动、用户 systemd 和 D-Bus；GPU 库由 Home Manager 的非 NixOS GPU 集成提供。
+桌面 profile 在共享开发环境之外，还导入 Mango、Niri、Noctalia、Wayland 工具、显示器工具、输入法和字体配置。它需要宿主图形驱动、用户 systemd 和 D-Bus；GPU 库由 Home Manager 的非 NixOS GPU 集成提供。
 
 纯 Shell profile 只导入共享开发环境，包括：
 
@@ -34,7 +34,7 @@ uv
 lazygit
 ```
 
-它不安装 Mango、Noctalia、Wayland、Fcitx5、字体或其他桌面软件。
+它不安装 Mango、Niri、Noctalia、Wayland、Fcitx5、字体或其他桌面软件。
 
 ## 新用户或新主机
 
@@ -62,7 +62,7 @@ nix eval --json '.#homeConfigurations' --apply builtins.attrNames
 
 ## 文件冲突
 
-Home Manager 只应管理 Nix 模块声明的文件。Mango、Neovim、终端、Shell 和 Git 配置由外部配置管理工具提供，不要同时在 Home Manager 中声明同一文件。
+Home Manager 只应管理 Nix 模块声明的文件。Mango、Niri、Neovim、终端、Shell 和 Git 配置由外部配置管理工具提供，不要同时在 Home Manager 中声明同一文件。
 
 出现：
 

@@ -92,23 +92,23 @@ Cargo 用户工具脚本是可选步骤：
 
 该脚本安装到 `~/.cargo/bin`，不属于 Nix store；需要单独更新或删除时按 [开发工具说明](docs/development-tools.md) 处理。
 
-### 4. 在 GDM 中登录 Nix Mango
+### 4. 在 GDM 中登录 Nix compositor
 
-桌面 profile 首次 `switch` 成功后，安装 Nix Mango 登录入口：
-
-```bash
-mango-desktop install
-```
-
-这个命令内部会调用 `sudo`，把 Nix 生成的会话文件安装到 GDM 的系统会话目录。注销当前会话，在 Ubuntu 登录界面点击齿轮图标，选择 `Nix Mango` 后登录。系统自带的 `mango.desktop` 不会被修改。
-
-卸载 Nix Mango 登录入口：
+桌面 profile 首次 `switch` 成功后，同时安装 Nix Mango 和 Nix Niri 登录入口：
 
 ```bash
-mango-desktop uninstall
+compositor-desktop install
 ```
 
-Home Manager 更新 Mango 会话文件后，重新执行 `mango-desktop install`。
+这个命令内部会调用 `sudo`，把 Nix 生成的两个会话文件安装到 GDM 的系统会话目录。注销当前会话，在 Ubuntu 登录界面点击齿轮图标，选择 `Nix Mango` 或 `Nix Niri` 后登录。系统自带的 desktop 文件不会被修改。
+
+卸载两个 Nix 登录入口：
+
+```bash
+compositor-desktop uninstall
+```
+
+Home Manager 更新 compositor 会话文件后，重新执行 `compositor-desktop install`。
 
 ### 5. 桌面主机的人工收尾
 
@@ -147,7 +147,7 @@ home-manager generations
 
 - Nix/Home Manager：安装用户软件、Rust/Go 等开发工具，以及当前 profile 声明的生成文件。
 - 宿主发行版：内核、GPU 驱动、设备节点、systemd、PAM、polkit 和其他 root 级系统组件。
-- 外部配置管理：Mango、Noctalia、Neovim、终端、Shell 和 Git 配置文件。
+- 外部配置管理：Mango、Niri、Noctalia、Neovim、终端、Shell 和 Git 配置文件。
 
 同一个配置文件只能由一个工具管理。Home Manager 报 `Existing file would be clobbered` 时，不要直接删除文件，先根据 [profile 和冲突说明](docs/profiles.md) 确认它的归属。
 

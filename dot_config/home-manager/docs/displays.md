@@ -74,6 +74,44 @@ scale 1.5  -> Xft.dpi: 144
 
 只在新屏幕缩放比例变化时修改该值。修改后重启受影响的 XWayland 应用；只重载 Mango 通常不会更新已经运行的应用。
 
+## Noctalia 外接屏亮度
+
+笔记本内置屏通常通过 `/sys/class/backlight` 和 `brightnessctl` 调节；HDMI/DP 外接屏通常通过 DDC/CI、`ddcutil` 和 `/dev/i2c-*` 调节。桌面 profile 已安装 `ddcutil`，但 Home Manager 不能配置非 NixOS 宿主的设备权限；如果 `/dev/i2c-*` 是 `root:root 0600`，Noctalia 会检测不到显示器。
+
+先在显示器实体菜单中开启 DDC/CI，再按宿主系统安装权限规则：
+
+```bash
+# Ubuntu / Debian
+sudo apt install ddcutil
+
+# Fedora
+sudo dnf install ddcutil i2c-tools
+
+# Arch
+sudo pacman -S ddcutil i2c-tools
+
+# 安装后重新加载设备规则
+sudo udevadm control --reload-rules
+sudo udevadm trigger --subsystem-match=i2c-dev
+```
+
+注销并重新登录，让 logind 重新授予当前桌面会话设备权限。NixOS 在系统配置中声明：
+
+```nix
+hardware.i2c.enable = true;
+users.users.kryond.extraGroups = [ "i2c" ];
+```
+
+应用系统配置并重新登录后验证：
+
+```bash
+ls -l /dev/i2c-*
+ddcutil detect
+ddcutil getvcp 10
+```
+
+Noctalia 还需要 `[brightness] enable_ddcutil = true`。如果权限正常但 `ddcutil detect` 仍无显示器，检查显示器是否支持并已开启 DDC/CI，以及连接线或扩展坞是否透传 DDC；不要用 `chmod 666 /dev/i2c-*` 临时放开所有 I²C 设备。
+
 ## 故障判断
 
 屏幕没有出现时，依次检查：

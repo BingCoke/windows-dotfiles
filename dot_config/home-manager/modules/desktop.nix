@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./mango.nix
+    ./compositors.nix
     ./wayland.nix
     ./input-method.nix
     ./fonts.nix

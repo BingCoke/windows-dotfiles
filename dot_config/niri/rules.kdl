@@ -1,0 +1,75 @@
+// Match Mango's focused_opacity=0.9 and unfocused_opacity=0.8.
+window-rule {
+    opacity 0.8
+
+    draw-border-with-background false
+    background-effect {
+        blur true
+        xray true
+    }
+}
+
+window-rule {
+    match is-focused=true
+    opacity 0.95
+}
+
+window-rule {
+    geometry-corner-radius 6
+    clip-to-geometry true
+}
+
+// Noctalia 提供模糊壁纸副本，Niri 将其放入 Overview 背景。
+layer-rule {
+    match namespace="^noctalia-backdrop"
+    place-within-backdrop true
+}
+
+// Match Mango's optimized wallpaper-based blur for Noctalia surfaces.
+layer-rule {
+    match namespace=r#"^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"#
+
+    background-effect {
+        xray false
+        blur true
+    }
+}
+
+layer-rule {
+    match namespace="noctalia-window-switcher"
+
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Floating Noctalia settings window.
+window-rule {
+  match app-id="dev.noctalia.Noctalia"
+  open-floating true
+  default-column-width { fixed 1080; }
+  default-window-height { fixed 920; }
+}
+
+// Mango rule.conf 中有对应应用的浮动规则。
+window-rule {
+    match app-id=r#"^float$"#
+    match app-id=r#"^bongo-cat$"# title=r#"^BongoCat$"#
+    // Mango appid matching is fuzzy; unanchored regexes preserve that behavior.
+    match app-id=r#"(broken|wechat|yesplaymusic|mihomo-party)"#
+    match app-id=r#"(hyprpicker|org\.gnome\.Calculator|org\.pulseaudio\.pavucontrol|pavucontrol|wdisplays|network\.cycles\.wdisplays|vdu_controls|com\.gabm\.satty|satty)"#
+    match app-id=r#"(org\.fcitx\.fcitx5-config-qt|fcitx5-configtool|fcitx5-config-qt|lxqt-policykit-agent|polkit-gnome-authentication-agent-1|polkit-kde-authentication-agent-1|org\.kde\.polkit-kde-authentication-agent-1|xfce-polkit)"#
+    match app-id=r#"(pinentry-gtk-2|pinentry-gnome3|pinentry-qt|ksshaskpass|ssh-askpass|xdg-desktop-portal-(gtk|kde|lxqt)|org\.freedesktop\.impl\.portal\.desktop\.(gtk|kde|lxqt)|thunar-settings)"#
+    match app-id=r#"(org\.telegram\.desktop|discord|vesktop|QQ|linuxqq|dingtalk|bytedance-feishu|lark|Slack|wemeetapp|Wemeetapp|zoom|Zoom|signal)"#
+    match app-id=r#"(Spotify|netease-cloud-music|listen1|baidunetdisk|Baidunetdisk|localsend)"#
+    match app-id=r#"(blueman-manager|nm-connection-editor|gpartedbin|GParted|org\.gnome\.DiskUtility|nwg-displays|org\.gnome\.Settings|gnome-control-center|gnome-system-monitor)"#
+    match app-id=r#"(qalculate-gtk|galculator|imv|nsxiv|sxiv|feh|org\.gnome\.eog|file-roller|org\.gnome\.FileRoller|xarchiver|ark)"#
+    match app-id=r#"(flameshot|swappy|org\.keepassxc\.KeePassXC|Bitwarden|1Password)"#
+    match app-id=r#"(clash-verge|clash-nyanpasu|v2rayN|rustdesk)"#
+    match app-id=r#"^steam$"# title=r#"^(Friends List|Steam Settings)$"#
+    match title=r#"^Wine:"#
+    match title=r#"^(Open File|Open Files|Save File|Save As|Open Folder|Select File|Select Files|Select Folder|Choose File|Choose Files|Choose Folder|打开文件|打开多个文件|保存文件|另存为|打开文件夹|选择文件|选择多个文件|选择文件夹)$"#
+
+    open-floating true
+}

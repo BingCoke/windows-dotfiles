@@ -1,6 +1,9 @@
 [accessibility]
 ui_scale = 1.2
 
+[backdrop]
+enabled = true
+
 [bar.default]
 background_opacity = 0.54
 border = "primary"

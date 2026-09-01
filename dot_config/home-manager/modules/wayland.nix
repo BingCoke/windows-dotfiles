@@ -3,15 +3,7 @@
 {
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk
-      xdg-desktop-portal-wlr
-    ];
-    config.mango = {
-      default = [ "gtk" ];
-      "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
-      "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
-    };
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
   systemd.user.services = {
@@ -39,20 +31,6 @@
         Type = "dbus";
         BusName = "org.freedesktop.impl.portal.desktop.gtk";
         ExecStart = "${pkgs.xdg-desktop-portal-gtk}/libexec/xdg-desktop-portal-gtk";
-      };
-    };
-
-    "xdg-desktop-portal-wlr" = {
-      Unit = {
-        Description = "Portal service (wlroots implementation)";
-        PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session.target" ];
-      };
-      Service = {
-        Type = "dbus";
-        BusName = "org.freedesktop.impl.portal.desktop.wlr";
-        ExecStart = "${pkgs.xdg-desktop-portal-wlr}/libexec/xdg-desktop-portal-wlr";
-        Restart = "on-failure";
       };
     };
   };
