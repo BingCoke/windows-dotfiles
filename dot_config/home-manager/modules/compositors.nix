@@ -32,6 +32,10 @@ let
     desktopNames = "niri;";
   };
 
+  startNiri = pkgs.writeShellScriptBin "start-niri" ''
+    XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=niri exec ${pkgs.niri}/bin/niri-session
+  '';
+
   compositorDesktop = pkgs.writeShellScriptBin "compositor-desktop" ''
     set -eu
 
@@ -89,6 +93,7 @@ in {
   home.packages = [
     mangoSession
     niriSession
+    startNiri
     compositorDesktop
     pkgs.noctalia
     noctaliaHostAuth

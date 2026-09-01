@@ -70,7 +70,7 @@ environment {
 spawn-at-startup "/opt/clash-party/mihomo-party"
 spawn-at-startup "fcitx5"
 spawn-at-startup "kanshi"
-spawn-sh-at-startup "setpriv --pdeathsig TERM noctalia"
+spawn-at-startup "noctalia"
 spawn-sh-at-startup "echo 'Xft.dpi: 120' | xrdb -merge"
 
 hotkey-overlay {
@@ -141,6 +141,7 @@ binds {
 
     Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
     Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+
     Mod+Shift+WheelScrollUp { focus-column-left; }
     Mod+Shift+WheelScrollDown { focus-column-right; }
 
@@ -164,5 +165,3 @@ binds {
     Mod+Ctrl+8 { move-column-to-workspace 8; }
     Mod+Ctrl+9 { move-column-to-workspace 9; }
 }
-
-include "noctalia.kdl"
