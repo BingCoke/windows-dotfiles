@@ -40,14 +40,26 @@ layout {
     default-column-width { proportion 0.8; }
 
     focus-ring {
-        width 2
+        off
+        width 1
         active-color "#7aa2f7"
         inactive-color "#66709b"
     }
 
     border {
-        off
-    }
+          width 4
+          active-color "#7aa2f7"
+          inactive-color "#565f89"
+          urgent-color "#f7768e"
+      }
+
+      shadow {
+          on
+          softness 30
+          spread 5
+          offset x=0 y=5
+          color "#1a1b2670"
+      }
 }
 
 environment {
@@ -98,7 +110,7 @@ binds {
     Mod+Shift+S { spawn "noctalia" "msg" "screenshot-region"; }
     Mod+V { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
     Mod+Shift+C { spawn "hyprpicker" "-a"; }
-    Alt+Tab { spawn "noctalia" "msg" "window-switcher"; }
+    // Alt+Tab { spawn "noctalia" "msg" "window-switcher"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
@@ -109,6 +121,7 @@ binds {
     Mod+Q repeat=false { close-window; }
     Mod+M { quit; }
     Mod+Tab repeat=false { toggle-overview; }
+    Mod+R { switch-focus-between-floating-and-tiling; }
     Mod+W { toggle-window-floating; }
     Mod+F { maximize-column; }
     Mod+A { fullscreen-window; }
@@ -123,6 +136,11 @@ binds {
     Mod+Ctrl+J { spawn "~/.config/niri/move-focused-window.sh" "down"; }
     Mod+Ctrl+K { spawn "~/.config/niri/move-focused-window.sh" "up"; }
     Mod+Ctrl+L { spawn "~/.config/niri/move-focused-window.sh" "right"; }
+
+    Mod+Alt+H { spawn "~/.config/niri/resize-focused-window.sh" "left"; }
+    Mod+Alt+J { spawn "~/.config/niri/resize-focused-window.sh" "down"; }
+    Mod+Alt+K { spawn "~/.config/niri/resize-focused-window.sh" "up"; }
+    Mod+Alt+L { spawn "~/.config/niri/resize-focused-window.sh" "right"; }
 
     Mod+Left { focus-workspace-up; }
     Mod+Right { focus-workspace-down; }
@@ -164,4 +182,8 @@ binds {
     Mod+Ctrl+7 { move-column-to-workspace 7; }
     Mod+Ctrl+8 { move-column-to-workspace 8; }
     Mod+Ctrl+9 { move-column-to-workspace 9; }
+
+    Mod+Escape { toggle-keyboard-shortcuts-inhibit; }
 }
+
+include "noctalia.kdl"
