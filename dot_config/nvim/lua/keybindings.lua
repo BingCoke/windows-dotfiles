@@ -76,7 +76,7 @@ map("i", "<M-d>", "<C-w>c", opt)
 map("n", "<esc>", "<cmd>noh<cr><esc>", opt)
 map("i", "<esc>", "<cmd>noh<cr><esc>", opt)
 
-map("n", "<leader>w", "<cmd>w<cr><esc>", opt)
+map("n", "<leader>w", "<cmd>silent write<cr><esc>", opt)
 
 -- 上下比例控制
 map("n", "<C-Down>", "<cmd>resize -2<CR>", opt)

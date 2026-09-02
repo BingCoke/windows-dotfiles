@@ -19,6 +19,7 @@ local simple_lsps = {
 
 -- Complex LSP servers (using lsp.codes.<name>.setup())
 local code_lsps = {
+  "cs",
   "nix",
   "flutter",
   "ts",
