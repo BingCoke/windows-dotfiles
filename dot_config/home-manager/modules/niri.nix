@@ -10,8 +10,12 @@ let
 in
 {
   home.file = {
+    ".config/systemd/user/xdg-desktop-portal.service".source =
+      "${pkgs.xdg-desktop-portal}/share/systemd/user/xdg-desktop-portal.service";
     ".config/systemd/user/xdg-desktop-portal-gnome.service".source =
       "${pkgs.xdg-desktop-portal-gnome}/share/systemd/user/xdg-desktop-portal-gnome.service";
+    ".config/systemd/user/xdg-desktop-portal-wlr.service".source =
+      "${pkgs.xdg-desktop-portal-wlr}/share/systemd/user/xdg-desktop-portal-wlr.service";
     ".config/systemd/user/niri.service.wants/xdg-desktop-portal-gnome.service".source =
       "${pkgs.xdg-desktop-portal-gnome}/share/systemd/user/xdg-desktop-portal-gnome.service";
   };

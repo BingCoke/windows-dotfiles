@@ -17,7 +17,10 @@ input {
 }
 
 overview {
-    backdrop-color "#24283b"
+
+    workspace-shadow {
+        off
+    }
 }
 
 blur {
@@ -34,7 +37,6 @@ layout {
     preset-column-widths {
         proportion 0.5
         proportion 0.8
-        proportion 1.0
     }
 
     default-column-width { proportion 0.8; }
@@ -47,19 +49,19 @@ layout {
     }
 
     border {
-          width 4
-          active-color "#7aa2f7"
-          inactive-color "#565f89"
-          urgent-color "#f7768e"
-      }
+        width 2
+        active-color "#7aa2f7"
+        inactive-color "#565f89"
+        urgent-color "#f7768e"
+    }
 
-      shadow {
-          on
-          softness 30
-          spread 5
-          offset x=0 y=5
-          color "#1a1b2670"
-      }
+    shadow {
+        on
+        softness 30
+        spread 5
+        offset x=0 y=5
+        color "#1a1b2670"
+    }
 }
 
 environment {
@@ -145,9 +147,6 @@ binds {
     Mod+Left { focus-workspace-up; }
     Mod+Right { focus-workspace-down; }
 
-    Ctrl+Left { focus-workspace-up; }
-    Ctrl+Right { focus-workspace-down; }
-
 
     // P = previous workspace
     Mod+Shift+P { focus-workspace-up; }
@@ -184,6 +183,11 @@ binds {
     Mod+Ctrl+9 { move-column-to-workspace 9; }
 
     Mod+Escape { toggle-keyboard-shortcuts-inhibit; }
+
+
+         // 当前聚焦列居中
+    Mod+C { center-column; }
+
 }
 
 include "noctalia.kdl"
