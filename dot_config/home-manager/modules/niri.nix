@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, xdgDesktopPortalWlr, ... }:
 
 let
   xwaylandSatellite = pkgs.xwayland-satellite;
@@ -9,16 +9,8 @@ let
   });
 in
 {
-  home.file = {
-    ".config/systemd/user/xdg-desktop-portal.service".source =
-      "${pkgs.xdg-desktop-portal}/share/systemd/user/xdg-desktop-portal.service";
-    ".config/systemd/user/xdg-desktop-portal-gnome.service".source =
-      "${pkgs.xdg-desktop-portal-gnome}/share/systemd/user/xdg-desktop-portal-gnome.service";
-    ".config/systemd/user/xdg-desktop-portal-wlr.service".source =
-      "${pkgs.xdg-desktop-portal-wlr}/share/systemd/user/xdg-desktop-portal-wlr.service";
-    ".config/systemd/user/niri.service.wants/xdg-desktop-portal-gnome.service".source =
-      "${pkgs.xdg-desktop-portal-gnome}/share/systemd/user/xdg-desktop-portal-gnome.service";
-  };
+  home.file.".config/systemd/user/niri.service.wants/xdg-desktop-portal-wlr.service".source =
+    "${xdgDesktopPortalWlr}/share/systemd/user/xdg-desktop-portal-wlr.service";
 
   wayland.windowManager.niri = {
     enable = true;
@@ -28,16 +20,9 @@ in
       patchedXwaylandSatellite;
   };
 
-  xdg.portal = {
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gnome
-      pkgs.xdg-desktop-portal-wlr
-    ];
-    config.niri = {
-      default = [ "gnome" "gtk" ];
-      "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
-      "org.freedesktop.impl.portal.RemoteDesktop" = [ "gnome" ];
-      "org.freedesktop.impl.portal.Screenshot" = [ "gnome" ];
-    };
+  xdg.portal.config.niri = {
+    default = [ "gtk" ];
+    "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+    "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
   };
 }

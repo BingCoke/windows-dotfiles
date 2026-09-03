@@ -1,6 +1,16 @@
 { config, pkgs, ... }:
 
 let
+  xdgDesktopPortalWlr = pkgs.xdg-desktop-portal-wlr.overrideAttrs (_: {
+    version = "0.9.0-dev-c0255d7";
+    src = pkgs.fetchFromGitHub {
+      owner = "emersion";
+      repo = "xdg-desktop-portal-wlr";
+      rev = "c0255d7b047b7263629ab5a314661045ff7f65e3";
+      hash = "sha256-W+0FrP5dlmf/dxcXt6pv4HFbpvJABNRl4TEghCSIy9c=";
+    };
+  });
+
   mkSession = { name, displayName, comment, command, desktopNames }:
     pkgs.writeTextFile {
       name = "nix-${name}-session";
@@ -85,10 +95,21 @@ let
     exec ${pkgs.bash}/bin/bash ${../scripts/noctalia-host-auth.sh} "$@"
   '';
 in {
+  _module.args = { inherit xdgDesktopPortalWlr; };
+
   imports = [
     ./mango.nix
     ./niri.nix
   ];
+
+  home.file = {
+    ".config/systemd/user/xdg-desktop-portal.service".source =
+      "${pkgs.xdg-desktop-portal}/share/systemd/user/xdg-desktop-portal.service";
+    ".config/systemd/user/xdg-desktop-portal-wlr.service".source =
+      "${xdgDesktopPortalWlr}/share/systemd/user/xdg-desktop-portal-wlr.service";
+  };
+
+  xdg.portal.extraPortals = [ xdgDesktopPortalWlr ];
 
   home.packages = [
     mangoSession

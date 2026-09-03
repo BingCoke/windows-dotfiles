@@ -21,6 +21,7 @@
   };
 
   home.packages = with pkgs; [
+    nerd-fonts.intone-mono
     noto-fonts
     (noto-fonts-cjk-sans.override { static = true; })
     noto-fonts-cjk-serif

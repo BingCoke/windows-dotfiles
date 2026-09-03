@@ -160,3 +160,4 @@ home-manager generations
 - [Noctalia GTK/Qt 主题与字体](docs/noctalia-theme.md)
 - [开发工具](docs/development-tools.md)
 - [日常运维、更新和回滚](docs/operations.md)
+- [上游问题与本地绕过跟踪](docs/upstream-workarounds.md)
