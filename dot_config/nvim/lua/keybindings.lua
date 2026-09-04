@@ -13,6 +13,7 @@ map("n", "s", "", opt)
 
 vim.keymap.set({ "n" }, "gf", "gF", { remap = true })
 vim.keymap.set({ "n" }, "<c-w>f", "<c-w>F", { remap = true })
+vim.keymap.set({ "n" }, "<c-w>gf", "<c-w>gF", { remap = true })
 
 -- Keep the normal <C-;> mapping for terminals that can report it directly.
 vim.keymap.set({ "i", "v", "c" }, "<C-;>", "<esc>", { noremap = true, silent = true })
@@ -26,42 +27,42 @@ vim.keymap.set({ "n", "i" }, "<C-\\><C-n>", "<Esc>", { remap = true, silent = tr
 -- 插入模式
 vim.keymap.set({ "i" }, "<C-v>", "<C-r>+", { noremap = true, silent = true })
 vim.keymap.set("c", "<C-v>", function()
-	local text = vim.fn.getreg("+")
-	vim.api.nvim_feedkeys(text, "n", true)
+  local text = vim.fn.getreg("+")
+  vim.api.nvim_feedkeys(text, "n", true)
 end, { noremap = true, silent = true })
 
 map("v", "<c-c>", '"+y', opt)
 
 local function copy_file_line_reference()
-	local path = vim.fn.expand("%:p")
-	if path == "" then
-		vim.notify("No file path for current buffer", vim.log.levels.WARN)
-		return
-	end
+  local path = vim.fn.expand("%:p")
+  if path == "" then
+    vim.notify("No file path for current buffer", vim.log.levels.WARN)
+    return
+  end
 
-	path = path:gsub("\\", "/")
+  path = path:gsub("\\", "/")
 
-	local start_line = vim.fn.line("v")
-	local end_line = vim.fn.line(".")
-	if vim.fn.mode() == "n" then
-		start_line = vim.fn.line(".")
-		end_line = start_line
-	end
+  local start_line = vim.fn.line("v")
+  local end_line = vim.fn.line(".")
+  if vim.fn.mode() == "n" then
+    start_line = vim.fn.line(".")
+    end_line = start_line
+  end
 
-	if start_line > end_line then
-		start_line, end_line = end_line, start_line
-	end
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
 
-	local line_text = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
-	local text = string.format("%s line %s", path, line_text)
+  local line_text = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
+  local text = string.format("%s line %s", path, line_text)
 
-	vim.fn.setreg("+", text)
+  vim.fn.setreg("+", text)
 end
 
 map("n", "<M-c>", copy_file_line_reference, opt)
 map("v", "<M-c>", function()
-	copy_file_line_reference()
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+  copy_file_line_reference()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
 end, opt)
 
 vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
@@ -124,40 +125,40 @@ local pluginKeys = {}
 
 -- 跳转到下一个错误（仅 ERROR）
 vim.keymap.set("n", "]e", function()
-	vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = false })
+  vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = false })
 end, opt)
 
 -- 跳转到上一个错误（仅 ERROR）
 vim.keymap.set("n", "[e", function()
-	vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = false })
+  vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = false })
 end, opt)
 
 -- 下一个诊断（所有级别）
 vim.keymap.set("n", "]g", function()
-	vim.diagnostic.jump({ count = 1, float = false })
+  vim.diagnostic.jump({ count = 1, float = false })
 end, opt)
 
 -- 上一个诊断（所有级别）—— 注意这里修正为 count = -1
 vim.keymap.set("n", "[g", function()
-	vim.diagnostic.jump({ count = -1, float = false })
+  vim.diagnostic.jump({ count = -1, float = false })
 end, { desc = "Previous Diagnostic" })
 
 -- 使用vscode打开当前文件
 vim.keymap.set("n", "<leader>cc", function()
-	vim.fn.jobstart({ "code", "-a", vim.fn.getcwd(-1, -1), vim.fn.expand("%:p") })
+  vim.fn.jobstart({ "code", "-a", vim.fn.getcwd(-1, -1), vim.fn.expand("%:p") })
 end, {
-	desc = "open vscode in current buffer file",
-	noremap = true,
-	silent = true,
+  desc = "open vscode in current buffer file",
+  noremap = true,
+  silent = true,
 })
 
 -- Symbol search (gs - go to symbol)
 vim.keymap.set("n", "gs", function()
-	require("util.symbol_search").go_to_symbol()
+  require("util.symbol_search").go_to_symbol()
 end, {
-	desc = "Go to symbol definition (treesitter + ripgrep)",
-	noremap = true,
-	silent = true,
+  desc = "Go to symbol definition (treesitter + ripgrep)",
+  noremap = true,
+  silent = true,
 })
 
 return pluginKeys
