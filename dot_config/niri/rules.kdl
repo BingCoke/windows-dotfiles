@@ -1,17 +1,12 @@
 // Match Mango's focused_opacity=0.9 and unfocused_opacity=0.8.
 window-rule {
-    opacity 0.8
+    opacity 0.88
 
     draw-border-with-background false
     background-effect {
         blur true
         xray true
     }
-}
-
-window-rule {
-    match is-focused=true
-    opacity 0.95
 }
 
 window-rule {
@@ -84,3 +79,20 @@ window-rule {
 
     open-floating true
 }
+
+
+window-rule {
+    match app-id="kitty-float"
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^rustdesk$"#
+    opacity 1.0
+}
+
+window-rule {
+    match app-id=r#"(firefox|org\.mozilla\.firefox|google-chrome|google-chrome-stable|chromium|chromium-browser|dingtalk|fcitx|wechat)"#
+    opacity 1.0
+}
+
