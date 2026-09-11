@@ -24,6 +24,13 @@ let
     "application/x-php"
     "text/css"
   ];
+
+  xsettingsConfig = pkgs.writeText "xsettingsd.conf" ''
+    Net/ThemeName "adw-gtk3-dark"
+    Net/IconThemeName "Yaru-magenta"
+    Gtk/CursorThemeName "DMZ-White"
+    Gtk/CursorThemeSize 24
+  '';
 in
 {
   imports = [
@@ -34,6 +41,43 @@ in
   ];
 
   targets.genericLinux.enable = true;
+
+  systemd.user.services.xsettingsd = {
+    Unit = {
+      Description = "XSettings daemon";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.xsettingsd}/bin/xsettingsd -c ${xsettingsConfig}";
+      Restart = "on-failure";
+    };
+
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  # X11/XWayland apps resolve the cursor theme name "default" through here. The
+  # host copy is a symlink into /etc/alternatives, which does not exist inside
+  # the Flatpak sandbox.
+  xdg.dataFile."icons/default/index.theme".text = ''
+    [Icon Theme]
+    Inherits=DMZ-White
+  '';
+
+  systemd.user.services.thunar = {
+    Unit = {
+      Description = "Thunar file manager";
+      Documentation = [ "man:Thunar(1)" ];
+    };
+
+    Service = {
+      Type = "dbus";
+      ExecStart = "${pkgs.thunar}/bin/Thunar --daemon";
+      BusName = "org.xfce.FileManager";
+      KillMode = "process";
+    };
+  };
 
   xdg.desktopEntries.kitty-nvim = {
     name = "Neovim (Kitty)";
@@ -49,6 +93,7 @@ in
   '';
 
   home.packages = [
+    pkgs.xsettingsd
     pkgs.thunar
     pkgs.xdg-user-dirs
     # GTK3/GTK4 theme used by Noctalia's GTK templates.

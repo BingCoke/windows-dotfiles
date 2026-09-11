@@ -52,8 +52,6 @@ function M.setup()
 				keymap.set("i", "<c-l>", M.markdown_todo, opt)
 				keymap.set("i", "<c-h>", M.markdown_head, opt)
 
-				keymap.set("n", "<leader>m", ":MarkdownPreview<CR>", opt)
-
 				local venn_enabled = vim.inspect(vim.b.venn_enabled)
 				if venn_enabled == "nil" then
 					vim.b.venn_enabled = true

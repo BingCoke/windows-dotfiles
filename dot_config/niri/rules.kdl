@@ -1,6 +1,6 @@
 // Match Mango's focused_opacity=0.9 and unfocused_opacity=0.8.
 window-rule {
-    opacity 0.88
+    opacity 0.82
 
     draw-border-with-background false
     background-effect {
@@ -92,7 +92,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r#"(firefox|org\.mozilla\.firefox|google-chrome|google-chrome-stable|chromium|chromium-browser|dingtalk|fcitx|wechat)"#
+    match app-id=r#"(firefox|org\.mozilla\.firefox|google-chrome|google-chrome-stable|chromium|chromium-browser|dingtalk|fcitx|wechat|qq|QQ)"#
     opacity 1.0
 }
 

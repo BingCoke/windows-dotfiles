@@ -55,8 +55,6 @@ function M.setup()
 				local opts = { silent = true, buffer = bufnr, noremap = true }
 				vim.keymap.set("i", "<c-l>", markdown_todo, opts)
 				vim.keymap.set("i", "<c-h>", markdown_head, opts)
-				vim.keymap.set("n", "<leader>m", ":MarkdownPreview<CR>", opts)
-
 				-- 注册 Daily Notes 命令
 				if client.server_capabilities.executeCommandProvider then
 					-- :Daily <relative_date>
