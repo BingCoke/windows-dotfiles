@@ -23,7 +23,7 @@ index efcb13d..95b8842 100644
          let mut window_types = self.window_types.clone();
          if self.window_types.is_empty() {
              if !self.override_redirect && self.has_transient_for {
-@@ -1187,12 +1194,14 @@ impl WindowRoleHeuristics {
+@@ -1193,12 +1200,14 @@ impl WindowRoleHeuristics {
 
          for ty in window_types {
              match ty {
@@ -32,7 +32,9 @@ index efcb13d..95b8842 100644
 +                    return WindowRole::new_basic(is_dingtalk && motif_no_decor && forced_size);
 +                }
                  x if x == window_atoms.dialog => {
-                     return WindowRole::new_basic(self.has_transient_for && motif_no_decor);
+                     return WindowRole::new_basic(
+                         self.has_transient_for && motif_no_decor && forced_size,
+                     );
                  }
                  x if x == window_atoms.utility => {
 -                    return WindowRole::new_basic(motif_no_decor && forced_size);

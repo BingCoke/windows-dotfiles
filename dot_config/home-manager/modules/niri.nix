@@ -1,7 +1,20 @@
-{ lib, pkgs, xdgDesktopPortalWlr, ... }:
+{ pkgs, xdgDesktopPortalWlr, ... }:
 
 let
-  xwaylandSatellite = pkgs.xwayland-satellite;
+  xwaylandSatelliteRevision = "add2795134593faafce60e404a0a75df68e9ee0c";
+  xwaylandSatelliteSrc = pkgs.fetchFromGitHub {
+    owner = "Supreeeme";
+    repo = "xwayland-satellite";
+    rev = xwaylandSatelliteRevision;
+    hash = "sha256-0TxfMgqW0/BLD4M942c5DCKYrtPvzsPJwvdcco4LQUM=";
+  };
+  xwaylandSatellite = pkgs.xwayland-satellite.overrideAttrs (_: {
+    src = xwaylandSatelliteSrc;
+    cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
+      src = xwaylandSatelliteSrc;
+      hash = "sha256-s1gl9eR6Mt2QLrhfcowstPFjzwE/lz4PJhJzWYHoIHg=";
+    };
+  });
   patchedXwaylandSatellite = xwaylandSatellite.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
       ../patches/xwayland-satellite-dingtalk-popup.patch
@@ -14,10 +27,7 @@ in
 
   wayland.windowManager.niri = {
     enable = true;
-    xwaylandSatellitePackage =
-      assert lib.assertMsg (xwaylandSatellite.version == "0.8.2")
-        "xwayland-satellite changed from 0.8.2; verify whether the DingTalk popup patch is still needed before updating it";
-      patchedXwaylandSatellite;
+    xwaylandSatellitePackage = patchedXwaylandSatellite;
   };
 
   xdg.portal.config.niri = {

@@ -80,17 +80,9 @@ require("blink.cmp").setup({
 
 	sources = {
 		default = { "lsp", "path", "snippets", "buffer" },
-		providers = {
-			cmdline = {
-				-- ignores cmdline completions when executing shell commands
-				enabled = function()
-					return vim.fn.getcmdtype() ~= ":" or not vim.fn.getcmdline():match("^[%%0-9,'<>%-]*!")
-				end,
-			},
-		},
 	},
 
-	-- Cmdline 模式配置（只有 enabled 和 keymap）
+	-- Cmdline 模式：sources 默认就是 { buffer, cmdline }，各 source 会按模式自动启用/禁用
 	cmdline = {
 		enabled = true,
 		keymap = { preset = "inherit" },

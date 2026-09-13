@@ -162,4 +162,5 @@ config.window_padding = {
 
 config.enable_kitty_keyboard = true
 
+config.color_scheme = "Noctalia"
 return config

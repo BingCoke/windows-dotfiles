@@ -11,6 +11,11 @@ input {
         tap
         drag true
         drag-lock
+        dwt
+        // dwtp
+         natural-scroll
+        accel-profile "adaptive"
+        // accel-speed 0.0
     }
 
     focus-follows-mouse max-scroll-amount="0%"
@@ -177,6 +182,7 @@ binds {
   Mod+Shift+WheelScrollUp { focus-column-left; }
   Mod+Shift+WheelScrollDown { focus-column-right; }
 
+  Mod+O { toggle-window-rule-opacity; }
 
   Mod+Shift+I { focus-column-first; }
   Mod+Shift+O { focus-column-last; }

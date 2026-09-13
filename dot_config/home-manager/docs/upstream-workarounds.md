@@ -99,8 +99,8 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-dingtalk-popup.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite` |
-| 当前锁定 nixpkgs 包 | `0.8.2` |
-| 保护措施 | 包版本不是 `0.8.2` 时停止求值，要求人工复核补丁 |
+| 当前固定上游源码 | `add2795134593faafce60e404a0a75df68e9ee0c` |
+| 保护措施 | Nix 固定源码和 Cargo vendor 哈希；更新提交前必须人工复核补丁 |
 
 ### 原因
 
@@ -112,10 +112,10 @@ DingTalk 的部分 X11 子窗口提供的 window type、Motif hints 和尺寸 hi
 
 满足以下任一技术条件，并通过完整运行验证后处理：
 
-1. **上游提供通用窗口角色配置接口。** 将当前规则迁移到配置层，再删除源码补丁和 `0.8.2` 版本断言。
-2. **上游通用启发式解决了这类属性组合。** 未包含 DingTalk 应用名硬编码的上游版本可以自然正确识别这些窗口时，直接删除补丁和版本断言。
+1. **上游提供通用窗口角色配置接口。** 将当前规则迁移到配置层，再删除源码补丁。
+2. **上游通用启发式解决了这类属性组合。** 未包含 DingTalk 应用名硬编码的上游版本可以自然正确识别这些窗口时，直接删除补丁。
 
-只出现新的 xwayland-satellite release 不足以撤销。版本断言触发时，应先将补丁试应用到新源码并检查上游的窗口角色代码和配置文档，再决定迁移、重写或删除。
+只出现新的 xwayland-satellite release 不足以撤销。更新固定提交或改回 nixpkgs 包前，应先将补丁试应用到新源码并检查上游的窗口角色代码和配置文档，再决定迁移、重写或删除。
 
 ### 检查方法
 
@@ -152,6 +152,34 @@ _NET_WM_WINDOW_TYPE
 WM_NORMAL_HINTS
 _MOTIF_WM_HINTS
 WM_TRANSIENT_FOR
+```
+
+## xwayland-satellite Steam 菜单焦点
+
+| 项目 | 当前值 |
+| --- | --- |
+| 本地实现 | `modules/niri.nix` 中的固定源码覆盖 |
+| 当前固定上游源码 | `add2795134593faafce60e404a0a75df68e9ee0c` |
+| 上游问题 | [#468](https://github.com/Supreeeme/xwayland-satellite/issues/468) |
+| 上游修复 | [#494](https://github.com/Supreeeme/xwayland-satellite/pull/494) |
+
+### 原因
+
+`xwayland-satellite 0.8.2` 会在 Niri 中错误地聚焦 Steam 的 `override_redirect` X11 popup。Steam 的下拉菜单和右键菜单随即失焦并关闭。固定提交包含 #494：不聚焦这类 popup，并在客户端声明时发送 `WM_TAKE_FOCUS`。
+
+### 撤销条件
+
+当 nixpkgs 的 `xwayland-satellite` 已包含 #494，且现有 DingTalk 补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续将 DingTalk 补丁施加到 `pkgs.xwayland-satellite`。不要仅因发布了新版本而撤销。
+
+### 验证
+
+构建配置后，重新登录 Niri 并完全重启 Steam。验证 Steam 顶部下拉菜单和右键菜单在移动鼠标、选择子项时不会消失；随后重复本节前面的 DingTalk 菜单、表情面板、主窗口和图片查看窗口检查。
+
+```bash
+PROFILE=bingcoke@home
+nix run github:nix-community/home-manager -- build --flake ".#$PROFILE"
+curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/add2795 \
+  | jq -r '.sha, .html_url'
 ```
 
 ## Noctalia 在非 NixOS 上的认证桥
