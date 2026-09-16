@@ -129,14 +129,11 @@ return {
         local comment_fg = get_hl_color("Comment", "fg", normal_fg)
         local tabline_fg = get_hl_color("TabLine", "fg", comment_fg)
         local tabline_bg = get_hl_color("TabLine", "bg", normal_bg)
-        local tabline_sel_fg = get_hl_color("TabLineSel", "bg", nil, normal_bg)
-          or get_hl_color("TabLineSel", "fg", nil, normal_bg)
-          or get_hl_color("WildMenu", "fg", normal_fg)
         local is_bright_background = color_is_bright(normal_bg)
-
         local fill_bg = shade_color(tabline_bg, is_bright_background and -6 or 8)
         local tab_bg = shade_color(tabline_bg, is_bright_background and -4 or 12)
-        local current_bg = shade_color(normal_bg, is_bright_background and -3 or 6)
+        local current_bg = get_hl_color("CursorLine", "bg")
+          or shade_color(tabline_bg, is_bright_background and -12 or 28)
 
         local diag_colors = {
           error = get_hl_color({ "DiagnosticError", "LspDiagnosticsDefaultError", "DiffDelete" }, "fg", "#e32636"),
@@ -170,7 +167,7 @@ return {
         local theme = {
           fill = { fg = comment_fg, bg = fill_bg },
           head = { fg = tabline_fg, bg = tab_bg },
-          current_tab = { fg = tabline_sel_fg, bg = current_bg, bold = true },
+          current_tab = { fg = normal_fg, bg = current_bg, style = "bold" },
           tab = { fg = tabline_fg, bg = tab_bg },
           win = { fg = tabline_fg, bg = tab_bg },
           tail = { fg = tabline_fg, bg = tab_bg },
@@ -185,7 +182,7 @@ return {
             local buf = vim.api.nvim_win_get_buf(win)
             local diag = get_buf_diagnostic(buf)
             return {
-              tab.number(),
+              " " .. tab.number(),
               tab.name(),
               diag and { diag.icon .. "", hl = { fg = diag.fg, bg = bg } } or "",
               tab_modified(tab),

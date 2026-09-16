@@ -1,11 +1,27 @@
 return {
   {
+    "albenisolmos/telescope-oil.nvim",
+    config = function()
+      -- optionally override defaults
+      -- local settings = require("telescope-oil.settings")
+      -- settings.set({ hidden = true })
+      -- settings.set({ no_ignore = false })
+      -- settings.set({ show_preview = true })
+
+      -- load extension
+      require("telescope").load_extension("oil")
+      vim.keymap.set("n", "<c-m>", "<cmd>Telescope oil<CR>", { noremap = true, silent = true })
+
+    end
+  },
+  {
     "stevearc/oil.nvim",
     enabled = true,
     lazy = false,
     dependencies = { "nvim-tree/nvim-web-devicons" },
 
     config = function()
+
       local function oil_find_descendant()
         local oil = require("oil")
         local root = oil.get_current_dir()
@@ -118,11 +134,6 @@ return {
           ["<2-LeftMouse>"] = "actions.select",
           ["gd"] = "actions.select",
           ["gp"] = { "actions.parent", mode = "n" },
-          ["<C-p>"] = {
-            callback = oil_find_descendant,
-            desc = "Find descendant directory",
-            mode = "n",
-          },
           ["gP"] = {
             callback = oil_pick_ancestor,
             desc = "Choose ancestor directory",

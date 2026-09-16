@@ -38,42 +38,30 @@ return {
 				return
 			end
 
-			vim.cmd("highlight! BufferLineSeparatorVisible guifg=#82aaff guibg=NONE")
-			vim.cmd("highlight! BufferLineSeparatorSelected guifg=#82aaff guibg=NONE")
-			vim.cmd("highlight! BufferLineSeparator guifg=#82aaff guibg=NONE")
+			--vim.cmd("highlight! BufferLineSeparatorVisible guifg=#82aaff guibg=NONE")
+			--vim.cmd("highlight! BufferLineSeparatorSelected guifg=#82aaff guibg=NONE")
+			--vim.cmd("highlight! BufferLineSeparator guifg=#82aaff guibg=NONE")
+			--
+			--vim.api.nvim_set_hl(0, "StatusLine", { bg = "NONE" })
+			--vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "NONE" })
+			--
+			--vim.cmd("highlight! TabLineFill guifg=None guibg=#171b2e")
+			--
+			--vim.cmd("highlight! TabLineSel guifg=#aab7f2 guibg=#1f2335")
+			--vim.cmd("highlight! TabLineLine guifg=#96a2d6 guibg=#1f2335")
+			--
+			--
+			--vim.cmd("highlight! MatchParen guifg=#1a1b26 guibg=#ff9e64 gui=bold cterm=bold")
+			--vim.cmd("highlight! Cursor guifg=#1a1b26 guibg=#7dcfff")
+			--vim.api.nvim_set_hl(0, "NormalCursor", { fg = "#1a1b26", bg = "#7dcfff" })
+			--vim.api.nvim_set_hl(0, "InsertCursor", { fg = "#222436", bg = "#ffffff" })
+			--vim.api.nvim_set_hl(0, "VisualCursor", { fg = "#1a1b26", bg = "#9ece6a" })
+			--
+			--vim.cmd("highlight! CursorLine guibg=#3b4261")
+			--vim.cmd("highlight! DiagnosticUnnecessary guifg=#747da6")
+			--vim.cmd("highlight! Comment cterm=bold,italic gui=bold,italic guifg=#747da6")
+			--vim.cmd("highlight! LspInlayHint guifg=#6d7594")
 
-			vim.api.nvim_set_hl(0, "StatusLine", { bg = "NONE" })
-			vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "NONE" })
-
-			--23:50:13 msg_show.list_cmd TabLineSel     xxx guifg=#1d202f guibg=#7aa2f7
-			--23:50:35 msg_show.list_cmd TabLineFill    xxx cleared
-			--23:50:44 msg_show.list_cmd TabLine      xxx guifg=#3b4261 guibg=#1f2335
-
-			vim.cmd("highlight! TabLineFill guifg=None guibg=#171b2e")
-
-			vim.cmd("highlight! TabLineSel guifg=#aab7f2 guibg=#1f2335")
-			vim.cmd("highlight! TabLineLine guifg=#96a2d6 guibg=#1f2335")
-
-			--vim.cmd("highlight! MatchParen guifg=#f7768e guibg=#7980ab gui=bold cterm=bold")
-
-			vim.cmd("highlight! MatchParen guifg=#1a1b26 guibg=#ff9e64 gui=bold cterm=bold")
-			vim.cmd("highlight! Cursor guifg=#1a1b26 guibg=#7dcfff")
-			vim.api.nvim_set_hl(0, "NormalCursor", { fg = "#1a1b26", bg = "#7dcfff" })
-			vim.api.nvim_set_hl(0, "InsertCursor", { fg = "#222436", bg = "#ffffff" })
-			vim.api.nvim_set_hl(0, "VisualCursor", { fg = "#1a1b26", bg = "#9ece6a" })
-			--vim.cmd("highlight! TermCursor guifg=#222436 guibg=#8291bf")
-
-			--vim.cmd("highlight! CursorIM guifg=#222436 guibg=#8291bf ")
-			--vim.cmd("highlight! lCursor guifg=#222436 guibg=#8291bf ")
-			vim.cmd("highlight! CursorLine guibg=#3b4261")
-			vim.cmd("highlight! DiagnosticUnnecessary guifg=#747da6")
-			vim.cmd("highlight! Comment cterm=bold,italic gui=bold,italic guifg=#747da6")
-			vim.cmd("highlight! LspInlayHint guifg=#6d7594")
-
-			--vim.cmd("hi LspInlayHint guifg=#7aa2f7 guibg=#3b4261")
-			--vim.cmd("highlight FidgetTitle ctermfg=110 guifg=#6cb6eb")
-			--vim.cmd("highlight link FidgetTitle Variable")
-			--pcall(vim.cmd,"hi Cursor guifg=NONE guibg=NONE")
 		end,
 	},
 	{
