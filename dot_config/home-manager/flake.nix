@@ -9,9 +9,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-flatpak.url = "github:gmodena/nix-flatpak?ref=v0.7.0";
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, home-manager, nix-flatpak, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -23,7 +24,10 @@
           modules = [
             ./home.nix
             hostModule
-          ] ++ (if desktop then [ ./modules/desktop.nix ] else [ ]);
+          ] ++ (if desktop then [
+            nix-flatpak.homeManagerModules.nix-flatpak
+            ./modules/desktop.nix
+          ] else [ ]);
 
         };
     in {

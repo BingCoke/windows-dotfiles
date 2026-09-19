@@ -28,13 +28,16 @@ git
 neovim
 cargo
 rustc
-go
-fnm
 uv
 lazygit
+mise
+starship
+fzf
+yazi
+zoxide
 ```
 
-它不安装 Mango、Niri、Noctalia、Wayland、Fcitx5、字体或其他桌面软件。
+它不安装 Mango、Niri、Noctalia、Wayland、Fcitx5、字体或其他桌面软件。Go 和 Node.js 的具体版本由 `mise` 管理，Python 由 `uv` 管理；这些语言运行时不作为 Nix profile 包安装。
 
 ## 新用户或新主机
 

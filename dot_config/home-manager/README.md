@@ -92,6 +92,14 @@ Cargo 用户工具脚本是可选步骤：
 
 该脚本安装到 `~/.cargo/bin`，不属于 Nix store；需要单独更新或删除时按 [开发工具说明](docs/development-tools.md) 处理。
 
+Home Manager 不管理 `~/.bashrc`、`~/.bash_profile` 或 `~/.profile`。可选的 Bash 工具集成示例位于 [`scripts/bashrc.example.sh`](scripts/bashrc.example.sh)。需要完整启用示例时，由用户自己的 `~/.bashrc` 主动加载：
+
+```bash
+. "$HOME/.config/home-manager/scripts/bashrc.example.sh"
+```
+
+也可以只复制其中需要的 `fzf`、`starship`、`yazi` 或 `zoxide` 配置。`zoxide` 初始化后提供 `z` 命令用于快速跳转目录。示例默认不启用 `mise activate bash`，因为它会为每个新 Shell 运行一次外部进程；需要自动切换工具版本时再取消对应注释。
+
 ### 4. 在 GDM 中登录 Nix compositor
 
 桌面 profile 首次 `switch` 成功后，同时安装 Nix Mango 和 Nix Niri 登录入口：
@@ -145,9 +153,10 @@ home-manager generations
 
 ## 所有权边界
 
-- Nix/Home Manager：安装用户软件、Rust/Go 等开发工具，以及当前 profile 声明的生成文件。
+- Nix/Home Manager：安装用户软件、Rust 工具链和开发辅助工具，以及当前 profile 声明的生成文件。
+- `mise`：管理 Go 和 Node.js 版本；`uv`：管理 Python 版本与 Python 项目环境。
 - 宿主发行版：内核、GPU 驱动、设备节点、systemd、PAM、polkit 和其他 root 级系统组件。
-- 外部配置管理：Mango、Niri、Noctalia、Neovim、终端、Shell 和 Git 配置文件。
+- 外部配置管理：Mango、Niri、Noctalia、Neovim、终端、Shell 和 Git 配置文件。Home Manager 安装 Shell 工具，但不生成 Bash 配置文件。
 
 同一个配置文件只能由一个工具管理。Home Manager 报 `Existing file would be clobbered` 时，不要直接删除文件，先根据 [profile 和冲突说明](docs/profiles.md) 确认它的归属。
 

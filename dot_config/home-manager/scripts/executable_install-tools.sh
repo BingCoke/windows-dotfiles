@@ -46,7 +46,7 @@ install_crate ripgrep rg
 install_crate fd-find fd
 
 printf '\nCargo tools are available in %s:\n' "$CARGO_BIN"
-for binary in cargo-binstall cargo-install-update yazi ya zellij rg fd; do
+for binary in cargo-binstall cargo-install-update yazi-fm zellij rg fd; do
   if [[ -x "$CARGO_BIN/$binary" ]]; then
     printf '  %-22s %s\n' "$binary" "$CARGO_BIN/$binary"
   else

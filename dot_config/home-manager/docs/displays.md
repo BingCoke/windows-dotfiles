@@ -4,7 +4,7 @@
 
 ## 识别输出
 
-进入 Mango/Wayland 会话后执行：
+进入 Niri 会话后执行：
 
 ```bash
 wlr-randr --json | jq
@@ -34,7 +34,7 @@ profile default {
 }
 ```
 
-`AOC U27G4 *` 只是示例，必须替换为 `wlr-randr` 返回的实际品牌和型号。多屏时，为每个输出增加对应的 `output` 行，并按实际需要设置启用状态、位置和缩放。
+按 **品牌 + 型号** 匹配，不要写 `eDP-1` / `DP-1`（每台笔记本都叫这个）。多台电脑、多套布局都写在同一个 `kanshi/config` 里，各自一个 `profile`；连上的屏幕能对上哪套就用哪套。Niri 配置保持共享，不在 `config.kdl` 里写 `output { scale ... }`。
 
 重新加载并确认：
 
@@ -44,35 +44,17 @@ kanshictl status
 wlr-randr
 ```
 
-现有 Mango 启动配置如果已经执行 `kanshi`，不需要另行启动第二个 kanshi 进程。确认当前进程：
+Niri 已经 `spawn-at-startup "kanshi"`，不要再开第二个进程。确认当前进程：
 
 ```bash
 pgrep -a kanshi
 ```
 
-## 1.25 和 1.5 缩放
+## 缩放
 
-Wayland 原生窗口使用 kanshi 的 `scale`。常用值：
+Niri 的窗口缩放只由 kanshi 的 `scale` 决定，常用 `1.25` 或 `1.5`。
 
-```text
-1.25
-1.5
-```
-
-如果使用 XWayland 应用并保持当前 Mango 的 `xwayland_ignore_scale=1`，需要让 X11 应用通过 Xft DPI 自己放大：
-
-```text
-scale 1.25 -> Xft.dpi: 120
-scale 1.5  -> Xft.dpi: 144
-```
-
-当前 Xft DPI 启动值位于：
-
-```text
-~/.config/mango/exec.conf
-```
-
-只在新屏幕缩放比例变化时修改该值。修改后重启受影响的 XWayland 应用；只重载 Mango 通常不会更新已经运行的应用。
+XWayland 走 xwayland-satellite，compositor scale 会透传给 X11 窗口。不要再设 `Xft.dpi`，也不要在 `config.kdl` 里写 `output { scale ... }`。
 
 ## Noctalia 外接屏亮度
 
@@ -124,5 +106,5 @@ pgrep -a kanshi
 
 - `wlr-randr` 看不到输出：先检查宿主驱动、连接线、扩展坞和 Wayland 会话。
 - 能看到输出但 kanshi 没有应用 profile：检查 `~/.config/kanshi/config` 中的品牌型号是否匹配。
-- Wayland 窗口清晰但 XWayland 窗口发虚：检查 `xwayland_ignore_scale` 和 Xft DPI 是否与新的 `scale` 对应。
+- Wayland 窗口清晰但 XWayland 窗口又大又糊：检查是否还留着 `Xft.dpi`；Niri 不需要它。
 - 屏幕排列错误：调整 kanshi 中的输出顺序和位置，不要通过重复启动 kanshi 解决。

@@ -1,4 +1,3 @@
-// Match Mango's focused_opacity=0.9 and unfocused_opacity=0.8.
 window-rule {
     opacity 0.82
 
@@ -31,7 +30,6 @@ layer-rule {
     place-within-backdrop true
 }
 
-// Match Mango's optimized wallpaper-based blur for Noctalia surfaces.
 layer-rule {
     match namespace=r#"^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"#
 
@@ -58,11 +56,9 @@ window-rule {
   default-window-height { fixed 920; }
 }
 
-// Mango rule.conf 中有对应应用的浮动规则。
 window-rule {
     match app-id=r#"^float$"#
     match app-id=r#"^bongo-cat$"# title=r#"^BongoCat$"#
-    // Mango appid matching is fuzzy; unanchored regexes preserve that behavior.
     match app-id=r#"(broken|wechat|yesplaymusic|mihomo-party)"#
     match app-id=r#"(hyprpicker|org\.gnome\.Calculator|org\.pulseaudio\.pavucontrol|pavucontrol|wdisplays|network\.cycles\.wdisplays|vdu_controls|com\.gabm\.satty|satty)"#
     match app-id=r#"(org\.fcitx\.fcitx5-config-qt|fcitx5-configtool|fcitx5-config-qt|lxqt-policykit-agent|polkit-gnome-authentication-agent-1|polkit-kde-authentication-agent-1|org\.kde\.polkit-kde-authentication-agent-1|xfce-polkit)"#

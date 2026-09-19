@@ -86,11 +86,10 @@ environment {
     NO_PROXY "127.0.0.1,localhost,::1"
 }
 
-spawn-at-startup "/opt/clash-party/mihomo-party"
+spawn-at-startup "clash-verge"
 spawn-at-startup "fcitx5"
 spawn-at-startup "kanshi"
 spawn-at-startup "noctalia"
-spawn-sh-at-startup "echo 'Xft.dpi: 120' | xrdb -merge"
 
 hotkey-overlay {
     skip-at-startup
@@ -127,6 +126,11 @@ binds {
   XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
   XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
   XF86AudioMute allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+  XF86AudioMicMute allow-when-locked=true { spawn "noctalia" "msg" "mic-mute"; }
+  XF86AudioPlay allow-when-locked=true { spawn "noctalia" "msg" "media" "toggle"; }
+  XF86AudioPause allow-when-locked=true { spawn "noctalia" "msg" "media" "pause"; }
+  XF86AudioNext allow-when-locked=true { spawn "noctalia" "msg" "media" "next"; }
+  XF86AudioPrev allow-when-locked=true { spawn "noctalia" "msg" "media" "previous"; }
   XF86MonBrightnessUp allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
   XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
 

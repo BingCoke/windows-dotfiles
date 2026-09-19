@@ -1,0 +1,12 @@
+# Match by manufacturer + model, never by connector name (eDP-1/DP-1).
+# Connector names are shared across laptops and can change on docks.
+# kanshi activates the first profile whose outputs are all connected.
+# Add one profile per machine or dock layout.
+
+profile xiaoxinpro-14gt {
+    output "Samsung Display Corp. ATNA40HQ08-0*" {
+        mode 2880x1800@120Hz
+        scale 1.25
+        position 0,0
+    }
+}

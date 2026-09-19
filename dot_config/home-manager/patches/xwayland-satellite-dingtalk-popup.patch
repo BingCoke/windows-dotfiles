@@ -14,7 +14,7 @@ index efcb13d..95b8842 100644
 @@ -1176,6 +1178,11 @@ impl WindowRoleHeuristics {
                  .is_some_and(|(min, max)| min == max)
          });
-
+ 
 +        let is_dingtalk = self
 +            .wm_class
 +            .as_deref()
@@ -24,7 +24,7 @@ index efcb13d..95b8842 100644
          if self.window_types.is_empty() {
              if !self.override_redirect && self.has_transient_for {
 @@ -1193,12 +1200,14 @@ impl WindowRoleHeuristics {
-
+ 
          for ty in window_types {
              match ty {
 -                x if x == window_atoms.normal => return WindowRole::Toplevel,
@@ -49,7 +49,7 @@ index 0e77dc9..6f45b00 100644
 @@ -494,6 +494,57 @@ mod window_role_heuristics {
          assert_eq!(win.guess_window_role(&win_types), WindowRole::Toplevel);
      }
-
+ 
 +    #[test]
 +    fn dingtalk_popup_roles() {
 +        let win_types = WindowTypes::new();

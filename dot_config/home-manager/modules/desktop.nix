@@ -27,8 +27,8 @@ let
 
   xsettingsConfig = pkgs.writeText "xsettingsd.conf" ''
     Net/ThemeName "adw-gtk3-dark"
-    Net/IconThemeName "Yaru-magenta"
-    Gtk/CursorThemeName "DMZ-White"
+    Net/IconThemeName "Adwaita"
+    Gtk/CursorThemeName "Adwaita"
     Gtk/CursorThemeSize 24
   '';
 in
@@ -38,6 +38,7 @@ in
     ./wayland.nix
     ./input-method.nix
     ./fonts.nix
+    ./flatpak.nix
   ];
 
   targets.genericLinux.enable = true;
@@ -62,7 +63,7 @@ in
   # the Flatpak sandbox.
   xdg.dataFile."icons/default/index.theme".text = ''
     [Icon Theme]
-    Inherits=DMZ-White
+    Inherits=Adwaita
   '';
 
   systemd.user.services.thunar = {
@@ -96,6 +97,7 @@ in
     pkgs.xsettingsd
     pkgs.thunar
     pkgs.xdg-user-dirs
+    pkgs.clash-verge-rev
     # GTK3/GTK4 theme used by Noctalia's GTK templates.
     pkgs.adw-gtk3
 

@@ -31,6 +31,45 @@
 
 当前 flake 跟踪 `nixos-unstable`。如果以后切换分支，上面的检查 URL 和撤销条件也必须改为实际使用的分支。
 
+## nix-flatpak 固定稳定版
+
+| 项目 | 当前值 |
+| --- | --- |
+| 本地实现 | `flake.nix` 的 `nix-flatpak` input |
+| 固定 tag | [`v0.7.0`](https://github.com/gmodena/nix-flatpak/releases/tag/v0.7.0) |
+| 上游说明 | README 将 `v0.7.0` 标为当前稳定版；`main` 为开发分支 |
+| 桌面引用 | 仅桌面 profile 导入 `nix-flatpak.homeManagerModules.nix-flatpak`，配置在 `modules/flatpak.nix` |
+
+### 原因
+
+桌面 profile 用 nix-flatpak 声明 Flatpak 应用（目前是钉钉）和全局 override。`main` 会改 override 的 option 结构（例如 `overrides` 与 `overrides.settings`），跟着开发分支容易让 `home-manager switch` 直接失败。因此钉在 GitHub 的稳定 release tag，而不是 `main` 或会移动的 `latest` 指针。
+
+### 何时升级
+
+有新的稳定 tag 后，把 `flake.nix` 里的 `ref=v0.7.0` 改成新 tag，更新 `flake.lock`，再构建桌面 profile。升级后核对 `modules/flatpak.nix` 的 `services.flatpak.overrides` 是否仍合法。
+
+### 检查方法
+
+查上游最新稳定版：
+
+```bash
+curl -fsSL https://api.github.com/repos/gmodena/nix-flatpak/releases/latest \
+  | jq -r '.tag_name, .published_at, .html_url'
+```
+
+对照 README 的 Versioning（当前稳定版是否仍写 `0.7.0`）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gmodena/nix-flatpak/main/README.md | head -25
+```
+
+当前 flake 钉的 tag：
+
+```bash
+nix flake metadata --json \
+  | jq -r '.locks.nodes["nix-flatpak"].original.ref'
+```
+
 ## xdg-desktop-portal-wlr 首帧后停止
 
 | 项目 | 当前值 |
@@ -104,7 +143,7 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 
 ### 原因
 
-DingTalk 的部分 X11 子窗口提供的 window type、Motif hints 和尺寸 hints 不能被当前 xwayland-satellite 通用启发式正确转换为 Wayland popup。补丁按这些属性区分菜单、表情面板、主窗口和图片窗口。
+DingTalk 的部分 X11 子窗口提供的 window type、Motif hints 和尺寸 hints 不能被当前 xwayland-satellite 通用启发式正确转换。补丁把钉钉的 `UTILITY` 菜单当成 popup；表情面板是 `NORMAL` + 固定尺寸，做成 popup 会在 1.25 缩放下被放到屏幕外，因此保持 toplevel（Niri 已有 `dingtalk` floating rule）。
 
 这个补丁是应用兼容规则，不应以“上游增加 DingTalk 硬编码”为目标。当前 xwayland-satellite 没有允许用户按 `WM_CLASS`、`_NET_WM_WINDOW_TYPE`、Motif hints 或尺寸 hints 覆盖 `Popup`/`Toplevel` 的配置接口。
 

@@ -7,18 +7,36 @@ git
 neovim
 cargo
 rustc
-go
-fnm
 uv
 lazygit
+yazi / ya / yy
+starship
+fzf
+zoxide / z
 ```
 
-因此纯 Shell profile 不依赖宿主系统预装 Rust 或 Go。确认命令来源：
+因此纯 Shell profile 不依赖宿主系统预装 Rust。Home Manager 只安装这些 Shell 工具，不管理 Bash 配置，也不会自动加载 completion 或 shell integration。可选配置见 [`scripts/bashrc.example.sh`](../scripts/bashrc.example.sh)；`uv` 不需要额外初始化。
+
+Go 和 Node.js 不由 Nix 安装，版本在 `~/.config/mise/config.toml` 中声明并由 `mise` 管理。首次安装或更新声明的工具：
+
+```bash
+mise install
+```
+
+Python 由 `uv` 管理，不在 `mise` 中声明。安装需要的 Python 版本：
+
+```bash
+uv python install 3.14
+```
+
+确认命令来源：
 
 ```bash
 type -a cargo
 type -a rustc
 type -a go
+type -a python
+type -a uv
 type -a nvim
 ```
 
@@ -29,7 +47,6 @@ type -a nvim
 ```text
 cargo-binstall
 cargo-update
-yazi / ya
 zellij
 ripgrep / rg
 fd-find / fd
@@ -51,6 +68,12 @@ fd-find / fd
 type -a rg
 type -a fd
 type -a yazi
+type -a ya
+type -a yy
+type -a starship
+type -a fzf
+type -a zoxide
+type -a z
 type -a go
 ```
 
