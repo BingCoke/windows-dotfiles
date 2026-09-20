@@ -112,10 +112,17 @@ binds {
   Mod+End  { focus-column-last; }
 
   Mod+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-  Mod+S { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+  // Mod+S { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
   Mod+Comma { spawn "noctalia" "msg" "settings-toggle"; }
   Mod+Return { spawn "kitty"; }
   Mod+E { spawn "kitty" "--class" "kitty-float"; }
+
+
+  // Mod+W { focus-window-or-workspace-up; }
+  Mod+D { focus-window-or-workspace-up; }
+  Mod+S { focus-window-or-workspace-down; }
+  Mod+A { focus-column-left; }
+  Mod+F { focus-column-right; }
 
   Mod+Shift+A { spawn "noctalia" "msg" "screenshot-fullscreen"; }
   Mod+Shift+S { spawn "noctalia" "msg" "screenshot-region"; }
@@ -139,8 +146,8 @@ binds {
   Mod+Tab repeat=false { toggle-overview; }
   Mod+R { switch-focus-between-floating-and-tiling; }
   Mod+W { toggle-window-floating; }
-  Mod+F { maximize-column; }
-  Mod+A { fullscreen-window; }
+  Mod+Shift+F { maximize-column; }
+  Mod+G { fullscreen-window; }
   Mod+X { switch-preset-column-width; }
 
   Mod+Shift+H { focus-column-left-or-last; }
