@@ -257,7 +257,7 @@ noctalia-host-auth test
 
 | 项目 | 当前值 |
 | --- | --- |
-| 本地实现 | `modules/compositors.nix` 中两个 portal user unit 链接；`modules/niri.nix` 中一个 Niri wants 链接 |
+| 本地实现 | `modules/compositors.nix` 中两个 portal user unit 链接；`modules/wayland.nix` 中 GTK portal unit 链接；`modules/niri.nix` 中一个 Niri wants 链接 |
 | 作用 | 确保 Ubuntu 的 user systemd 优先找到当前用户的 Nix portal，并让 `niri.service` 显式启动 WLR portal |
 | 影响范围 | 仅应用该 desktop profile 的用户；不修改 `/usr` 下的系统 unit，也不影响其他用户 |
 | 上游跟踪 | 当前没有精确 issue；属于 generic Linux 会话发现与启动保证 |

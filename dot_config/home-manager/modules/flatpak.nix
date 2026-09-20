@@ -21,9 +21,19 @@ in
 
   services.flatpak.enable = true;
 
+  # nix-flatpak starts this oneshot from sd-switch and from an activation hook.
+  # Both wait, so `home-manager switch` blocks on Flathub downloads.
+  systemd.user.services.flatpak-managed-install.Unit.X-SwitchMethod = "keep-old";
+  home.activation.flatpak-managed-install = lib.mkForce (
+    lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+      $DRY_RUN_CMD ${config.systemd.user.systemctlPath} is-system-running -q && \
+        ${config.systemd.user.systemctlPath} --user start --no-block flatpak-managed-install.service || true
+    ''
+  );
+
   services.flatpak.packages = [
     "com.dingtalk.DingTalk"
-    "org.gtk.Gtk3theme.Yaru-magenta-dark"
+    "org.gtk.Gtk3theme.adw-gtk3-dark"
   ];
 
   # Apply to every Flatpak app. host + session/system bus + all devices is
@@ -32,7 +42,10 @@ in
     Context = {
       # host includes home, exposes host-os/host-etc under /run/host, and leaves
       # /tmp to Flatpak so socket permissions can mount the X11 socket there.
-      filesystems = [ "host" ];
+      filesystems = [
+        "host"
+        "xdg-config/gtk-3.0:ro"
+      ];
       sockets = [
         "wayland"
         "x11"
@@ -52,9 +65,10 @@ in
 
     Environment = {
       FONTCONFIG_FILE = "${config.xdg.configHome}/fontconfig/flatpak-cjk.conf";
-      XCURSOR_THEME = "Adwaita";
-      XCURSOR_SIZE = "24";
+      XCURSOR_THEME = config.home.pointerCursor.name;
+      XCURSOR_SIZE = toString config.home.pointerCursor.size;
       XCURSOR_PATH = "/run/host/user-share/icons:/run/host/share/icons";
+      QT_QPA_SYSTEM_ICON_THEME = config.gtk.iconTheme.name;
       GTK_IM_MODULE = "fcitx";
       QT_IM_MODULE = "fcitx";
       XMODIFIERS = "@im=fcitx";
@@ -74,9 +88,6 @@ in
       # adapting automatically to 1x and differently scaled displays.
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";
       QT_SCALE_FACTOR_ROUNDING_POLICY = "PassThrough";
-      # DingTalk/CEF opens an in-process GTK3 file chooser rather than using
-      # the FileChooser portal. Match the Yaru-styled chooser used on Ubuntu.
-      GTK_THEME = "Yaru-magenta-dark";
     };
   };
 }

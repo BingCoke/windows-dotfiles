@@ -6,6 +6,9 @@
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
+  home.file.".config/systemd/user/xdg-desktop-portal-gtk.service".source =
+    "${pkgs.xdg-desktop-portal-gtk}/share/systemd/user/xdg-desktop-portal-gtk.service";
+
   home.packages = with pkgs; [
     kitty
     poweralertd

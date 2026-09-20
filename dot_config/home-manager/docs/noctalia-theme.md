@@ -4,12 +4,13 @@
 
 ```text
 adw-gtk3
+Tela Circle icons
+Catppuccin Mocha Dark cursor
 qt5ct
 qt6ct
-nwg-look
 ```
 
-Noctalia 负责根据当前主题生成颜色文件。Home Manager 只负责安装主题工具和提供 Qt6 默认环境变量。
+Home Manager 负责 GTK 基础主题、GTK/Qt 图标、光标和 Qt6 默认环境变量。Noctalia 负责根据当前主题生成 GTK/Qt 颜色文件。
 
 ## 首次配置
 
@@ -31,13 +32,7 @@ builtin_ids = ["gtk3", "gtk4", "qt"]
 
 不要让 Home Manager 或其他配置工具静态管理 Noctalia 运行时生成的颜色文件。
 
-首次配置 GTK 时运行：
-
-```bash
-nwg-look
-```
-
-选择 `adw-gtk3` 并应用。不要在 `nwg-look` 中启用 GTK4 主题；如果以前配置过 GTK4 主题，先使用 `Preferences -> Clear` 清除旧的 GTK4 覆盖，让 Noctalia 的 GTK4 CSS 接管。
+GTK3 基础主题、GTK/Qt 图标和光标声明在 `modules/desktop.nix`。修改后运行 `home-manager switch`；Noctalia 继续管理 GTK3/GTK4 CSS 和 Qt 配色。图标与光标设置不修改颜色。
 
 分别配置 Qt5 和 Qt6：
 
@@ -135,7 +130,7 @@ fc-cache -f
 
 ## 动态文件所有权
 
-以下文件由 Noctalia、`nwg-look` 或 `qt5ct`/`qt6ct` 运行时修改，不要用 Home Manager 声明为静态 `xdg.configFile`：
+以下文件由 Noctalia 或 `qt5ct`/`qt6ct` 运行时修改，不要用 Home Manager 声明为静态 `xdg.configFile`：
 
 ```text
 ~/.config/gtk-3.0/gtk.css

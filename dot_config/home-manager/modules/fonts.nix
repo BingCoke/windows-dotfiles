@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   notoCjkSans = pkgs.noto-fonts-cjk-sans.override { static = true; };
@@ -70,6 +70,7 @@ in
     <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
     <fontconfig>
       <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
+      <include ignore_missing="yes">${config.xdg.configHome}/fontconfig/conf.d/52-hm-default-fonts.conf</include>
       <selectfont>
         <rejectfont>
           <glob>*NotoSansCJK-VF*</glob>
