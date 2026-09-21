@@ -45,6 +45,10 @@ in
       filesystems = [
         "host"
         "xdg-config/gtk-3.0:ro"
+        # host already exposes these files, but Flatpak remaps XDG_*_HOME.
+        # Client-side Fcitx panels look there, not at ~/.config or ~/.local.
+        "xdg-config/fcitx5:ro"
+        "xdg-data/fcitx5:ro"
       ];
       sockets = [
         "wayland"
@@ -84,10 +88,6 @@ in
     Context.sockets = [ "!wayland" ];
     Environment = {
       XDG_SESSION_TYPE = "x11";
-      # Preserve fractional X11 DPI values reported by xwayland-satellite while
-      # adapting automatically to 1x and differently scaled displays.
-      QT_AUTO_SCREEN_SCALE_FACTOR = "1";
-      QT_SCALE_FACTOR_ROUNDING_POLICY = "PassThrough";
     };
   };
 }

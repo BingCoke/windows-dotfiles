@@ -1,0 +1,693 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index d3bf003a..c3360f04 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -19,7 +19,14 @@ pub trait XConnection: Sized + 'static {
+ 
+     fn set_window_dims(&mut self, window: x::Window, dims: PendingSurfaceState) -> bool;
+     fn set_fullscreen(&mut self, window: x::Window, fullscreen: bool);
++    /// Gives the window keyboard focus and activates it (see [`activate_window`]).
++    ///
++    /// [`activate_window`]: XConnection::activate_window
+     fn focus_window(&mut self, window: x::Window, output_name: Option<String>);
++    /// Marks the window as the active one (`_NET_ACTIVE_WINDOW`, `WM_STATE`, primary output)
++    /// without touching keyboard focus.
++    fn activate_window(&mut self, window: x::Window, output_name: Option<String>);
++    /// Sends the `WM_TAKE_FOCUS` client message to the window.
+     fn send_take_focus(&mut self, window: x::Window);
+     fn close_window(&mut self, window: x::Window);
+     fn unmap_window(&mut self, window: x::Window);
+diff --git a/src/server/event.rs b/src/server/event.rs
+index 4fcf9230..a7c5eab8 100644
+--- a/src/server/event.rs
++++ b/src/server/event.rs
+@@ -226,7 +226,9 @@ impl SurfaceEvents {
+                     if state.last_focused_toplevel == Some(*window) {
+                         let output = get_output_name(Some(&on_output), &state.world);
+                         debug!("focused window changed outputs - resetting primary output");
+-                        connection.focus_window(*window, output);
++                        // Only the primary output changes; how the window holds focus is its
++                        // input model's business and was settled when it was activated.
++                        connection.activate_window(*window, output);
+                     }
+ 
+                     if state.fractional_scale.is_none() {
+@@ -431,14 +433,15 @@ impl SurfaceEvents {
+                 });
+ 
+                 if first_configure {
+-                    let window_data = data.get::<&WindowData>().unwrap();
+-                    if window_data.attrs.require_wm_focus() {
+-                        let window = *data.get::<&x::Window>().unwrap();
++                    let attrs = &data.get::<&WindowData>().unwrap().attrs;
++                    let window = *data.get::<&x::Window>().unwrap();
++                    let action = attrs.focus_action();
++                    if !attrs.override_redirect && action != FocusAction::None {
+                         state.inner.to_focus = Some(FocusData {
+                             window,
+                             output_name: None,
+                             is_popup: true,
+-                            has_take_focus: window_data.attrs.has_take_focus,
++                            action,
+                         });
+                     }
+                 }
+@@ -851,10 +854,17 @@ impl Event for client::wl_keyboard::Event {
+                 let mut query = surface.data().copied().and_then(|key| {
+                     state
+                         .world
+-                        .query_one::<(&x::Window, &WlSurface, Option<&OnOutput>)>(key)
++                        .query_one::<(
++                            &x::Window,
++                            &WlSurface,
++                            Option<&OnOutput>,
++                            Option<&WindowData>,
++                        )>(key)
+                         .ok()
+                 });
+-                let Some((window, surface, output)) = query.as_mut().and_then(|q| q.get()) else {
++                let Some((window, surface, output, window_data)) =
++                    query.as_mut().and_then(|q| q.get())
++                else {
+                     return;
+                 };
+                 state.last_kb_serial = Some((
+@@ -865,13 +875,14 @@ impl Event for client::wl_keyboard::Event {
+                     serial,
+                 ));
+                 let output_name = get_output_name(output, &state.world);
+-                let window_data = data.get::<&WindowData>();
+-                let has_take_focus = window_data.as_ref().is_some_and(|d| d.attrs.has_take_focus);
++                let action = window_data
++                    .map(|d| d.attrs.focus_action())
++                    .unwrap_or(FocusAction::Direct);
+                 state.to_focus = Some(FocusData {
+                     window: *window,
+                     output_name,
+                     is_popup: false,
+-                    has_take_focus,
++                    action,
+                 });
+                 keyboard.enter(serial, surface, keys);
+             }
+diff --git a/src/server/mod.rs b/src/server/mod.rs
+index a436331b..834f614e 100644
+--- a/src/server/mod.rs
++++ b/src/server/mod.rs
+@@ -99,9 +99,13 @@ where
+     u32::from(wenum).try_into().unwrap()
+ }
+ 
+-#[derive(Default, Debug)]
++#[derive(Debug)]
+ struct WindowAttributes {
++    /// `WM_HINTS.input`. Windows without `WM_HINTS` are assumed to accept input; ICCCM 4.1.2.4
++    /// leaves window managers "free to assume convenient values for all fields of the WM_HINTS
++    /// property if a window is mapped without one".
+     accepts_input: bool,
++    /// Whether `WM_TAKE_FOCUS` is in `WM_PROTOCOLS`.
+     has_take_focus: bool,
+     role: WindowRole,
+     override_redirect: bool,
+@@ -114,12 +118,53 @@ struct WindowAttributes {
+     transient_for: Option<x::Window>,
+ }
+ 
++impl Default for WindowAttributes {
++    fn default() -> Self {
++        Self {
++            accepts_input: true,
++            has_take_focus: false,
++            role: WindowRole::default(),
++            override_redirect: false,
++            dims: WindowDims::default(),
++            size_hints: None,
++            title: None,
++            class: None,
++            group: None,
++            decorations: None,
++            transient_for: None,
++        }
++    }
++}
++
+ impl WindowAttributes {
+-    fn require_wm_focus(&self) -> bool {
+-        !self.override_redirect && (self.has_take_focus || self.accepts_input)
++    /// The window's ICCCM input model (section 4.1.7), from `WM_HINTS.input` and `WM_TAKE_FOCUS`.
++    fn focus_action(&self) -> FocusAction {
++        match (self.accepts_input, self.has_take_focus) {
++            (false, false) => FocusAction::None,
++            (true, false) => FocusAction::Direct,
++            (true, true) => FocusAction::DirectAndOffer,
++            (false, true) => FocusAction::Offer,
++        }
+     }
+ }
+ 
++/// How a window is given keyboard focus, one per ICCCM 4.1.7 input model. Passive and Locally
++/// Active windows (`input` = True) "require window manager assistance in acquiring the input
++/// focus"; No Input and Globally Active windows (`input` = False) request "that the window manager
++/// not set the input focus to their top-level window". Windows advertising `WM_TAKE_FOCUS` are
++/// additionally offered the focus and may take it, or decline it, themselves.
++#[derive(Copy, Clone, Debug, PartialEq, Eq)]
++enum FocusAction {
++    /// No Input: the window never wants keyboard focus.
++    None,
++    /// Passive: the window manager sets focus directly.
++    Direct,
++    /// Locally Active: the window manager sets focus directly and also sends `WM_TAKE_FOCUS`.
++    DirectAndOffer,
++    /// Globally Active: the window manager only sends `WM_TAKE_FOCUS`.
++    Offer,
++}
++
+ #[derive(Debug, Default, PartialEq, Eq, Copy, Clone)]
+ struct WindowOutputOffset {
+     x: i32,
+@@ -399,7 +444,7 @@ struct FocusData {
+     window: x::Window,
+     output_name: Option<String>,
+     is_popup: bool,
+-    has_take_focus: bool,
++    action: FocusAction,
+ }
+ 
+ #[derive(Copy, Clone, Default)]
+@@ -424,6 +469,9 @@ impl<S: X11Selection> XConnection for NoConnection<S> {
+     fn focus_window(&mut self, _: x::Window, _: Option<String>) {
+         debug!("could not focus window without XWayland initialized");
+     }
++    fn activate_window(&mut self, _: x::Window, _: Option<String>) {
++        debug!("could not activate window without XWayland initialized");
++    }
+     fn send_take_focus(&mut self, _: x::Window) {
+         debug!("could not send take focus without XWayland initialized");
+     }
+@@ -474,6 +522,8 @@ pub struct InnerServerState<S: X11Selection> {
+     to_focus: Option<FocusData>,
+     unfocus: bool,
+     last_focused_toplevel: Option<x::Window>,
++    /// Focus is to be restored to the last focused toplevel on the next run.
++    restore_focus_pending: bool,
+     last_hovered: Option<x::Window>,
+ 
+     xdg_wm_base: XdgWmBase,
+@@ -576,6 +626,7 @@ impl<S: X11Selection> ServerState<NoConnection<S>> {
+             to_focus: None,
+             unfocus: false,
+             last_focused_toplevel: None,
++            restore_focus_pending: false,
+             last_hovered: None,
+             xdg_wm_base,
+             compositor,
+@@ -743,24 +794,61 @@ impl<C: XConnection> ServerState<C> {
+         }
+ 
+         {
++            // A keyboard leave received since the restoration was queued is the newer state:
++            // the compositor moved focus away, so nothing of ours is to be focused.
++            let restore_focus = std::mem::take(&mut self.restore_focus_pending);
++            if restore_focus && self.to_focus.is_none() && !self.unfocus {
++                match self
++                    .last_focused_toplevel
++                    .and_then(|window| Some((window, self.mapped_focus_action(window)?)))
++                {
++                    Some((window, action)) => {
++                        self.to_focus = Some(FocusData {
++                            window,
++                            output_name: None,
++                            is_popup: false,
++                            action,
++                        })
++                    }
++                    None => self.unfocus = true,
++                }
++            }
+             if let Some(FocusData {
+                 window,
+                 output_name,
+                 is_popup,
+-                has_take_focus,
++                action,
+             }) = self.to_focus.take()
+             {
+                 debug!(
+-                    "focusing (take_focus={has_take_focus:?}) {} {window:?}",
++                    "focusing {} {window:?} ({action:?})",
+                     if is_popup { "popup" } else { "window" }
+                 );
+-                if has_take_focus {
+-                    self.connection.send_take_focus(window);
+-                } else {
+-                    self.connection.focus_window(window, output_name);
+-                    if !is_popup {
+-                        self.last_focused_toplevel = Some(window);
++                match action {
++                    FocusAction::Direct | FocusAction::DirectAndOffer => {
++                        self.connection.focus_window(window, output_name);
++                    }
++                    // The window takes focus itself once offered; leave X focus undisturbed
++                    // until then, but it is already the active toplevel.
++                    FocusAction::Offer if !is_popup => {
++                        self.connection.activate_window(window, output_name);
+                     }
++                    // The window never takes keyboard input. X focus must not stay on the
++                    // previously focused window either, or keys meant for this one would keep
++                    // going there, so unset it. It does not become the focus restore target.
++                    FocusAction::None if !is_popup => {
++                        self.connection.focus_window(x::WINDOW_NONE, None);
++                    }
++                    FocusAction::Offer | FocusAction::None => {}
++                }
++                // Focus is set before the offer is sent: send_take_focus waits for the
++                // SendEvent reply, so a client responding to the offer by focusing one of its
++                // subwindows would otherwise be overridden by our SetInputFocus.
++                if matches!(action, FocusAction::DirectAndOffer | FocusAction::Offer) {
++                    self.connection.send_take_focus(window);
++                }
++                if !is_popup && action != FocusAction::None {
++                    self.last_focused_toplevel = Some(window);
+                 }
+             } else if self.unfocus {
+                 self.connection.focus_window(x::WINDOW_NONE, None);
+@@ -1193,6 +1281,23 @@ impl<S: X11Selection + 'static> InnerServerState<S> {
+         self.last_focused_toplevel.unwrap_or(x::WINDOW_NONE)
+     }
+ 
++    /// Restores focus to the last focused toplevel (or unsets it if there is none), the way
++    /// it would be focused on activation: according to its input model. Applied on the next
++    /// run, and resolved only then, since the toplevel may be gone by that time.
++    pub fn restore_focus(&mut self) {
++        self.restore_focus_pending = true;
++    }
++
++    /// The window's input model, if it is a mapped window we know.
++    fn mapped_focus_action(&self, window: x::Window) -> Option<FocusAction> {
++        self.windows
++            .get(&window)
++            .copied()
++            .and_then(|id| self.world.get::<&WindowData>(id).ok())
++            .filter(|data| data.mapped)
++            .map(|data| data.attrs.focus_action())
++    }
++
+     pub fn set_fullscreen(&mut self, window: x::Window, state: super::xstate::SetState) {
+         let Some(data) = self
+             .windows
+diff --git a/src/server/tests.rs b/src/server/tests.rs
+index 4e1735ee..f2bb356e 100644
+--- a/src/server/tests.rs
++++ b/src/server/tests.rs
+@@ -1,4 +1,6 @@
+-use super::{InnerServerState, NoConnection, ServerState, WindowDims, selection::Clipboard};
++use super::{
++    FocusAction, InnerServerState, NoConnection, ServerState, WindowDims, selection::Clipboard,
++};
+ use crate::server::selection::{Primary, SelectionType};
+ use crate::xstate::{SetState, WinSize, WmName};
+ use crate::{XConnection, timespec_from_millis};
+@@ -160,7 +162,10 @@ struct WindowData {
+ #[derive(Default)]
+ struct FakeXConnection {
+     focused_window: Option<Window>,
++    active_window: Option<Window>,
+     send_take_focus_window: Option<Window>,
++    /// Whether the window had already been given X focus when WM_TAKE_FOCUS was sent to it.
++    take_focus_sent_after_focus: bool,
+     windows: HashMap<Window, WindowData>,
+     set_window_dims_counter: usize,
+ }
+@@ -228,11 +233,26 @@ impl super::XConnection for FakeXConnection {
+ 
+     #[track_caller]
+     fn focus_window(&mut self, window: Window, _output_name: Option<String>) {
++        if window == x::WINDOW_NONE {
++            self.focused_window = None;
++            self.active_window = None;
++            return;
++        }
+         assert!(
+             self.windows.contains_key(&window),
+             "Unknown window: {window:?}"
+         );
+         self.focused_window = window.into();
++        self.active_window = window.into();
++    }
++
++    #[track_caller]
++    fn activate_window(&mut self, window: Window, _output_name: Option<String>) {
++        assert!(
++            self.windows.contains_key(&window),
++            "Unknown window: {window:?}"
++        );
++        self.active_window = window.into();
+     }
+ 
+     #[track_caller]
+@@ -242,6 +262,7 @@ impl super::XConnection for FakeXConnection {
+             "Unknown window: {window:?}"
+         );
+         self.send_take_focus_window = window.into();
++        self.take_focus_sent_after_focus = self.focused_window == Some(window);
+     }
+ 
+     fn raise_to_top(&mut self, window: Window) {
+@@ -873,7 +894,7 @@ impl TestFixture<FakeXConnection> {
+         &mut self,
+         comp: &Compositor,
+         override_redirect: bool,
+-        accepts_input: bool,
++        accepts_input: Option<bool>,
+         take_focus: bool,
+     ) -> (Window, Window) {
+         let win_toplevel = Window::new(1);
+@@ -896,14 +917,15 @@ impl TestFixture<FakeXConnection> {
+             self.satellite
+                 .set_window_role(win_popup, crate::xstate::WindowRole::Popup);
+         }
+-
+-        self.satellite.set_win_hints(
+-            win_popup,
+-            super::WmHints {
+-                window_group: None,
+-                accepts_input,
+-            },
+-        );
++        if let Some(accepts_input) = accepts_input {
++            self.satellite.set_win_hints(
++                win_popup,
++                super::WmHints {
++                    window_group: None,
++                    accepts_input,
++                },
++            );
++        }
+         if take_focus {
+             self.satellite.set_take_focus(win_popup, true);
+         }
+@@ -1705,9 +1727,221 @@ fn override_redirect_choose_hover_window() {
+     assert_eq!(&popup_data.popup().parent, win1_xdg);
+ }
+ 
++/// Sets the focus related attributes of a window: `WM_HINTS.input` (`None` for no `WM_HINTS`)
++/// and whether `WM_TAKE_FOCUS` is advertised.
++fn set_focus_hints(
++    f: &mut TestFixture<FakeXConnection>,
++    window: Window,
++    accepts_input: Option<bool>,
++    take_focus: bool,
++) {
++    if let Some(accepts_input) = accepts_input {
++        f.satellite.set_win_hints(
++            window,
++            super::WmHints {
++                window_group: None,
++                accepts_input,
++            },
++        );
++    }
++    f.satellite.set_take_focus(window, take_focus);
++}
++
++/// (accepts_input, take_focus, expected action), one per ICCCM input model, plus windows without
++/// WM_HINTS, which are treated as accepting input.
++const FOCUS_MODELS: [(Option<bool>, bool, FocusAction); 6] = [
++    (Some(false), false, FocusAction::None),  // No Input
++    (Some(true), false, FocusAction::Direct), // Passive
++    (None, false, FocusAction::Direct),
++    (Some(true), true, FocusAction::DirectAndOffer), // Locally Active
++    (None, true, FocusAction::DirectAndOffer),
++    (Some(false), true, FocusAction::Offer), // Globally Active
++];
++
++#[test]
++fn toplevel_focus_models() {
++    for (accepts_input, take_focus, action) in FOCUS_MODELS {
++        let case = format!("accepts_input={accepts_input:?} take_focus={take_focus}");
++        let (mut f, comp) = TestFixture::new_with_compositor();
++
++        let win_a = Window::new(1);
++        let (_, id_a) = f.create_toplevel(&comp, win_a);
++        let win_b = Window::new(2);
++        f.create_toplevel(&comp, win_b);
++        assert_eq!(f.connection().focused_window, Some(win_b), "{case}");
++        assert_eq!(f.connection().send_take_focus_window, None, "{case}");
++
++        set_focus_hints(&mut f, win_a, accepts_input, take_focus);
++        f.testwl.focus_toplevel(id_a);
++        f.run();
++
++        let (focused, active, restore) = match action {
++            // Focus is unset rather than left on the previously focused window, and the
++            // window never becomes the focus restore target.
++            FocusAction::None => (None, None, win_b),
++            FocusAction::Direct | FocusAction::DirectAndOffer => (Some(win_a), Some(win_a), win_a),
++            // X focus is left undisturbed until the window takes it.
++            FocusAction::Offer => (Some(win_b), Some(win_a), win_a),
++        };
++        let offer = matches!(action, FocusAction::DirectAndOffer | FocusAction::Offer);
++        assert_eq!(f.connection().focused_window, focused, "{case}");
++        assert_eq!(f.connection().active_window, active, "{case}");
++        assert_eq!(
++            f.connection().send_take_focus_window,
++            offer.then_some(win_a),
++            "{case}"
++        );
++        if action == FocusAction::DirectAndOffer {
++            // The offer must come after focus is set, or a client focusing one of its
++            // subwindows in response to the offer would be overridden.
++            assert!(f.connection().take_focus_sent_after_focus, "{case}");
++        }
++        assert_eq!(f.satellite.focus_restore_target(), restore, "{case}");
++    }
++}
++
++#[test]
++fn no_input_toplevel_keeps_previous_focus_state() {
++    // Activating a No Input window unsets X focus, but the previously focused toplevel stays
++    // the focus restore target and is what satellite picks as the parent of popups created
++    // afterwards (the builder's parent is the expectation checked by create_popup).
++    let (mut f, comp) = TestFixture::new_with_compositor();
++
++    let win_a = Window::new(1);
++    let (_, id_a) = f.create_toplevel(&comp, win_a);
++    let win_b = Window::new(2);
++    let (_, id_b) = f.create_toplevel(&comp, win_b);
++    set_focus_hints(&mut f, win_b, Some(false), false);
++    f.testwl.focus_toplevel(id_a);
++    f.run();
++    assert_eq!(f.connection().focused_window, Some(win_a));
++
++    f.testwl.focus_toplevel(id_b);
++    f.run();
++    assert_eq!(f.connection().focused_window, None);
++    assert_eq!(f.connection().active_window, None);
++    assert_eq!(f.satellite.focus_restore_target(), win_a);
++
++    let popup = Window::new(3);
++    f.create_popup(&comp, PopupBuilder::new(popup, win_a, id_a));
++}
++
++#[test]
++fn focus_restore_uses_input_model() {
++    // Restoring focus after the active window unmaps goes through the same input model
++    // handling as activation: a Globally Active toplevel is offered the focus, not given it.
++    let (mut f, comp) = TestFixture::new_with_compositor();
++    let win = Window::new(1);
++    let (_, id) = f.create_toplevel(&comp, win);
++    set_focus_hints(&mut f, win, Some(false), true);
++    f.testwl.focus_toplevel(id);
++    f.run();
++    assert_eq!(f.satellite.focus_restore_target(), win);
++    f.satellite.connection.send_take_focus_window = None;
++    f.satellite.connection.focused_window = None;
++    f.satellite.connection.active_window = None;
++
++    f.satellite.restore_focus();
++    f.run();
++    assert_eq!(f.connection().focused_window, None, "not focused directly");
++    assert_eq!(f.connection().send_take_focus_window, Some(win));
++    assert_eq!(f.connection().active_window, Some(win));
++
++    // A Locally Active one is focused and offered.
++    set_focus_hints(&mut f, win, Some(true), true);
++    f.satellite.connection.send_take_focus_window = None;
++    f.satellite.restore_focus();
++    f.run();
++    assert_eq!(f.connection().focused_window, Some(win));
++    assert_eq!(f.connection().send_take_focus_window, Some(win));
++    assert!(f.connection().take_focus_sent_after_focus);
++}
++
++#[test]
++fn output_change_of_focused_toplevel_keeps_input_model() {
++    // A focused toplevel entering another output only updates the primary output; a Globally
++    // Active client's own choice of focus window must not be overridden.
++    let (mut f, comp) = TestFixture::new_with_compositor();
++    let (_, output_a) = f.new_output(0, 0);
++    let (_, output_b) = f.new_output(1000, 0);
++    f.run();
++    let win = Window::new(1);
++    let (_, id) = f.create_toplevel(&comp, win);
++    f.testwl.move_surface_to_output(id, &output_a);
++    f.run();
++    // The toplevel was focused directly on creation; make it Globally Active and activate it
++    // again, which only offers the focus.
++    set_focus_hints(&mut f, win, Some(false), true);
++    f.satellite.connection.focused_window = None;
++    f.testwl.focus_toplevel(id);
++    f.run();
++    assert_eq!(f.connection().focused_window, None);
++    assert_eq!(f.connection().send_take_focus_window, Some(win));
++    assert_eq!(f.connection().active_window, Some(win));
++    f.satellite.connection.active_window = None;
++
++    f.testwl.move_surface_to_output(id, &output_b);
++    f.run();
++    f.run();
++    assert_eq!(
++        f.connection().focused_window,
++        None,
++        "focus was set directly"
++    );
++    assert_eq!(
++        f.connection().active_window,
++        Some(win),
++        "primary output not updated"
++    );
++}
++
++#[test]
++fn focus_restore_target_gone_before_dispatch() {
++    // Restoration is applied on the next run; if the toplevel it would restore to is unmapped
++    // and destroyed before that, nothing is sent to it and it does not become the restore
++    // target again. X focus is unset instead.
++    let (mut f, comp) = TestFixture::new_with_compositor();
++    let win = Window::new(1);
++    let (_, id) = f.create_toplevel(&comp, win);
++    set_focus_hints(&mut f, win, Some(true), true);
++    f.testwl.focus_toplevel(id);
++    f.run();
++    assert_eq!(f.satellite.focus_restore_target(), win);
++    f.satellite.connection.send_take_focus_window = None;
++
++    f.satellite.restore_focus();
++    f.satellite.unmap_window(win);
++    f.satellite.destroy_window(win);
++    f.run();
++    assert_eq!(f.connection().send_take_focus_window, None);
++    assert_eq!(f.connection().focused_window, None);
++    assert_eq!(f.satellite.focus_restore_target(), x::WINDOW_NONE);
++}
++
++#[test]
++fn focus_restore_yields_to_keyboard_leave() {
++    // A restoration is resolved when it is applied. If the compositor took keyboard focus
++    // away in the meantime, that is the newer state: the restoration must not focus the
++    // toplevel behind the compositor's back, X focus is unset instead.
++    let (mut f, comp) = TestFixture::new_with_compositor();
++    let win = Window::new(1);
++    let (_, id) = f.create_toplevel(&comp, win);
++    set_focus_hints(&mut f, win, Some(true), true);
++    f.testwl.focus_toplevel(id);
++    f.run();
++    assert_eq!(f.satellite.focus_restore_target(), win);
++    f.satellite.connection.send_take_focus_window = None;
++
++    f.satellite.restore_focus();
++    f.testwl.unfocus_toplevel();
++    f.run();
++    assert_eq!(f.connection().send_take_focus_window, None);
++    assert_eq!(f.connection().focused_window, None);
++}
++
+ #[test]
+ fn popup_override_redirect_never_focused_nor_offered() {
+-    for accepts_input in [true, false] {
++    for accepts_input in [None, Some(true), Some(false)] {
+         for take_focus in [false, true] {
+             let (mut f, comp) = TestFixture::new_with_compositor();
+ 
+@@ -1728,32 +1962,33 @@ fn popup_override_redirect_never_focused_nor_offered() {
+ }
+ 
+ #[test]
+-fn popup_send_take_focus_when_advertised() {
+-    for accepts_input in [true, false] {
++fn popup_focus_models() {
++    for (accepts_input, take_focus, action) in FOCUS_MODELS {
++        let case = format!("accepts_input={accepts_input:?} take_focus={take_focus}");
+         let (mut f, comp) = TestFixture::new_with_compositor();
+ 
+-        let (win_toplevel, win_popup) = f.setup_popup_focus_case(&comp, false, accepts_input, true);
+-        assert_eq!(f.connection().focused_window, Some(win_toplevel));
+-        assert_eq!(f.connection().send_take_focus_window, Some(win_popup));
++        let (win_toplevel, win_popup) =
++            f.setup_popup_focus_case(&comp, false, accepts_input, take_focus);
++        let direct = matches!(action, FocusAction::Direct | FocusAction::DirectAndOffer);
++        let offer = matches!(action, FocusAction::DirectAndOffer | FocusAction::Offer);
++        assert_eq!(
++            f.connection().focused_window,
++            Some(if direct { win_popup } else { win_toplevel }),
++            "{case}"
++        );
++        assert_eq!(
++            f.connection().send_take_focus_window,
++            offer.then_some(win_popup),
++            "{case}"
++        );
++        if action == FocusAction::DirectAndOffer {
++            assert!(f.connection().take_focus_sent_after_focus, "{case}");
++        }
++        // Popups never become the last focused toplevel.
++        assert_eq!(f.satellite.focus_restore_target(), win_toplevel, "{case}");
+     }
+ }
+ 
+-#[test]
+-fn popup_focus_on_map_with_input_hint() {
+-    let (mut f, comp) = TestFixture::new_with_compositor();
+-
+-    let (_, win_popup) = f.setup_popup_focus_case(&comp, false, true, false);
+-    assert_eq!(f.connection().focused_window, Some(win_popup));
+-}
+-
+-#[test]
+-fn popup_no_focus_without_input_hint() {
+-    let (mut f, comp) = TestFixture::new_with_compositor();
+-
+-    let (win_toplevel, _) = f.setup_popup_focus_case(&comp, false, false, false);
+-    assert_eq!(f.connection().focused_window, Some(win_toplevel));
+-}
+-
+ #[track_caller]
+ fn check_output_position_event(output: &TestObject<WlOutput>, pos: (i32, i32)) {
+     let mut geo = None;
+diff --git a/src/xstate/mod.rs b/src/xstate/mod.rs
+index 6f08eb95..77bf9162 100644
+--- a/src/xstate/mod.rs
++++ b/src/xstate/mod.rs
+@@ -443,8 +443,9 @@ impl XState {
+ 
+                     let active_win: &[x::Window] = active_win.value();
+                     if active_win[0] == e.window() {
+-                        let restore_to = server_state.focus_restore_target();
+-                        server_state.connection.focus_window(restore_to, None);
++                        // Applied on the next server_state.run(), according to the restored
++                        // window's input model.
++                        server_state.restore_focus();
+                     }
+ 
+                     unwrap_or_skip_bad_window_cont!(self.connection.send_and_check_request(
+@@ -1388,6 +1389,10 @@ impl XConnection for RealConnection {
+             debug!("SetInputFocus failed ({window:?}: {e:?})");
+             return;
+         }
++        self.activate_window(window, output_name);
++    }
++
++    fn activate_window(&mut self, window: x::Window, output_name: Option<String>) {
+         if let Err(e) = self.connection.send_and_check_request(&x::ChangeProperty {
+             mode: x::PropMode::Replace,
+             window: self.root_window(),

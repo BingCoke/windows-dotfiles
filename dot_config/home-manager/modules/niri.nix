@@ -17,6 +17,7 @@ let
   });
   patchedXwaylandSatellite = xwaylandSatellite.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
+      ../patches/xwayland-satellite-icccm-focus.patch
       ../patches/xwayland-satellite-dingtalk-popup.patch
     ];
   });

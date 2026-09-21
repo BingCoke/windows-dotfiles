@@ -31,6 +31,15 @@ let
     Gtk/CursorThemeName "${config.home.pointerCursor.name}"
     Gtk/CursorThemeSize ${toString config.home.pointerCursor.size}
   '';
+
+  thunar = pkgs.thunar.override {
+    thunarPlugins = with pkgs; [
+      thunar-archive-plugin
+      thunar-volman
+    ];
+  };
+
+  gioModules = "${pkgs.gvfs}/lib/gio/modules";
 in
 {
   imports = [
@@ -98,11 +107,49 @@ in
 
     Service = {
       Type = "dbus";
-      ExecStart = "${pkgs.thunar}/bin/Thunar --daemon";
+      ExecStart = "${thunar}/bin/thunar --daemon";
       BusName = "org.xfce.FileManager";
       KillMode = "process";
+      Environment = [
+        "GIO_EXTRA_MODULES=${gioModules}"
+        "PATH=${config.home.profileDirectory}/bin:/usr/bin:/usr/sbin:/bin"
+      ];
     };
   };
+
+  xdg.configFile."Thunar/uca.xml".text = ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <actions>
+    <action>
+      <icon>utilities-terminal</icon>
+      <name>在此打开终端</name>
+      <submenu></submenu>
+      <unique-id>1710000001-1</unique-id>
+      <command>${pkgs.kitty}/bin/kitty --working-directory %f</command>
+      <description>Open terminal in the selected folder</description>
+      <range></range>
+      <patterns>*</patterns>
+      <startup-notify/>
+      <directories/>
+    </action>
+    <action>
+      <icon>utilities-terminal</icon>
+      <name>在此打开终端</name>
+      <submenu></submenu>
+      <unique-id>1710000001-2</unique-id>
+      <command>${pkgs.kitty}/bin/kitty --working-directory %d</command>
+      <description>Open terminal in the file's folder</description>
+      <range></range>
+      <patterns>*</patterns>
+      <startup-notify/>
+      <other-files/>
+      <text-files/>
+      <image-files/>
+      <audio-files/>
+      <video-files/>
+    </action>
+    </actions>
+  '';
 
   xdg.desktopEntries.kitty-nvim = {
     name = "Neovim (Kitty)";
@@ -119,7 +166,11 @@ in
 
   home.packages = [
     pkgs.xsettingsd
-    pkgs.thunar
+    thunar
+    pkgs.gvfs
+    pkgs.samba
+    pkgs.cifs-utils
+    pkgs.xarchiver
     pkgs.xdg-user-dirs
     pkgs.clash-verge-rev
 
@@ -132,11 +183,13 @@ in
   home.sessionVariables = {
     QT_QPA_PLATFORMTHEME = "qt6ct";
     QT_QPA_SYSTEM_ICON_THEME = config.gtk.iconTheme.name;
+    GIO_EXTRA_MODULES = gioModules;
   };
 
   systemd.user.sessionVariables = {
     QT_QPA_SYSTEM_ICON_THEME = config.gtk.iconTheme.name;
     XCURSOR_THEME = config.home.pointerCursor.name;
     XCURSOR_SIZE = toString config.home.pointerCursor.size;
+    GIO_EXTRA_MODULES = gioModules;
   };
 }

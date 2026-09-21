@@ -143,7 +143,7 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 
 ### 原因
 
-DingTalk 的部分 X11 子窗口提供的 window type、Motif hints 和尺寸 hints 不能被当前 xwayland-satellite 通用启发式正确转换。补丁把钉钉的 `UTILITY` 菜单当成 popup；表情面板是 `NORMAL` + 固定尺寸，做成 popup 会在 1.25 缩放下被放到屏幕外，因此保持 toplevel（Niri 已有 `dingtalk` floating rule）。
+DingTalk 的部分 X11 子窗口提供的 window type、Motif hints 和尺寸 hints 不能被当前 xwayland-satellite 通用启发式正确转换。补丁把钉钉的 `UTILITY` 菜单和固定尺寸的表情面板当成 popup，主窗口和图片查看窗口保持 toplevel。表情面板必须是 popup，才能保留 XDG popup 的外部点击关闭和锚定定位。
 
 这个补丁是应用兼容规则，不应以“上游增加 DingTalk 硬编码”为目标。当前 xwayland-satellite 没有允许用户按 `WM_CLASS`、`_NET_WM_WINDOW_TYPE`、Motif hints 或尺寸 hints 覆盖 `Popup`/`Toplevel` 的配置接口。
 
@@ -208,7 +208,7 @@ WM_TRANSIENT_FOR
 
 ### 撤销条件
 
-当 nixpkgs 的 `xwayland-satellite` 已包含 #494，且现有 DingTalk 补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续将 DingTalk 补丁施加到 `pkgs.xwayland-satellite`。不要仅因发布了新版本而撤销。
+当 nixpkgs 的 `xwayland-satellite` 已包含 #494，且现有本地补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续把 ICCCM 焦点补丁和 DingTalk 角色补丁施加到 `pkgs.xwayland-satellite`。不要仅因发布了新版本而撤销；#499 是另一个补丁，不随源码固定一起删。
 
 ### 验证
 
@@ -219,6 +219,43 @@ PROFILE=bingcoke@home
 nix run github:nix-community/home-manager -- build --flake ".#$PROFILE"
 curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/add2795 \
   | jq -r '.sha, .html_url'
+```
+
+## xwayland-satellite ICCCM 焦点
+
+| 项目 | 当前值 |
+| --- | --- |
+| 本地实现 | `patches/xwayland-satellite-icccm-focus.patch` |
+| 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite`，排在 DingTalk 角色补丁之前 |
+| 当前固定上游源码 | `add2795134593faafce60e404a0a75df68e9ee0c` |
+| 补丁对应上游 | [#499](https://github.com/Supreeeme/xwayland-satellite/pull/499) 的 `7fb176b348c076a63cf7e1fdf04e28124c412dd0` |
+| 独立上游问题 | [#487](https://github.com/Supreeeme/xwayland-satellite/issues/487) 孤儿 popup 生命周期，本补丁不处理 |
+
+### 原因
+
+钉钉表情面板被本地角色补丁分类为 XDG popup，同时声明 `WM_HINTS.input=true` 和 `WM_TAKE_FOCUS`（ICCCM Locally Active）。#494 对这类 popup 只发 `WM_TAKE_FOCUS`、不先设 X focus，Escape 会落到主窗口并把它隐藏。#499 按 ICCCM 矩阵处理：Locally Active 先 Direct focus 再 offer。
+
+### 撤销条件
+
+当 #499 已合并，且当前使用的 nixpkgs / `xwaylandSatelliteRevision` 源码已包含该修复后，只删除本补丁和本节。不要同时删除 DingTalk 角色补丁，也不要把 #487 当成同一个修复。
+
+撤销后至少验证：
+
+- 完全退出并重启钉钉后，聊天中打开表情面板，1.25 缩放下锚在表情按钮附近；
+- Escape 只关面板，主窗口仍可见；
+- 再打开后点击外部，面板自动关闭；
+- 反复打开不会变成已映射但不可见；
+- Steam 下拉/右键菜单不会立刻关闭；
+- `journalctl --user -b` 中 Locally Active popup 的焦点路径是 `DirectAndOffer`，不是只 offer。
+
+手动隐藏/销毁父窗口而留下孤儿 popup，仍属于 #487。
+
+### 检查方法
+
+```bash
+curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/pulls/499 \
+  | jq -r '.state, .merged, .merge_commit_sha, .html_url'
+nix eval --raw github:NixOS/nixpkgs/nixos-unstable#xwayland-satellite.src.rev
 ```
 
 ## Noctalia 在非 NixOS 上的认证桥
