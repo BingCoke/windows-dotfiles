@@ -138,7 +138,7 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-dingtalk-popup.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite` |
-| 当前固定上游源码 | `add2795134593faafce60e404a0a75df68e9ee0c` |
+| 当前固定上游源码 | `b83eab900644e4c7c77982ce3d44cb490f0c5e1d`（`v0.8.3`） |
 | 保护措施 | Nix 固定源码和 Cargo vendor 哈希；更新提交前必须人工复核补丁 |
 
 ### 原因
@@ -198,13 +198,13 @@ WM_TRANSIENT_FOR
 | 项目 | 当前值 |
 | --- | --- |
 | 本地实现 | `modules/niri.nix` 中的固定源码覆盖 |
-| 当前固定上游源码 | `add2795134593faafce60e404a0a75df68e9ee0c` |
+| 当前固定上游源码 | `b83eab900644e4c7c77982ce3d44cb490f0c5e1d`（`v0.8.3`） |
 | 上游问题 | [#468](https://github.com/Supreeeme/xwayland-satellite/issues/468) |
 | 上游修复 | [#494](https://github.com/Supreeeme/xwayland-satellite/pull/494) |
 
 ### 原因
 
-`xwayland-satellite 0.8.2` 会在 Niri 中错误地聚焦 Steam 的 `override_redirect` X11 popup。Steam 的下拉菜单和右键菜单随即失焦并关闭。固定提交包含 #494：不聚焦这类 popup，并在客户端声明时发送 `WM_TAKE_FOCUS`。
+`xwayland-satellite 0.8.2` 会在 Niri 中错误地聚焦 Steam 的 `override_redirect` X11 popup。Steam 的下拉菜单和右键菜单随即失焦并关闭。固定提交是 `v0.8.3`。它包含 #494：不聚焦这类 popup，并在客户端声明时发送 `WM_TAKE_FOCUS`。同一个 release 还包含 #496，修正带装饰窗口的 viewport 与鼠标偏移。
 
 ### 撤销条件
 
@@ -217,7 +217,7 @@ WM_TRANSIENT_FOR
 ```bash
 PROFILE=bingcoke@home
 nix run github:nix-community/home-manager -- build --flake ".#$PROFILE"
-curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/add2795 \
+curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/b83eab9 \
   | jq -r '.sha, .html_url'
 ```
 
@@ -227,7 +227,7 @@ curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/add
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-icccm-focus.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite`，排在 DingTalk 角色补丁之前 |
-| 当前固定上游源码 | `add2795134593faafce60e404a0a75df68e9ee0c` |
+| 当前固定上游源码 | `b83eab900644e4c7c77982ce3d44cb490f0c5e1d`（`v0.8.3`） |
 | 补丁对应上游 | [#499](https://github.com/Supreeeme/xwayland-satellite/pull/499) 的 `7fb176b348c076a63cf7e1fdf04e28124c412dd0` |
 | 独立上游问题 | [#487](https://github.com/Supreeeme/xwayland-satellite/issues/487) 孤儿 popup 生命周期，本补丁不处理 |
 

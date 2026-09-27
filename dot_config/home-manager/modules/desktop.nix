@@ -115,7 +115,54 @@ in
         "PATH=${config.home.profileDirectory}/bin:/usr/bin:/usr/sbin:/bin"
       ];
     };
+
+    Install.WantedBy = [ "graphical-session.target" ];
   };
+
+  systemd.user.services.gvfs-daemon = {
+    Unit = {
+      Description = "Virtual filesystem service";
+      PartOf = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.gvfs}/libexec/gvfsd";
+      Type = "dbus";
+      BusName = "org.gtk.vfs.Daemon";
+      Slice = "session.slice";
+    };
+
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  systemd.user.services.gvfs-udisks2-volume-monitor = {
+    Unit = {
+      Description = "Virtual filesystem service - disk device monitor";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "gvfs-daemon.service" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.gvfs}/libexec/gvfs-udisks2-volume-monitor";
+      Type = "dbus";
+      BusName = "org.gtk.vfs.UDisks2VolumeMonitor";
+      Slice = "session.slice";
+    };
+
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  xdg.configFile."xfce4/xfconf/xfce-perchannel-xml/thunar-volman.xml".text = ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <channel name="thunar-volman" version="1.0">
+      <property name="automount-media" type="empty">
+        <property name="enabled" type="bool" value="true"/>
+      </property>
+      <property name="autobrowse" type="empty">
+        <property name="enabled" type="bool" value="true"/>
+      </property>
+    </channel>
+  '';
 
   xdg.configFile."Thunar/uca.xml".text = ''
     <?xml version="1.0" encoding="UTF-8"?>
@@ -168,6 +215,7 @@ in
     pkgs.xsettingsd
     thunar
     pkgs.gvfs
+    pkgs.exfatprogs
     pkgs.samba
     pkgs.cifs-utils
     pkgs.xarchiver

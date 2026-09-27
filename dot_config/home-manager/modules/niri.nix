@@ -1,24 +1,26 @@
 { pkgs, xdgDesktopPortalWlr, ... }:
 
 let
-  xwaylandSatelliteRevision = "add2795134593faafce60e404a0a75df68e9ee0c";
+  xwaylandSatelliteRevision = "b83eab900644e4c7c77982ce3d44cb490f0c5e1d";
   xwaylandSatelliteSrc = pkgs.fetchFromGitHub {
     owner = "Supreeeme";
     repo = "xwayland-satellite";
     rev = xwaylandSatelliteRevision;
-    hash = "sha256-0TxfMgqW0/BLD4M942c5DCKYrtPvzsPJwvdcco4LQUM=";
+    hash = "sha256-eFEjCCniMCKeWU0PcZNv+tDYe08SLFPjRplyPY8OFt4=";
   };
   xwaylandSatellite = pkgs.xwayland-satellite.overrideAttrs (_: {
+    version = "0.8.3";
     src = xwaylandSatelliteSrc;
     cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
       src = xwaylandSatelliteSrc;
-      hash = "sha256-s1gl9eR6Mt2QLrhfcowstPFjzwE/lz4PJhJzWYHoIHg=";
+      hash = "sha256-gMGFvnbxM3hD5fmkSimaFd87GEf6BXFe/MGjoS6VNVU=";
     };
   });
   patchedXwaylandSatellite = xwaylandSatellite.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
       ../patches/xwayland-satellite-icccm-focus.patch
       ../patches/xwayland-satellite-dingtalk-popup.patch
+      ../patches/xwayland-satellite-input-region-scale.patch
     ];
   });
 in
