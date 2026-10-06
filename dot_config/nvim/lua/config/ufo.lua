@@ -45,8 +45,7 @@ end
 
 require("ufo").setup({
   provider_selector = function(bufnr, filetype, buftype)
-
-    if filetype == "dashboard" then
+    if filetype == "dashboard" or filetype == "org" then
       return ""
     end
 
