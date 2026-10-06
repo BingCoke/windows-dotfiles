@@ -9,27 +9,37 @@ let
   systemdDataDirs = builtins.filter
     (directory: !(lib.hasInfix "$" directory))
     config.xdg.systemDirs.data;
+
+  xdgDataDirs = lib.concatStringsSep ":" systemdDataDirs;
 in
 {
   home.packages = [ pkgs.flatpak ];
 
   xdg.systemDirs.data = [ flatpakDataDir ];
 
-  systemd.user.sessionVariables.XDG_DATA_DIRS = lib.mkForce (
-    lib.concatStringsSep ":" systemdDataDirs
-  );
+  systemd.user.sessionVariables.XDG_DATA_DIRS = lib.mkForce xdgDataDirs;
+
+  # environment.d is only read when user@ starts. Linger keeps that manager
+  # across compositor logout, so pin the same value on niri.service.
+  home.file.".config/systemd/user/niri.service.d/10-flatpak-xdg-data-dirs.conf".text = ''
+    [Service]
+    Environment=XDG_DATA_DIRS=${xdgDataDirs}
+  '';
+
+  home.activation.importFlatpakXdgDataDirs = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+    ${config.systemd.user.systemctlPath} --user is-system-running -q && \
+      $DRY_RUN_CMD ${config.systemd.user.systemctlPath} --user set-environment XDG_DATA_DIRS=${lib.escapeShellArg xdgDataDirs} || true
+  '';
 
   services.flatpak.enable = true;
 
   # nix-flatpak starts this oneshot from sd-switch and from an activation hook.
   # Both wait, so `home-manager switch` blocks on Flathub downloads.
   systemd.user.services.flatpak-managed-install.Unit.X-SwitchMethod = "keep-old";
-  home.activation.flatpak-managed-install = lib.mkForce (
-    lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-      $DRY_RUN_CMD ${config.systemd.user.systemctlPath} is-system-running -q && \
-        ${config.systemd.user.systemctlPath} --user start --no-block flatpak-managed-install.service || true
-    ''
-  );
+  home.activation.flatpak-managed-install = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+    $DRY_RUN_CMD ${config.systemd.user.systemctlPath} is-system-running -q && \
+      ${config.systemd.user.systemctlPath} --user start --no-block flatpak-managed-install.service || true
+  '';
 
   services.flatpak.packages = [
     "com.dingtalk.DingTalk"
@@ -88,6 +98,10 @@ in
     Context.sockets = [ "!wayland" ];
     Environment = {
       XDG_SESSION_TYPE = "x11";
+      # Preserve fractional X11 DPI values reported by xwayland-satellite while
+      # adapting automatically to 1x and differently scaled displays.
+      QT_AUTO_SCREEN_SCALE_FACTOR = "1";
+      QT_SCALE_FACTOR_ROUNDING_POLICY = "PassThrough";
     };
   };
 }
