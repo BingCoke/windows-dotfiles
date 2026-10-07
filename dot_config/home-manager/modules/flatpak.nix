@@ -36,10 +36,12 @@ in
   # nix-flatpak starts this oneshot from sd-switch and from an activation hook.
   # Both wait, so `home-manager switch` blocks on Flathub downloads.
   systemd.user.services.flatpak-managed-install.Unit.X-SwitchMethod = "keep-old";
-  home.activation.flatpak-managed-install = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-    $DRY_RUN_CMD ${config.systemd.user.systemctlPath} is-system-running -q && \
-      ${config.systemd.user.systemctlPath} --user start --no-block flatpak-managed-install.service || true
-  '';
+  home.activation.flatpak-managed-install = lib.mkForce (
+    lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+      $DRY_RUN_CMD ${config.systemd.user.systemctlPath} is-system-running -q && \
+        ${config.systemd.user.systemctlPath} --user start --no-block flatpak-managed-install.service || true
+    ''
+  );
 
   services.flatpak.packages = [
     "com.dingtalk.DingTalk"
