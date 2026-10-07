@@ -221,6 +221,7 @@ in
     pkgs.xarchiver
     pkgs.xdg-user-dirs
     pkgs.clash-verge-rev
+    pkgs.gearlever
 
     # Qt5 and Qt6 theme selectors for Noctalia-generated color schemes.
     pkgs.libsForQt5.qt5ct
