@@ -2,45 +2,41 @@
 name: home-manager-update
 description: >
   Update this machine's Home Manager config. Use when the user asks to
-  check nixpkgs or Home Manager updates, compare important packages such
-  as Noctalia, advance or drop a pinned git source, run home-manager build
-  or switch, or publish the config through chezmoi (pull, re-add, commit,
-  push). Also 更新 home-manager、钉死的 git、switch、chezmoi 提交推送.
+  check nixpkgs or Home Manager updates, see which tools would change,
+  advance or drop a pinned git source, run home-manager build or switch,
+  or publish the config through chezmoi. Also 更新 home-manager、钉死的
+  git、switch、chezmoi 提交推送.
 ---
 
 # Home Manager update
 
 The config is `~/.config/home-manager`. This skill lives in that tree at `.agents/skills/home-manager-update/SKILL.md` and is published with the rest of the config. Chezmoi owns the tree from `~/.local/share/chezmoi` (`origin` `git@github.com:BingCoke/windows-dotfiles.git`). `docs/operations.md` is the switch and rollback procedure. `docs/upstream-workarounds.md` is the revocation rule for every pin. Read the section you are about to change. Those files win when this skill and the tree disagree.
 
-A **profile** is one `homeConfigurations` attribute. A **pin** is an `overrideAttrs` `src` rev that replaces the nixpkgs package. A **generation** is one activated Home Manager build.
+A **profile** is one `homeConfigurations` attribute. A **session** is graphical when `XDG_SESSION_TYPE` is `wayland` or `x11`, or `XDG_CURRENT_DESKTOP` is set; otherwise it is shell. A **tool** is a package or enabled program in the selected profile. A **pin** is an `overrideAttrs` `src` rev that replaces the nixpkgs package. A **generation** is one activated Home Manager build.
+
+The tool set is whatever that profile declares. Read it from Home Manager. Names in this skill would go stale.
 
 ## 1. Name the profile
 
-The desktop profile is `$(whoami)@$(hostname)`. Read both from the machine. Ignore the profile written in `docs/operations.md` and any profile remembered from another host. Use the attribute with the `-shell` suffix only when the user asks for the shell profile. Confirm the attribute exists in `flake.nix` and that its host module sets `home.username` to the current user. A shell profile has no desktop modules.
+Read the user and hostname from the machine. A graphical session uses `user@hostname`. A shell session uses `user@hostname-shell`. Ignore the profile written in `docs/operations.md` and any profile remembered from another host. Confirm the attribute exists in `flake.nix` and that its host module sets `home.username` to the current user.
 
-Done when that attribute exists and the host module names the current user.
+Done when that attribute exists and matches the session.
 
-## 2. Stay on the asked branch
+## 2. Tell the user the updates
 
-Do the first branch the user asked for, then stop. A report does not update the lock, move a pin, switch, or publish. A pin move does not run `nix flake update`. A flake update does not delete a pin. Switch and chezmoi run only after the user asks for that step.
+Compare the locked nixpkgs revision with `github:NixOS/nixpkgs/nixos-unstable` without writing `flake.lock`. Enumerate the selected profile's tools and diff their versions. A pinned tool does not follow the flake; say so with its current rev, then compare that pin with upstream git and nixpkgs as in the pin branch.
 
-### Report
-
-Compare the locked nixpkgs revision with `github:NixOS/nixpkgs/nixos-unstable` without writing `flake.lock`. Diff versions for packages the desktop modules actually reference. Always include noctalia, niri, mango, kitty, fcitx5, and quickshell, plus any package the user names.
-
-A package whose `src` is pinned is unchanged by the flake move. Say so with the pin's current rev.
-
-Done when every changed package has its old version, new version, and whether the running profile would pick it up.
+Report the version changes to the user and stop. A later branch runs only after the user accepts that report. A pin move does not run `nix flake update`. A flake update does not delete a pin.
 
 ### Pin
 
 Read that pin's section in `docs/upstream-workarounds.md`, then compare three revs: the pin, upstream git HEAD, and `nixos-unstable`'s `src.rev`.
 
-- Upstream git has commits after the pin that nixpkgs lacks: move the pin to that commit, refresh the fetch hash, and keep every local patch that still applies in its current order.
+- Upstream git has commits after the pin that nixpkgs lacks: move the pin to that commit and refresh the hashes that expression already records. Keep every local patch that still applies, in its current order.
 - nixpkgs already contains the pinned commit and the fix that justified it: delete the `src` override and apply the patches that the doc still requires onto `pkgs.<name>`.
 - Neither is true: leave the pin.
 
-`Cargo.lock` unchanged means the existing cargo-vendor hash still applies. Build the overridden package, then `home-manager build --flake ".#$PROFILE"`.
+Build the overridden package, then `home-manager build --flake ".#$PROFILE"`.
 
 Done when the store path is the chosen rev and each kept patch applied during that build.
 

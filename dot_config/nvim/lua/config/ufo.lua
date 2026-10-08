@@ -1,4 +1,3 @@
-
 vim.keymap.set("n", "zc", ":foldclose<CR>")
 
 vim.keymap.set("n", "zv", ":foldopen<CR>")
@@ -53,3 +52,28 @@ require("ufo").setup({
   end,
   fold_virt_text_handler = handler,
 })
+
+
+
+--local buffer = require("ufo.model.buffer")
+--local orig_lines = buffer.lines
+--function buffer:lines(lnum, endLnum)
+--  if self:lineCount() < lnum then
+--    self:reload()
+--  end
+--  local lineCount = self:lineCount()
+--  if lineCount < lnum then
+--    return { "" }
+--  end
+--  endLnum = endLnum or lnum
+--  if endLnum < 0 then
+--    endLnum = lineCount + endLnum + 1
+--  end
+--  if endLnum > lineCount then
+--    endLnum = lineCount
+--  end
+--  if endLnum < lnum then
+--    return { "" }
+--  end
+--  return orig_lines(self, lnum, endLnum)
+--end

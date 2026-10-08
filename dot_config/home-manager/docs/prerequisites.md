@@ -58,14 +58,10 @@ Noctalia 的认证桥是唯一需要额外 root 操作的桌面收尾步骤，�
 首次切换桌面 profile 后，执行下面的命令安装 GPU 库：
 
 ```bash
-sudo "$(command -v non-nixos-gpu-setup)"
+nix-gpu-setup
 ```
 
-该命令安装 `/etc/tmpfiles.d/non-nixos-gpu.conf`，让 `/run/opengl-driver` 在启动时自动创建。如果希望以后直接使用 `sudo non-nixos-gpu-setup`，可在切换后创建一次系统入口：
-
-```bash
-sudo ln -sfn "$(command -v non-nixos-gpu-setup)" /usr/local/bin/non-nixos-gpu-setup
-```
+该命令会自己请求 sudo，并安装 `/etc/tmpfiles.d/non-nixos-gpu.conf`，让 `/run/opengl-driver` 在启动时自动创建。不要加 `sudo`；`sudo` 的 `PATH` 找不到用户 profile 里的命令。
 
 纯 Shell profile 不导入桌面模块和 GPU 集成，可以使用纯 flake 命令：
 

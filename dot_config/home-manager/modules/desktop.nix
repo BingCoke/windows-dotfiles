@@ -47,6 +47,13 @@ let
   });
 
   gioModules = "${pkgs.gvfs}/lib/gio/modules";
+
+  gpuSetup = pkgs.writeShellScriptBin "nix-gpu-setup" ''
+    if [ "$(id -u)" -ne 0 ]; then
+      exec /usr/bin/sudo -- ${lib.getExe config.targets.genericLinux.gpu.setupPackage} "$@"
+    fi
+    exec ${lib.getExe config.targets.genericLinux.gpu.setupPackage} "$@"
+  '';
 in
 {
   imports = [
@@ -58,6 +65,34 @@ in
   ];
 
   targets.genericLinux.enable = true;
+
+  # The upstream activation message prints a store path. sudo does not search
+  # the user profile, so the short command has to carry the absolute path.
+  home.activation.checkExistingGpuDrivers = lib.mkForce (
+    lib.hm.dag.entryAnywhere ''
+      existing=$(readlink /run/opengl-driver || true)
+      new=${config.targets.genericLinux.gpu.drivers}
+      verboseEcho Existing drivers: ''${existing}
+      verboseEcho New drivers: ''${new}
+      if [[ -z "''${existing}" ]] ; then
+        warnEcho "This non-NixOS system is not yet set up to use the GPU"
+        warnEcho "with Nix packages. To set up GPU drivers, run"
+        warnEcho "  nix-gpu-setup"
+      elif [[ "''${existing}" != "''${new}" ]] ; then
+        warnEcho "GPU drivers require an update, run"
+        warnEcho "  nix-gpu-setup"
+      fi
+    ''
+  );
+
+  home.activation.hostSetupCommands = lib.hm.dag.entryAfter [ "installPackages" ] ''
+    warnEcho "Host setup commands:"
+    warnEcho "  nix-gpu-setup"
+    warnEcho "  compositor-desktop install"
+    warnEcho "  noctalia-host-auth check"
+    warnEcho "  noctalia-host-auth install"
+    warnEcho "  noctalia-host-auth test"
+  '';
 
   gtk = {
     enable = true;
@@ -233,6 +268,7 @@ in
     # Qt5 and Qt6 theme selectors for Noctalia-generated color schemes.
     pkgs.libsForQt5.qt5ct
     pkgs.qt6Packages.qt6ct
+    gpuSetup
   ];
 
   # These resource selectors do not alter GTK or Qt palettes.

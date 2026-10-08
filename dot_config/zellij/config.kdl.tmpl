@@ -415,3 +415,11 @@ show_startup_tips false
 
 on_force_close "detach"
 
+{{- if and (stat (joinPath .chezmoi.homeDir ".local/share/zellij/certs/cert.pem")) (stat (joinPath .chezmoi.homeDir ".local/share/zellij/certs/key.pem")) }}
+web_server true
+web_server_ip "0.0.0.0"
+web_server_port 8082
+web_server_cert "{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/share/zellij/certs/cert.pem"
+web_server_key "{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/share/zellij/certs/key.pem"
+{{- end }}
+

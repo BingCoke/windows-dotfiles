@@ -63,14 +63,10 @@ nix run github:nix-community/home-manager -- \
 首次切换桌面 profile 时，Home Manager 可能会提示执行类似下面的命令，把 Nix GPU 库注册到宿主系统：
 
 ```bash
-sudo "$(command -v non-nixos-gpu-setup)"
+nix-gpu-setup
 ```
 
-该命令只需在首次安装或 GPU 库更新后执行一次。它创建 `/run/opengl-driver`，不会修改宿主 glibc，也不会给系统 GUI 应用注入 `LD_LIBRARY_PATH`。如果希望固定使用 `sudo non-nixos-gpu-setup`，可在切换后创建一次系统入口：
-
-```bash
-sudo ln -sfn "$(command -v non-nixos-gpu-setup)" /usr/local/bin/non-nixos-gpu-setup
-```
+该命令只需在首次安装或 GPU 库更新后执行一次。它会自己请求 sudo，并调用当前 profile 里的 `non-nixos-gpu-setup`。它创建 `/run/opengl-driver`，不会修改宿主 glibc，也不会给系统 GUI 应用注入 `LD_LIBRARY_PATH`。
 
 纯 Shell profile 不导入 GPU 和桌面模块：
 
