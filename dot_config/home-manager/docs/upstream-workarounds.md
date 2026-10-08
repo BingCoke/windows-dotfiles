@@ -138,7 +138,7 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-dingtalk-popup.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite` |
-| 当前固定上游源码 | `b83eab900644e4c7c77982ce3d44cb490f0c5e1d`（`v0.8.3`） |
+| 当前固定上游源码 | [`ae88928f7334556d298b8d9552abdf395931931b`](https://github.com/Supreeeme/xwayland-satellite/commit/ae88928f7334556d298b8d9552abdf395931931b)（`v0.8.3` 之后，含 #448） |
 | 保护措施 | Nix 固定源码和 Cargo vendor 哈希；更新提交前必须人工复核补丁 |
 
 ### 原因
@@ -198,17 +198,19 @@ WM_TRANSIENT_FOR
 | 项目 | 当前值 |
 | --- | --- |
 | 本地实现 | `modules/niri.nix` 中的固定源码覆盖 |
-| 当前固定上游源码 | `b83eab900644e4c7c77982ce3d44cb490f0c5e1d`（`v0.8.3`） |
+| 当前固定上游源码 | [`ae88928f7334556d298b8d9552abdf395931931b`](https://github.com/Supreeeme/xwayland-satellite/commit/ae88928f7334556d298b8d9552abdf395931931b) |
 | 上游问题 | [#468](https://github.com/Supreeeme/xwayland-satellite/issues/468) |
-| 上游修复 | [#494](https://github.com/Supreeeme/xwayland-satellite/pull/494) |
+| 上游修复 | [#494](https://github.com/Supreeeme/xwayland-satellite/pull/494)，已进入 `v0.8.3` |
 
 ### 原因
 
-`xwayland-satellite 0.8.2` 会在 Niri 中错误地聚焦 Steam 的 `override_redirect` X11 popup。Steam 的下拉菜单和右键菜单随即失焦并关闭。固定提交是 `v0.8.3`。它包含 #494：不聚焦这类 popup，并在客户端声明时发送 `WM_TAKE_FOCUS`。同一个 release 还包含 #496，修正带装饰窗口的 viewport 与鼠标偏移。
+`xwayland-satellite 0.8.2` 会在 Niri 中错误地聚焦 Steam 的 `override_redirect` X11 popup。Steam 的下拉菜单和右键菜单随即失焦并关闭。`v0.8.3`（`b83eab9`）包含 #494：不聚焦这类 popup，并在客户端声明时发送 `WM_TAKE_FOCUS`。同一个 release 还包含 #496，修正带装饰窗口的 viewport 与鼠标偏移。2026-10-06 的 `nixos-unstable` 已经是这个 tag。
+
+源码固定仍然留着，因为上游 git 又超过了 `v0.8.3`，而这份 nixpkgs 没有。当前提交 `ae88928` 在 `v0.8.3` 之上多了 [#448](https://github.com/Supreeeme/xwayland-satellite/pull/448)：`xdg_positioner` 的尺寸和锚点矩形向上取整。同一范围里还有只改测试的 #509 和 README。本地三个补丁在这个提交上仍能按原顺序应用。
 
 ### 撤销条件
 
-当 nixpkgs 的 `xwayland-satellite` 已包含 #494，且现有本地补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续把 ICCCM 焦点补丁和 DingTalk 角色补丁施加到 `pkgs.xwayland-satellite`。不要仅因发布了新版本而撤销；#499 是另一个补丁，不随源码固定一起删。
+当 nixpkgs 的 `xwayland-satellite.src.rev` 已经包含 `ae88928`（或同时仍包含 #494 和 #448 的更新提交），且现有本地补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续把 ICCCM 焦点补丁、DingTalk 角色补丁和 input-region 缩放补丁施加到 `pkgs.xwayland-satellite`。不要仅因 nixpkgs 到达 `v0.8.3` 就撤销；#448 还不在那个 tag 里。#499 是另一个补丁，不随源码固定一起删。
 
 ### 验证
 
@@ -217,7 +219,7 @@ WM_TRANSIENT_FOR
 ```bash
 PROFILE=bingcoke@home
 nix run github:nix-community/home-manager -- build --flake ".#$PROFILE"
-curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/b83eab9 \
+curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/ae88928 \
   | jq -r '.sha, .html_url'
 ```
 
@@ -227,7 +229,7 @@ curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/b83
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-icccm-focus.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite`，排在 DingTalk 角色补丁之前 |
-| 当前固定上游源码 | `b83eab900644e4c7c77982ce3d44cb490f0c5e1d`（`v0.8.3`） |
+| 当前固定上游源码 | [`ae88928f7334556d298b8d9552abdf395931931b`](https://github.com/Supreeeme/xwayland-satellite/commit/ae88928f7334556d298b8d9552abdf395931931b)（`v0.8.3` 之后，含 #448） |
 | 补丁对应上游 | [#499](https://github.com/Supreeeme/xwayland-satellite/pull/499) 的 `7fb176b348c076a63cf7e1fdf04e28124c412dd0` |
 | 独立上游问题 | [#487](https://github.com/Supreeeme/xwayland-satellite/issues/487) 孤儿 popup 生命周期，本补丁不处理 |
 
