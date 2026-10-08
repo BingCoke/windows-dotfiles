@@ -39,6 +39,13 @@ let
     ];
   };
 
+  # nixos-unstable does not yet have nixpkgs 9e32df0.
+  telaCircle = pkgs.tela-circle-icon-theme.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      find $out -xtype l -print -delete
+    '';
+  });
+
   gioModules = "${pkgs.gvfs}/lib/gio/modules";
 in
 {
@@ -59,7 +66,7 @@ in
       name = "adw-gtk3-dark";
     };
     iconTheme = {
-      package = pkgs.tela-circle-icon-theme;
+      package = telaCircle;
       name = "Tela-circle-dark";
     };
     colorScheme = "dark";

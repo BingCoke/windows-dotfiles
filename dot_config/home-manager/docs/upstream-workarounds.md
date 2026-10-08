@@ -327,6 +327,31 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 
 最后分别执行一次截图和 RustDesk 屏幕捕获。只有两个 compositor 的 fresh login、D-Bus activation 和实际 portal 请求都通过后，才删除通用 unit 链接；Niri wants 链接可以单独验证和撤销。
 
+## tela-circle-icon-theme 断链
+
+| 项目 | 当前值 |
+| --- | --- |
+| 本地实现 | `modules/desktop.nix` 中 `telaCircle` 的 `postInstall` |
+| 上游修复 | [`9e32df0`](https://github.com/NixOS/nixpkgs/commit/9e32df0a175bcb1a601dfc9baa5e44396e3f6454)，在 `installPhase` 里删除断掉的符号链接 |
+| 当前锁定 nixpkgs | `151fa4e8`，包含 `2026-07-07`，不含该修复 |
+
+### 原因
+
+`2026-07-07` 的安装脚本会留下指向不存在图标的符号链接，`noBrokenSymlinks` 让 `home-manager build` 失败。修复已在 nixpkgs `master`，但还没进入当前 `nixos-unstable`。本地在 `postInstall` 删除这些断链。
+
+### 撤销条件
+
+`nixos-unstable` 的 `tela-circle-icon-theme` 已经自己删除断链，并且去掉这段 `postInstall` 后，桌面 profile 仍能构建。
+
+### 检查方法
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NixOS/nixpkgs/nixos-unstable/pkgs/by-name/te/tela-circle-icon-theme/package.nix \
+  | grep -n 'xtype l'
+```
+
+有匹配后再删除本地覆盖并重新构建。
+
 ## 不属于待撤销绕过的配置
 
 以下内容是当前系统的正常功能或所有权选择，不因上游发布新版本而自动删除：
