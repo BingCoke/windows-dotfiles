@@ -91,6 +91,20 @@ in
     };
   };
 
+  home.file.".local/share/applications/com.dingtalk.DingTalk.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=钉钉
+    GenericName=dingtalk
+    Comment=钉钉桌面版
+    Exec=flatpak run --branch=stable --arch=x86_64 --command=dingtalk --file-forwarding com.dingtalk.DingTalk --ignore-certificate-errors @@u %U @@
+    Icon=com.dingtalk.DingTalk
+    Categories=Chat;Office;
+    Keywords=dingtalk;
+    MimeType=x-scheme-handler/dingtalk;x-scheme-handler/dingtalk_std_ind;
+    X-Flatpak=com.dingtalk.DingTalk
+  '';
+
   # Flathub preloads libdingtalk_wayland_screenshare.so whenever
   # WAYLAND_DISPLAY is set or XDG_SESSION_TYPE=wayland. That hook intercepts
   # XGetImage (file-dialog thumbnails, open file) and abort()s on a portal

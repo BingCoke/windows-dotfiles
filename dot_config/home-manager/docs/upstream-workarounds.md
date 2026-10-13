@@ -74,7 +74,7 @@ nix flake metadata --json \
 
 | 项目 | 当前值 |
 | --- | --- |
-| 本地实现 | `modules/compositors.nix` 中固定上游源码；Mango 和 Niri 共用 |
+| 本地实现 | `modules/compositors.nix` 中固定上游源码；Niri 使用 |
 | 固定提交 | [`c0255d7b047b7263629ab5a314661045ff7f65e3`](https://github.com/emersion/xdg-desktop-portal-wlr/commit/c0255d7b047b7263629ab5a314661045ff7f65e3) |
 | 本地版本名 | `0.9.0-dev-c0255d7` |
 | 当前正式 release | `v0.8.4`，不包含该提交 |
@@ -88,11 +88,11 @@ nix flake metadata --json \
 
 ### 撤销条件
 
-同时满足以下条件后，删除 `modules/compositors.nix` 中的 `overrideAttrs`，让 Mango 和 Niri 重新使用 `pkgs.xdg-desktop-portal-wlr`：
+同时满足以下条件后，删除 `modules/compositors.nix` 中的 `overrideAttrs`，让 Niri 重新使用 `pkgs.xdg-desktop-portal-wlr`：
 
 1. xdg-desktop-portal-wlr 发布的新 tag 包含 `c0255d7`；或者 nixpkgs 在当前 release 包上明确回移了等价修复。
 2. 实际使用的 `nixos-unstable` 包包含该 release 或回移补丁。
-3. 未固定源码的 Home Manager generation 中，Mango、Niri 和 Niri 的两个 systemd service 链接解析到同一个 nixpkgs derivation。
+3. 未固定源码的 Home Manager generation 中，Niri 使用的两个 portal service 链接解析到同一个 nixpkgs derivation。
 4. RustDesk 重启后可以连续更新画面，不再只显示首帧。
 
 ### 检查方法
@@ -296,16 +296,16 @@ noctalia-host-auth test
 
 | 项目 | 当前值 |
 | --- | --- |
-| 本地实现 | `modules/compositors.nix` 中两个 portal user unit 链接；`modules/wayland.nix` 中 GTK portal unit 链接；`modules/niri.nix` 中一个 Niri wants 链接 |
+| 本地实现 | `modules/compositors.nix` 中的 portal user unit 链接；`modules/wayland.nix` 中 GTK portal unit 链接；`modules/niri.nix` 中一个 Niri wants 链接 |
 | 作用 | 确保 Ubuntu 的 user systemd 优先找到当前用户的 Nix portal，并让 `niri.service` 显式启动 WLR portal |
 | 影响范围 | 仅应用该 desktop profile 的用户；不修改 `/usr` 下的系统 unit，也不影响其他用户 |
 | 上游跟踪 | 当前没有精确 issue；属于 generic Linux 会话发现与启动保证 |
 
-Mango 和 Niri 共用 `~/.config/systemd/user` 下的 portal unit。Niri 额外使用自己的 wants 链接；Mango 通过 user D-Bus activation 启动同一个 WLR backend。两套桌面的 ScreenCast 和 Screenshot 都由各自的 portal 配置明确路由到 `wlr`。
+Niri 使用 `~/.config/systemd/user` 下的 portal unit，并通过自己的 wants 链接启动 WLR backend。ScreenCast 和 Screenshot 都由 Niri 的 portal 配置明确路由到 `wlr`。
 
 ### 撤销条件
 
-只有 Ubuntu 的 user systemd 和 D-Bus 在不创建这些显式链接时，仍能从 Home Manager profile 稳定发现固定的 portal 包，才考虑删除链接。验证必须覆盖全新 Mango 和 Niri 登录，不能复用已经运行的 portal 进程。
+只有 Ubuntu 的 user systemd 和 D-Bus 在不创建这些显式链接时，仍能从 Home Manager profile 稳定发现固定的 portal 包，才考虑删除链接。验证必须覆盖全新 Niri 登录，不能复用已经运行的 portal 进程。
 
 ### 检查方法
 
@@ -318,14 +318,14 @@ systemd-analyze --user unit-paths
 busctl --user list --activatable | grep org.freedesktop.impl.portal.desktop.wlr
 ```
 
-在测试 generation 中移除显式链接并分别重新登录 Mango 和 Niri，然后检查：
+在测试 generation 中移除显式链接并重新登录 Niri，然后检查：
 
 ```bash
 systemctl --user show xdg-desktop-portal-wlr.service \
   -p ActiveState -p FragmentPath -p ExecStart
 ```
 
-最后分别执行一次截图和 RustDesk 屏幕捕获。只有两个 compositor 的 fresh login、D-Bus activation 和实际 portal 请求都通过后，才删除通用 unit 链接；Niri wants 链接可以单独验证和撤销。
+最后执行一次截图和 RustDesk 屏幕捕获。只有 Niri 的 fresh login、D-Bus activation 和实际 portal 请求都通过后，才删除通用 unit 链接；Niri wants 链接可以单独验证和撤销。
 
 ## tela-circle-icon-theme 断链
 
@@ -360,5 +360,5 @@ curl -fsSL https://raw.githubusercontent.com/NixOS/nixpkgs/nixos-unstable/pkgs/b
 - `modules/fonts.nix` 中选择静态 Noto CJK 字体包；
 - `flake.lock` 对 nixpkgs 和 Home Manager 的正常版本锁定；
 - `targets.genericLinux` 的 GPU 集成及其宿主初始化；
-- GDM compositor session 文件安装工具；
+- Niri 会话文件安装工具；
 - 外部配置管理与 Home Manager 之间的文件所有权边界。

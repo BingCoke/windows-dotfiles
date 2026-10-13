@@ -1,0 +1,13 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+rule_file="$HOME/.config/home-manager/udev/99-usb-firmware-permissions.rules"
+installed_rule="/etc/udev/rules.d/99-usb-firmware-permissions.rules"
+installer="$HOME/.config/home-manager/scripts/install-usb-firmware-udev-rules.sh"
+
+if ! cmp -s "$rule_file" "$installed_rule"; then
+    printf '\nUSB firmware udev permissions are not installed or are outdated. To opt in, run:\n  '
+    printf '%q\n\n' "$installer"
+fi
+{{- end -}}

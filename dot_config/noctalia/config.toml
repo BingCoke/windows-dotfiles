@@ -79,7 +79,6 @@ builtin_ids = [
     "gtk4",
     "ghostty",
     "kitty",
-    "mango",
     "qt",
     "sway",
 ]

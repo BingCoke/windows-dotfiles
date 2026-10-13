@@ -18,6 +18,7 @@ $env:DOTFILES_USE_SHELL = 'nu'
 - Alacritty: 如果 `DOTFILES_USE_SHELL` 非空且能在 `PATH` 中找到，就写入 `terminal.shell.program`。
 - Neovim: 仅在 Windows 上、`DOTFILES_USE_SHELL=nu` 且 `nu` 可执行时，启用 Nushell 专用的 `shell`、`shellcmdflag`、重定向和管道配置。
 
+
 也就是说，如果 Windows 下想让这些配置使用 Nushell，需要先确保 `nu` 在 `PATH` 里，然后把变量设为 `nu`：
 
 ```powershell

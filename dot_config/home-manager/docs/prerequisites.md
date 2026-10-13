@@ -47,13 +47,15 @@ Nix profile 不会安装或修改以下 root 级组件：
 - Linux 内核、GPU 驱动和设备节点
 - systemd、D-Bus、显示管理器和自动登录
 - PAM、polkit、`pkexec`
-- PipeWire 或其他发行版基础服务
+- 系统级基础服务，以及未应用本配置的用户的音频服务
+
+桌面 profile 的用户级 PipeWire、pipewire-pulse、WirePlumber 和 filter-chain 服务及音频 socket 由 Nix/Home Manager 管理，详见 [用户级音频服务](audio.md)。Home Manager 使用宿主的 `/usr/bin/systemctl` 控制宿主 systemd 用户管理器。宿主仍提供内核音频驱动、设备权限、D-Bus 和可用的实时调度设施；不卸载宿主音频软件包，不修改其他用户的服务。
 
 Noctalia 的认证桥是唯一需要额外 root 操作的桌面收尾步骤，见 [Noctalia 宿主认证](noctalia-host-auth.md)。
 
 ## 非 NixOS GPU 集成
 
-桌面 profile 使用 Home Manager 的 `targets.genericLinux.gpu` 集成。它把 Nix 构建的 GPU 库注册到宿主系统的 `/run/opengl-driver`，因此 Mango 和其他 Nix 图形程序不需要 `nixGL` 包装，也不会把 Nix 图形库路径传给宿主 GUI 应用。
+桌面 profile 使用 Home Manager 的 `targets.genericLinux.gpu` 集成。它把 Nix 构建的 GPU 库注册到宿主系统的 `/run/opengl-driver`，因此 Niri 和其他 Nix 图形程序不需要 `nixGL` 包装，也不会把 Nix 图形库路径传给宿主 GUI 应用。
 
 首次切换桌面 profile 后，执行下面的命令安装 GPU 库：
 

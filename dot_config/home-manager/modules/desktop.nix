@@ -59,12 +59,14 @@ in
   imports = [
     ./compositors.nix
     ./wayland.nix
+    ./audio.nix
     ./input-method.nix
     ./fonts.nix
     ./flatpak.nix
   ];
 
   targets.genericLinux.enable = true;
+  systemd.user.systemctlPath = "/usr/bin/systemctl";
 
   # The upstream activation message prints a store path. sudo does not search
   # the user profile, so the short command has to carry the absolute path.
@@ -88,7 +90,7 @@ in
   home.activation.hostSetupCommands = lib.hm.dag.entryAfter [ "installPackages" ] ''
     warnEcho "Host setup commands:"
     warnEcho "  nix-gpu-setup"
-    warnEcho "  compositor-desktop install"
+    warnEcho "  niri-desktop install"
     warnEcho "  noctalia-host-auth check"
     warnEcho "  noctalia-host-auth install"
     warnEcho "  noctalia-host-auth test"

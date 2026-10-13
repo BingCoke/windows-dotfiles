@@ -62,7 +62,7 @@ printf '%s\n' "$QT_QPA_PLATFORMTHEME"
 qt6ct
 ```
 
-首次设置或修改后，完整注销并重新登录 Mango 会话。只重新打开终端不能保证由 Mango 启动的应用继承新的环境变量。
+首次设置或修改后，完整注销并重新登录 Niri 会话。只重新打开终端不能保证由 Niri 启动的应用继承新的环境变量。
 
 Qt5 和 Qt6 不能通过一个 `QT_QPA_PLATFORMTHEME` 值同时指定。需要强制 Qt5 应用使用 Qt5 主题时：
 
@@ -96,7 +96,7 @@ sudo pacman -S glib2 dconf
 sudo apt install libglib2.0-bin dconf-gsettings-backend
 ```
 
-Mango 应从正常的图形登录会话启动，不能在没有用户 D-Bus 的裸 TTY shell 中直接启动后期待 GTK 设置同步。
+Niri 应从正常的图形登录会话启动，不能在没有用户 D-Bus 的裸 TTY shell 中直接启动后期待 GTK 设置同步。
 
 ## 字体验证
 

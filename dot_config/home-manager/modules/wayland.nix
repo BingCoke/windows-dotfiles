@@ -21,9 +21,6 @@
     ddcutil
     ddcutil-service
     vdu_controls
-    pavucontrol
-    pamixer
-    playerctl
     lxqt.lxqt-policykit
     libnotify
     xdg-utils

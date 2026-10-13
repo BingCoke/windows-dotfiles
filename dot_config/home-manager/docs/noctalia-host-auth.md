@@ -51,7 +51,7 @@ sudo dnf upgrade --refresh selinux-policy selinux-policy-targeted
 noctalia-host-auth test
 ```
 
-如果提示 Noctalia 没有运行，先进入 Mango 会话并确认 Noctalia 已启动。不要通过关闭认证检查或手动复制 `/usr` 下的 helper 绕过问题。
+如果提示 Noctalia 没有运行，先进入 Niri 会话并确认 Noctalia 已启动。不要通过关闭认证检查或手动复制 `/usr` 下的 helper 绕过问题。
 
 ## 撤销
 

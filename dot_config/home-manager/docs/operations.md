@@ -55,6 +55,8 @@ home-manager news
 
 回滚只影响 Home Manager 用户环境。它不会撤销宿主系统通过 `noctalia-host-auth install` 建立的认证桥，也不会恢复宿主 GPU、PAM 或 systemd 配置。
 
+桌面 profile 的用户级音频服务由 Home Manager 管理；首次接管和回滚后的音频切换见 [用户级音频服务](audio.md)。
+
 ## 常见检查
 
 检查当前 profile 安装的软件：
@@ -63,7 +65,7 @@ home-manager news
 home-manager packages
 type -a nvim
 type -a cargo
-type -a mango
+type -a niri
 ```
 
 如果新安装的 Nix 命令在当前终端不可见，关闭并重新打开终端。

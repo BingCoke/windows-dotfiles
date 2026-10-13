@@ -24,7 +24,7 @@ input {
 overview {
 
     workspace-shadow {
-        off
+        on
     }
 }
 

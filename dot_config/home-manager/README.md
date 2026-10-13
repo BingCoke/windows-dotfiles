@@ -96,23 +96,23 @@ Home Manager 不管理 `~/.bashrc`、`~/.bash_profile` 或 `~/.profile`。可选
 
 也可以只复制其中需要的 `fzf`、`starship`、`yazi` 或 `zoxide` 配置。`zoxide` 初始化后提供 `z` 命令用于快速跳转目录。示例默认不启用 `mise activate bash`，因为它会为每个新 Shell 运行一次外部进程；需要自动切换工具版本时再取消对应注释。
 
-### 4. 在 GDM 中登录 Nix compositor
+### 4. 在 GDM 中登录 Nix Niri
 
-桌面 profile 首次 `switch` 成功后，同时安装 Nix Mango 和 Nix Niri 登录入口：
-
-```bash
-compositor-desktop install
-```
-
-这个命令内部会调用 `sudo`，把 Nix 生成的两个会话文件安装到 GDM 的系统会话目录。注销当前会话，在 Ubuntu 登录界面点击齿轮图标，选择 `Nix Mango` 或 `Nix Niri` 后登录。系统自带的 desktop 文件不会被修改。
-
-卸载两个 Nix 登录入口：
+桌面 profile 首次 `switch` 成功后，安装 Nix Niri 登录入口：
 
 ```bash
-compositor-desktop uninstall
+niri-desktop install
 ```
 
-Home Manager 更新 compositor 会话文件后，重新执行 `compositor-desktop install`。
+这个命令内部会调用 `sudo`，把 Nix 生成的 Niri 会话文件安装到 GDM 的系统会话目录。注销当前会话，在 Ubuntu 登录界面点击齿轮图标，选择 `Nix Niri` 后登录。系统自带的 desktop 文件不会被修改。
+
+卸载 Nix Niri 登录入口：
+
+```bash
+niri-desktop uninstall
+```
+
+Home Manager 更新 Niri 会话文件后，重新执行 `niri-desktop install`。
 
 ### 5. 桌面主机的人工收尾
 
@@ -127,6 +127,16 @@ noctalia-host-auth test
 认证桥的宿主依赖和故障处理见 [Noctalia 宿主认证](docs/noctalia-host-auth.md)。新电脑的显示器型号、排列和缩放比例需要重新确认，见 [显示器配置](docs/displays.md)。GTK/Qt 主题首次配置和字体检查见 [Noctalia GTK/Qt 主题与字体](docs/noctalia-theme.md)。
 
 纯 Shell 主机不需要执行这些桌面步骤。
+
+### 可选：开放 USB 键盘刷写权限
+
+在 Linux 上执行 `chezmoi apply` 后，若 USB udev 规则尚未安装或已过期，会输出安装命令。只有主动运行该命令才会请求 sudo 并安装规则：
+
+```bash
+~/.config/home-manager/scripts/install-usb-firmware-udev-rules.sh
+```
+
+规则文件位于 `~/.config/home-manager/udev/99-usb-firmware-permissions.rules`。安装后会向本机所有用户开放 USB/libusb、USB HID 和 USB 串口设备节点的读写权限，不限于键盘；不修改 USB 存储设备的块设备权限。
 
 ## 日常操作
 
@@ -149,10 +159,10 @@ home-manager generations
 
 ## 所有权边界
 
-- Nix/Home Manager：安装用户软件、Rust 工具链和开发辅助工具，以及当前 profile 声明的生成文件。
+- Nix/Home Manager：安装用户软件、Rust 工具链和开发辅助工具，以及当前 profile 声明的生成文件。桌面 profile 还管理当前用户的 PipeWire、pipewire-pulse、WirePlumber 和 filter-chain 服务及音频 socket；同一用户的所有会话共用这套 Nix 音频栈，不限于 Niri。未应用本配置的其他用户仍使用宿主音频服务。
 - `mise`：管理 Go 和 Node.js 版本；`uv`：管理 Python 版本与 Python 项目环境。
 - 宿主发行版：内核、GPU 驱动、设备节点、systemd、PAM、polkit 和其他 root 级系统组件。
-- 外部配置管理：Mango、Niri、Noctalia、Neovim、终端、Shell 和 Git 配置文件。Home Manager 安装 Shell 工具，但不生成 Bash 配置文件。
+- 外部配置管理：Niri、Noctalia、Neovim、终端、Shell 和 Git 配置文件。Home Manager 安装 Shell 工具，但不生成 Bash 配置文件。
 
 同一个配置文件只能由一个工具管理。Home Manager 报 `Existing file would be clobbered` 时，不要直接删除文件，先根据 [profile 和冲突说明](docs/profiles.md) 确认它的归属。
 
@@ -165,4 +175,5 @@ home-manager generations
 - [Noctalia GTK/Qt 主题与字体](docs/noctalia-theme.md)
 - [开发工具](docs/development-tools.md)
 - [日常运维、更新和回滚](docs/operations.md)
+- [用户级音频服务](docs/audio.md)
 - [上游问题与本地绕过跟踪](docs/upstream-workarounds.md)
