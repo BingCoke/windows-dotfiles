@@ -19,7 +19,6 @@ let
       Name=Nix Niri
       Comment=Niri compositor from the Nix profile
       Exec=${config.home.homeDirectory}/.nix-profile/bin/niri-session
-      TryExec=${config.home.homeDirectory}/.nix-profile/bin/niri-session
       DesktopNames=niri;
       Type=Application
     '';

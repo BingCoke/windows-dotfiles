@@ -10,8 +10,7 @@ return {
 
       -- load extension
       require("telescope").load_extension("oil")
-      vim.keymap.set("n", "<c-m>", "<cmd>Telescope oil<CR>", { noremap = true, silent = true })
-
+      vim.keymap.set("n", "<A-m>", "<cmd>Telescope oil<CR>", { noremap = true, silent = true })
     end
   },
   {
@@ -21,72 +20,6 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
 
     config = function()
-
-      local function oil_find_descendant()
-        local oil = require("oil")
-        local root = oil.get_current_dir()
-        if not root then
-          vim.notify("Oil: current directory is unavailable", vim.log.levels.WARN)
-          return
-        end
-
-        local fd = vim.fn.executable("fd") == 1 and "fd" or "fdfind"
-        if vim.fn.executable(fd) ~= 1 then
-          vim.notify("Oil: install fd to search descendant directories", vim.log.levels.ERROR)
-          return
-        end
-
-        local pickers = require("telescope.pickers")
-        local finders = require("telescope.finders")
-        local sorters = require("telescope.config").values
-        local actions = require("telescope.actions")
-        local action_state = require("telescope.actions.state")
-
-        local function descendant_finder(search_root)
-          return finders.new_oneshot_job({
-            fd,
-            "--type",
-            "d",
-            "--hidden",
-            "--exclude",
-            ".git",
-            "--absolute-path",
-            ".",
-            search_root,
-          }, {})
-        end
-
-        pickers
-            .new({}, {
-              prompt_title = "Oil descendant directories",
-              finder = descendant_finder(root),
-              sorter = sorters.file_sorter({}),
-              attach_mappings = function(prompt_bufnr, map)
-                local function drill_down()
-                  local entry = action_state.get_selected_entry()
-                  if not entry then
-                    return
-                  end
-
-                  local picker = action_state.get_current_picker(prompt_bufnr)
-                  picker:refresh(descendant_finder(vim.trim(entry.value)), { reset_prompt = true })
-                end
-
-                map("i", "<C-l>", drill_down)
-                map("n", "<C-l>", drill_down)
-                actions.select_default:replace(function()
-                  local entry = action_state.get_selected_entry()
-                  actions.close(prompt_bufnr)
-                  if entry then
-                    oil.open(vim.trim(entry.value))
-                  end
-                end)
-                return true
-              end,
-            })
-            :find()
-      end
-
       local function oil_pick_ancestor()
         local oil = require("oil")
         local dir = oil.get_current_dir()
@@ -162,7 +95,7 @@ return {
 
           ["<C-r>"] = "actions.refresh",
 
-          ["_"] = { "actions.open_cwd", mode = "n" },
+          -- ["_"] = { "actions.open_cwd", mode = "n" },
           ["`"] = { "actions.cd", mode = "n" },
           ["cd"] = { "actions.cd", mode = "n" },
           ["gl"] = { "actions.cd", opts = { scope = "win" }, mode = "n" },

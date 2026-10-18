@@ -19,7 +19,6 @@ local function nav(short_direction, direction, action)
       detach = true,
     })
   end
-
 end
 
 local M = {}
@@ -58,19 +57,19 @@ end
 
 local map = vim.keymap.set
 
-map({ "n", "t", "i" }, "<m-h>", function()
+map({ "n", "t" }, "<m-h>", function()
   M.left()
 end, { desc = "navigate left or tab" })
 
-map({ "n", "t", "i" }, "<m-j>", function()
+map({ "n", "t" }, "<m-j>", function()
   M.down()
 end, { desc = "navigate down" })
 
-map({ "n", "t", "i" }, "<m-k>", function()
+map({ "n", "t" }, "<m-k>", function()
   M.up()
 end, { desc = "navigate up" })
 
-map({ "n", "t", "i" }, "<M-l>", function()
+map({ "n", "t" }, "<M-l>", function()
   M.right()
 end, { desc = "navigate right or tab" })
 

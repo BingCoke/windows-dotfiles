@@ -54,6 +54,15 @@ let
     fi
     exec ${lib.getExe config.targets.genericLinux.gpu.setupPackage} "$@"
   '';
+
+  clashTunSetup = pkgs.writeShellScriptBin "clash-tun-setup" ''
+    if [ "$(id -u)" -ne 0 ]; then
+      exec /usr/bin/sudo -- ${pkgs.bash}/bin/bash ${../scripts/clash-tun-setup.sh} \
+        ${config.home.profileDirectory}/bin/clash-verge-service ${config.home.username}
+    fi
+    exec ${pkgs.bash}/bin/bash ${../scripts/clash-tun-setup.sh} \
+      ${config.home.profileDirectory}/bin/clash-verge-service ${config.home.username}
+  '';
 in
 {
   imports = [
@@ -90,6 +99,7 @@ in
   home.activation.hostSetupCommands = lib.hm.dag.entryAfter [ "installPackages" ] ''
     warnEcho "Host setup commands:"
     warnEcho "  nix-gpu-setup"
+    warnEcho "  clash-tun-setup"
     warnEcho "  niri-desktop install"
     warnEcho "  noctalia-host-auth check"
     warnEcho "  noctalia-host-auth install"
@@ -99,7 +109,21 @@ in
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.adw-gtk3;
+      # v5.3 supports Ubuntu 24.04's GTK 4.14; v5.4 requires GTK 4.16.
+      package = pkgs.adw-gtk3.overrideAttrs (_: {
+        version = "5.3";
+        src = pkgs.fetchFromGitHub {
+          owner = "lassekongo83";
+          repo = "adw-gtk3";
+          tag = "v5.3";
+          hash = "sha256-DpJLX9PJX1Q8dDOx7YOXQzgNECsKp5uGiCVTX6iSlbI=";
+        };
+        nativeBuildInputs = with pkgs; [
+          meson
+          ninja
+          sassc
+        ];
+      });
       name = "adw-gtk3-dark";
     };
     iconTheme = {
@@ -265,6 +289,7 @@ in
     pkgs.xarchiver
     pkgs.xdg-user-dirs
     pkgs.clash-verge-rev
+    clashTunSetup
     pkgs.gearlever
 
     # Qt5 and Qt6 theme selectors for Noctalia-generated color schemes.

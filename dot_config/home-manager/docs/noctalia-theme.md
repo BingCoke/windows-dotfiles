@@ -3,7 +3,7 @@
 桌面 profile 已经安装 GTK、Qt5 和 Qt6 的主题支持：
 
 ```text
-adw-gtk3
+adw-gtk3 v5.3
 Tela Circle icons
 Catppuccin Mocha Dark cursor
 qt5ct
@@ -32,7 +32,7 @@ builtin_ids = ["gtk3", "gtk4", "qt"]
 
 不要让 Home Manager 或其他配置工具静态管理 Noctalia 运行时生成的颜色文件。
 
-GTK3 基础主题、GTK/Qt 图标和光标声明在 `modules/desktop.nix`。修改后运行 `home-manager switch`；Noctalia 继续管理 GTK3/GTK4 CSS 和 Qt 配色。图标与光标设置不修改颜色。
+GTK3 基础主题、GTK/Qt 图标和光标声明在 `modules/desktop.nix`。所有桌面 profile 统一固定 `adw-gtk3 v5.3`，兼容 Ubuntu 24.04 的 GTK 4.14，并保留完整的 GTK3/GTK4 深浅主题文件。修改后运行 `home-manager switch`；Noctalia 继续管理 GTK3/GTK4 CSS 和 Qt 配色。图标与光标设置不修改颜色。
 
 分别配置 Qt5 和 Qt6：
 
@@ -47,6 +47,22 @@ qt6ct
 ~/.config/qt5ct/colors/noctalia.conf
 ~/.config/qt6ct/colors/noctalia.conf
 ```
+
+## Flatpak 主题
+
+`modules/flatpak.nix` 将同一个 Nix 主题包的 `adw-gtk3` 和 `adw-gtk3-dark` 链接到 `~/.local/share/themes`，并只读共享到每个 Flatpak 应用的主题目录。GTK 优先读取这些本地主题，宿主和沙箱使用同一份 v5.3。
+
+`~/.config/gtk-3.0` 和 `~/.config/gtk-4.0` 也只读共享到沙箱，Noctalia 继续生成和更新配色。
+
+每次激活 Home Manager 时，会为 Flathub 的 `org.gtk.Gtk3theme.adw-gtk3` 和 `org.gtk.Gtk3theme.adw-gtk3-dark` 设置用户级 mask，阻止自动安装和更新。已安装的主题扩展保留，由共享的本地主题优先提供样式。可以检查：
+
+```bash
+flatpak mask --user
+readlink -f ~/.local/share/themes/adw-gtk3-dark
+flatpak override --user --show
+```
+
+切换后完整退出并重新打开 Flatpak 应用，使它们获得新的主题挂载。
 
 ## 会话环境
 

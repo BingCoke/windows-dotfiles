@@ -45,8 +45,18 @@ in
 
   services.flatpak.packages = [
     "com.dingtalk.DingTalk"
-    "org.gtk.Gtk3theme.adw-gtk3-dark"
   ];
+
+  # GTK searches XDG_DATA_HOME/themes before Flatpak's theme extensions.
+  xdg.dataFile."themes/adw-gtk3".source =
+    "${config.gtk.theme.package}/share/themes/adw-gtk3";
+  xdg.dataFile."themes/adw-gtk3-dark".source =
+    "${config.gtk.theme.package}/share/themes/adw-gtk3-dark";
+
+  home.activation.maskFlatpakGtkThemes = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    $DRY_RUN_CMD ${pkgs.flatpak}/bin/flatpak mask --user \
+      org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark
+  '';
 
   # Apply to every Flatpak app. host + session/system bus + all devices is
   # equivalent to a normal install for files, D-Bus, and hardware access.
@@ -57,6 +67,8 @@ in
       filesystems = [
         "host"
         "xdg-config/gtk-3.0:ro"
+        "xdg-config/gtk-4.0:ro"
+        "xdg-data/themes:ro"
         # host already exposes these files, but Flatpak remaps XDG_*_HOME.
         # Client-side Fcitx panels look there, not at ~/.config or ~/.local.
         "xdg-config/fcitx5:ro"

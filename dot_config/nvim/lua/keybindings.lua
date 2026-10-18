@@ -33,37 +33,11 @@ end, { noremap = true, silent = true })
 
 map("v", "<c-c>", '"+y', opt)
 
-local function copy_file_line_reference()
-  local path = vim.fn.expand("%:p")
-  if path == "" then
-    vim.notify("No file path for current buffer", vim.log.levels.WARN)
-    return
-  end
-
-  path = path:gsub("\\", "/")
-
-  local start_line = vim.fn.line("v")
-  local end_line = vim.fn.line(".")
-  if vim.fn.mode() == "n" then
-    start_line = vim.fn.line(".")
-    end_line = start_line
-  end
-
-  if start_line > end_line then
-    start_line, end_line = end_line, start_line
-  end
-
-  local line_text = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
-  local text = string.format("%s line %s", path, line_text)
-
-  vim.fn.setreg("+", text)
-end
-
-map("n", "<M-c>", copy_file_line_reference, opt)
-map("v", "<M-c>", function()
-  copy_file_line_reference()
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
-end, opt)
+-- Copy the current line / visual selection as a file/line reference followed by
+-- a Markdown code block (lua/util/copy_code_reference.lua)
+map({ "n", "v" }, "<M-c>", function()
+  require("util.copy_code_reference").copy()
+end, { noremap = true, silent = true, desc = "Copy code block with file/line reference" })
 
 vim.keymap.set({ "n", "i", "v", "c", "t" }, "<F13>", "<Nop>", { noremap = true, silent = true })
 
@@ -127,6 +101,8 @@ local pluginKeys = {}
 vim.keymap.set("n", "]e", function()
   vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = false })
 end, opt)
+
+
 
 -- 跳转到上一个错误（仅 ERROR）
 vim.keymap.set("n", "[e", function()

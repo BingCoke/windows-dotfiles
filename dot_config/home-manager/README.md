@@ -126,6 +126,14 @@ noctalia-host-auth test
 
 认证桥的宿主依赖和故障处理见 [Noctalia 宿主认证](docs/noctalia-host-auth.md)。新电脑的显示器型号、排列和缩放比例需要重新确认，见 [显示器配置](docs/displays.md)。GTK/Qt 主题首次配置和字体检查见 [Noctalia GTK/Qt 主题与字体](docs/noctalia-theme.md)。
 
+需要 Clash Verge 的 TUN 模式时，再执行一次宿主服务安装；命令会请求 sudo，服务随后由 systemd 管理并随系统启动：
+
+```bash
+clash-tun-setup
+```
+
+安装、检查和删除的说明见 [Clash Verge TUN 模式](docs/clash-tun.md)。
+
 纯 Shell 主机不需要执行这些桌面步骤。
 
 ### 可选：开放 USB 键盘刷写权限
@@ -173,6 +181,7 @@ home-manager generations
 - [显示器配置](docs/displays.md)
 - [Noctalia 宿主认证](docs/noctalia-host-auth.md)
 - [Noctalia GTK/Qt 主题与字体](docs/noctalia-theme.md)
+- [Clash Verge TUN 模式](docs/clash-tun.md)
 - [开发工具](docs/development-tools.md)
 - [日常运维、更新和回滚](docs/operations.md)
 - [用户级音频服务](docs/audio.md)
