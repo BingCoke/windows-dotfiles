@@ -50,3 +50,5 @@ onchange-after_setup-symlinks.ps1
 .agents/skills/**/build/
 .config/nushell/local.nu
 .config/nushell/local-env.nu
+
+README.md

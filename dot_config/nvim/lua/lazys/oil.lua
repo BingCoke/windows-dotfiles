@@ -149,11 +149,11 @@ return {
       })
 
       -- opens parent dir over current active window
-      vim.keymap.set({ "n" }, "-", function()
+      vim.keymap.set({ "n" }, "|", function()
         require("oil").toggle_float(vim.fn.getcwd(-1, -1))
       end, { desc = "Open global cwd" })
 
-      vim.keymap.set({ "n" }, "_", function()
+      vim.keymap.set({ "n" }, "\\", function()
         require("oil").open(vim.fn.getcwd(-1, -1))
       end, { desc = "Open global cwd" })
 

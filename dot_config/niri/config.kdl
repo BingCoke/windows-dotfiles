@@ -29,8 +29,8 @@ overview {
 }
 
 blur {
-    passes 3
-    offset 1.0
+    passes 4
+    offset 2.0
     noise 0.0
     saturation 1.0
 }
