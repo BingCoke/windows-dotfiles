@@ -1,19 +1,19 @@
 { pkgs, xdgDesktopPortalWlr, ... }:
 
 let
-  xwaylandSatelliteRevision = "ae88928f7334556d298b8d9552abdf395931931b";
+  xwaylandSatelliteRevision = "45b912c6fbcbbc9bc22148c865e95a449d3b5c0e";
   xwaylandSatelliteSrc = pkgs.fetchFromGitHub {
     owner = "Supreeeme";
     repo = "xwayland-satellite";
     rev = xwaylandSatelliteRevision;
-    hash = "sha256-+RlIyHipr7BOLsIC9jnpzbkLBsY6XbLhuPinAwJsYjo=";
+    hash = "sha256-LJdlM4zm7UyOC0fxBdV1im+Mi/vEO63hxe4kAR+/kO0=";
   };
   xwaylandSatellite = pkgs.xwayland-satellite.overrideAttrs (_: {
-    version = "0.8.3-dev-ae88928";
+    version = "0.8.3-dev-45b912c";
     src = xwaylandSatelliteSrc;
     cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
       src = xwaylandSatelliteSrc;
-      hash = "sha256-gMGFvnbxM3hD5fmkSimaFd87GEf6BXFe/MGjoS6VNVU=";
+      hash = "sha256-gyQmdkWxnoaJzW1KN40ZmRTjVbfpt6tA8JHUMds35ag=";
     };
   });
   patchedXwaylandSatellite = xwaylandSatellite.overrideAttrs (old: {

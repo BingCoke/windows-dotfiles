@@ -39,10 +39,17 @@ let
     ];
   };
 
-  # nixos-unstable does not yet have nixpkgs 9e32df0.
-  telaCircle = pkgs.tela-circle-icon-theme.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      find $out -xtype l -print -delete
+  # nixos-unstable does not yet have nixpkgs 6b01148: with __structuredAttrs,
+  # makeWrapperArgs elements are passed unsplit, so the `--prefix PATH : ...`
+  # element must be re-tokenized and gappsWrapperArgs expanded in preFixup.
+  gearlever = pkgs.gearlever.overrideAttrs (old: {
+    makeWrapperArgs = builtins.concatMap (
+      arg:
+      if arg == "\${gappsWrapperArgs[@]}" then [ ]
+      else builtins.filter (t: builtins.isString t && t != "") (builtins.split " " arg)
+    ) old.makeWrapperArgs;
+    preFixup = (old.preFixup or "") + ''
+      makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
     '';
   });
 
@@ -127,7 +134,7 @@ in
       name = "adw-gtk3-dark";
     };
     iconTheme = {
-      package = telaCircle;
+      package = pkgs.tela-circle-icon-theme;
       name = "Tela-circle-dark";
     };
     colorScheme = "dark";
@@ -290,7 +297,7 @@ in
     pkgs.xdg-user-dirs
     pkgs.clash-verge-rev
     clashTunSetup
-    pkgs.gearlever
+    gearlever
 
     # Qt5 and Qt6 theme selectors for Noctalia-generated color schemes.
     pkgs.libsForQt5.qt5ct

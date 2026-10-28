@@ -60,7 +60,7 @@ in
 
   # Apply to every Flatpak app. host + session/system bus + all devices is
   # equivalent to a normal install for files, D-Bus, and hardware access.
-  services.flatpak.overrides.global = {
+  services.flatpak.overrides.settings.global = {
     Context = {
       # host includes home, exposes host-os/host-etc under /run/host, and leaves
       # /tmp to Flatpak so socket permissions can mount the X11 socket there.
@@ -122,7 +122,7 @@ in
   # XGetImage (file-dialog thumbnails, open file) and abort()s on a portal
   # handshake panic. DingTalk is X11-only; keep the Wayland socket off this
   # app so the hook never loads. This is not a DISPLAY/QT_QPA_PLATFORM override.
-  services.flatpak.overrides."com.dingtalk.DingTalk" = {
+  services.flatpak.overrides.settings."com.dingtalk.DingTalk" = {
     Context.sockets = [ "!wayland" ];
     Environment = {
       XDG_SESSION_TYPE = "x11";

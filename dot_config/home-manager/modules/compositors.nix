@@ -2,12 +2,12 @@
 
 let
   xdgDesktopPortalWlr = pkgs.xdg-desktop-portal-wlr.overrideAttrs (_: {
-    version = "0.9.0-dev-c0255d7";
+    version = "0.9.0-dev-2e67398";
     src = pkgs.fetchFromGitHub {
       owner = "emersion";
       repo = "xdg-desktop-portal-wlr";
-      rev = "c0255d7b047b7263629ab5a314661045ff7f65e3";
-      hash = "sha256-W+0FrP5dlmf/dxcXt6pv4HFbpvJABNRl4TEghCSIy9c=";
+      rev = "2e67398bd492392c258b680f4d2a1f371356c1e1";
+      hash = "sha256-TBzGR8EAvOjBY6os2wt9vP97y4Eh4U9VWmcZ2871yDM=";
     };
   });
 

@@ -36,8 +36,8 @@
 | 项目 | 当前值 |
 | --- | --- |
 | 本地实现 | `flake.nix` 的 `nix-flatpak` input |
-| 固定 tag | [`v0.7.0`](https://github.com/gmodena/nix-flatpak/releases/tag/v0.7.0) |
-| 上游说明 | README 将 `v0.7.0` 标为当前稳定版；`main` 为开发分支 |
+| 固定 tag | [`v0.8.0`](https://github.com/gmodena/nix-flatpak/releases/tag/v0.8.0) |
+| 上游说明 | README 将 `v0.8.0` 标为当前稳定版；`main` 为开发分支 |
 | 桌面引用 | 仅桌面 profile 导入 `nix-flatpak.homeManagerModules.nix-flatpak`，配置在 `modules/flatpak.nix` |
 
 ### 原因
@@ -46,7 +46,7 @@
 
 ### 何时升级
 
-有新的稳定 tag 后，把 `flake.nix` 里的 `ref=v0.7.0` 改成新 tag，更新 `flake.lock`，再构建桌面 profile。升级后核对 `modules/flatpak.nix` 的 `services.flatpak.overrides` 是否仍合法。
+有新的稳定 tag 后，把 `flake.nix` 里的 `ref=v0.8.0` 改成新 tag，更新 `flake.lock`，再构建桌面 profile。升级后核对 `modules/flatpak.nix` 的 `services.flatpak.overrides.settings` 是否仍合法。v0.8.0 仍接受直接写在 `overrides` 下的旧格式，但会输出弃用告警，本地已统一改用 `.settings`。
 
 ### 检查方法
 
@@ -57,7 +57,7 @@ curl -fsSL https://api.github.com/repos/gmodena/nix-flatpak/releases/latest \
   | jq -r '.tag_name, .published_at, .html_url'
 ```
 
-对照 README 的 Versioning（当前稳定版是否仍写 `0.7.0`）：
+对照 README 的 Versioning（当前稳定版是否仍写 `0.8.0`）：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/gmodena/nix-flatpak/main/README.md | head -25
@@ -75,8 +75,8 @@ nix flake metadata --json \
 | 项目 | 当前值 |
 | --- | --- |
 | 本地实现 | `modules/compositors.nix` 中固定上游源码；Niri 使用 |
-| 固定提交 | [`c0255d7b047b7263629ab5a314661045ff7f65e3`](https://github.com/emersion/xdg-desktop-portal-wlr/commit/c0255d7b047b7263629ab5a314661045ff7f65e3) |
-| 本地版本名 | `0.9.0-dev-c0255d7` |
+| 固定提交 | [`2e67398bd492392c258b680f4d2a1f371356c1e1`](https://github.com/emersion/xdg-desktop-portal-wlr/commit/2e67398bd492392c258b680f4d2a1f371356c1e1)（`c0255d7` 之后 2 个提交） |
+| 本地版本名 | `0.9.0-dev-2e67398` |
 | 当前正式 release | `v0.8.4`，不包含该提交 |
 | 当前锁定 nixpkgs 包 | `0.8.4` |
 
@@ -85,6 +85,8 @@ nix flake metadata --json \
 `v0.8.4` 的 wlr-screencopy 路径在完成并提交一帧后没有再次调用 `pw_stream_trigger_process()`。流作为 PipeWire driver 运行时只会交付进入 `STREAMING` 时预先触发的一帧，随后停止。节点仍显示 `running`，通常也不会产生 PipeWire 错误。
 
 上游提交 `c0255d7` 在每次 wlr-screencopy capture cycle 完成后重新触发 graph。本机已通过运行时 A/B 验证：`0.8.4` 在 RustDesk 中首帧后冻结，包含该提交的构建可以持续捕获。
+
+钉的来源已跟随上游 HEAD 到 `2e67398`，额外包含 `Start` 只处理匹配会话和拒绝未知会话 `SelectSources` 两个修复；冻结修复仍是 `c0255d7`。
 
 ### 撤销条件
 
@@ -138,7 +140,7 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-dingtalk-popup.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite` |
-| 当前固定上游源码 | [`ae88928f7334556d298b8d9552abdf395931931b`](https://github.com/Supreeeme/xwayland-satellite/commit/ae88928f7334556d298b8d9552abdf395931931b)（`v0.8.3` 之后，含 #448） |
+| 当前固定上游源码 | [`45b912c6fbcbbc9bc22148c865e95a449d3b5c0e`](https://github.com/Supreeeme/xwayland-satellite/commit/45b912c6fbcbbc9bc22148c865e95a449d3b5c0e)（`v0.8.3` 之后，含 #448、#526、#539） |
 | 保护措施 | Nix 固定源码和 Cargo vendor 哈希；更新提交前必须人工复核补丁 |
 
 ### 原因
@@ -198,7 +200,7 @@ WM_TRANSIENT_FOR
 | 项目 | 当前值 |
 | --- | --- |
 | 本地实现 | `modules/niri.nix` 中的固定源码覆盖 |
-| 当前固定上游源码 | [`ae88928f7334556d298b8d9552abdf395931931b`](https://github.com/Supreeeme/xwayland-satellite/commit/ae88928f7334556d298b8d9552abdf395931931b) |
+| 当前固定上游源码 | [`45b912c6fbcbbc9bc22148c865e95a449d3b5c0e`](https://github.com/Supreeeme/xwayland-satellite/commit/45b912c6fbcbbc9bc22148c865e95a449d3b5c0e)（`v0.8.3` 之后，含 #448、#526、#539） |
 | 上游问题 | [#468](https://github.com/Supreeeme/xwayland-satellite/issues/468) |
 | 上游修复 | [#494](https://github.com/Supreeeme/xwayland-satellite/pull/494)，已进入 `v0.8.3` |
 
@@ -206,11 +208,11 @@ WM_TRANSIENT_FOR
 
 `xwayland-satellite 0.8.2` 会在 Niri 中错误地聚焦 Steam 的 `override_redirect` X11 popup。Steam 的下拉菜单和右键菜单随即失焦并关闭。`v0.8.3`（`b83eab9`）包含 #494：不聚焦这类 popup，并在客户端声明时发送 `WM_TAKE_FOCUS`。同一个 release 还包含 #496，修正带装饰窗口的 viewport 与鼠标偏移。2026-10-06 的 `nixos-unstable` 已经是这个 tag。
 
-源码固定仍然留着，因为上游 git 又超过了 `v0.8.3`，而这份 nixpkgs 没有。当前提交 `ae88928` 在 `v0.8.3` 之上多了 [#448](https://github.com/Supreeeme/xwayland-satellite/pull/448)：`xdg_positioner` 的尺寸和锚点矩形向上取整。同一范围里还有只改测试的 #509 和 README。本地三个补丁在这个提交上仍能按原顺序应用。
+源码固定仍然留着，因为上游 git 又超过了 `v0.8.3`，而这份 nixpkgs 没有。当前钉的提交 `45b912c` 在 `v0.8.3` 之上包含 [#448](https://github.com/Supreeeme/xwayland-satellite/pull/448)：`xdg_positioner` 的尺寸和锚点矩形向上取整；此外还有 #526（`tv_nsec` 类型推断修复）、#539（移除未使用的 fontdue）、`xdg_output`/`logical_size` 时序修复，以及 Wayland dispatch 期间排空缓存的 X11 事件，其余为测试同步。本地三个补丁在该提交上仍按原顺序应用：ICCCM 补丁偏移 2–3 行，DingTalk 补丁第 3 个 hunk 以 fuzz 2 命中，已人工复核窗口角色语义未变。
 
 ### 撤销条件
 
-当 nixpkgs 的 `xwayland-satellite.src.rev` 已经包含 `ae88928`（或同时仍包含 #494 和 #448 的更新提交），且现有本地补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续把 ICCCM 焦点补丁、DingTalk 角色补丁和 input-region 缩放补丁施加到 `pkgs.xwayland-satellite`。不要仅因 nixpkgs 到达 `v0.8.3` 就撤销；#448 还不在那个 tag 里。#499 是另一个补丁，不随源码固定一起删。
+当 nixpkgs 的 `xwayland-satellite.src.rev` 已经包含 `45b912c`（或同时仍包含 #494 和 #448 的更新提交），且现有本地补丁能在该包源码上正确应用时，删除 `xwaylandSatelliteSrc`、`xwaylandSatelliteRevision` 和 `cargoDeps` 覆盖，继续把 ICCCM 焦点补丁、DingTalk 角色补丁和 input-region 缩放补丁施加到 `pkgs.xwayland-satellite`。不要仅因 nixpkgs 到达 `v0.8.3` 就撤销；#448 还不在那个 tag 里。#499 是另一个补丁，不随源码固定一起删。
 
 ### 验证
 
@@ -219,7 +221,7 @@ WM_TRANSIENT_FOR
 ```bash
 PROFILE=bingcoke@home
 nix run github:nix-community/home-manager -- build --flake ".#$PROFILE"
-curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/ae88928 \
+curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/45b912c \
   | jq -r '.sha, .html_url'
 ```
 
@@ -229,7 +231,7 @@ curl -fsSL https://api.github.com/repos/Supreeeme/xwayland-satellite/commits/ae8
 | --- | --- |
 | 本地实现 | `patches/xwayland-satellite-icccm-focus.patch` |
 | 应用位置 | `modules/niri.nix` 中的 `patchedXwaylandSatellite`，排在 DingTalk 角色补丁之前 |
-| 当前固定上游源码 | [`ae88928f7334556d298b8d9552abdf395931931b`](https://github.com/Supreeeme/xwayland-satellite/commit/ae88928f7334556d298b8d9552abdf395931931b)（`v0.8.3` 之后，含 #448） |
+| 当前固定上游源码 | [`45b912c6fbcbbc9bc22148c865e95a449d3b5c0e`](https://github.com/Supreeeme/xwayland-satellite/commit/45b912c6fbcbbc9bc22148c865e95a449d3b5c0e)（`v0.8.3` 之后，含 #448、#526、#539） |
 | 补丁对应上游 | [#499](https://github.com/Supreeeme/xwayland-satellite/pull/499) 的 `7fb176b348c076a63cf7e1fdf04e28124c412dd0` |
 | 独立上游问题 | [#487](https://github.com/Supreeeme/xwayland-satellite/issues/487) 孤儿 popup 生命周期，本补丁不处理 |
 
@@ -327,30 +329,30 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 
 最后执行一次截图和 RustDesk 屏幕捕获。只有 Niri 的 fresh login、D-Bus activation 和实际 portal 请求都通过后，才删除通用 unit 链接；Niri wants 链接可以单独验证和撤销。
 
-## tela-circle-icon-theme 断链
+## gearlever 的 makeWrapperArgs 分词
 
 | 项目 | 当前值 |
 | --- | --- |
-| 本地实现 | `modules/desktop.nix` 中 `telaCircle` 的 `postInstall` |
-| 上游修复 | [`9e32df0`](https://github.com/NixOS/nixpkgs/commit/9e32df0a175bcb1a601dfc9baa5e44396e3f6454)，在 `installPhase` 里删除断掉的符号链接 |
-| 当前锁定 nixpkgs | `151fa4e8`，包含 `2026-07-07`，不含该修复 |
+| 本地实现 | `modules/desktop.nix` 中的 `gearlever` override |
+| 上游修复 | [`6b01148e2e97`](https://github.com/NixOS/nixpkgs/commit/6b01148e2e97)，`treewide: fix python makeWrapperArgs with __structuredAttrs` |
+| 当前锁定 nixpkgs | `31ecbaca`，不含该修复 |
 
 ### 原因
 
-`2026-07-07` 的安装脚本会留下指向不存在图标的符号链接，`noBrokenSymlinks` 让 `home-manager build` 失败。修复已在 nixpkgs `master`，但还没进入当前 `nixos-unstable`。本地在 `postInstall` 删除这些断链。
+`31ecbaca` 的 `gearlever` 把 `--prefix PATH : ...` 和 `${gappsWrapperArgs[@]}` 各作为一个 `makeWrapperArgs` 元素。Python 包启用 `__structuredAttrs` 后，这些元素不再经过 shell 分词，`makeCWrapper` 收到整段字符串并以 `Unknown argument` 失败，桌面 profile 构建中断。本地覆盖把这些元素重新分词，并在 `preFixup` 中展开 `gappsWrapperArgs`，语义与上游修复一致。
 
 ### 撤销条件
 
-`nixos-unstable` 的 `tela-circle-icon-theme` 已经自己删除断链，并且去掉这段 `postInstall` 后，桌面 profile 仍能构建。
+`nixos-unstable` 的 `gearlever` 已经包含 `6b01148`（`makeWrapperArgs` 的元素不再含空格分隔的多参数），且删除覆盖后桌面 profile 仍能构建。
 
 ### 检查方法
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NixOS/nixpkgs/nixos-unstable/pkgs/by-name/te/tela-circle-icon-theme/package.nix \
-  | grep -n 'xtype l'
+curl -fsSL https://raw.githubusercontent.com/NixOS/nixpkgs/nixos-unstable/pkgs/by-name/ge/gearlever/package.nix \
+  | grep -n -B2 -A6 'makeWrapperArgs'
 ```
 
-有匹配后再删除本地覆盖并重新构建。
+已修复的版本会用独立的 `"--prefix" "PATH" ":"` 元素，并在 `preFixup` 中追加 `gappsWrapperArgs`。
 
 ## 不属于待撤销绕过的配置
 
