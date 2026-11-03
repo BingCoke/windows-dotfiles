@@ -70,6 +70,20 @@ nix flake metadata --json \
   | jq -r '.locks.nodes["nix-flatpak"].original.ref'
 ```
 
+### 删除 override 键需要手动 reset
+
+nix-flatpak 按 merge 语义写 override：只把新的 `overrides.settings` 合并到 active override 文件上，从 Nix 配置里删掉的键不会撤回。它生成的 install 脚本注释写明 "When a setting or file is removed from the Nix config the active override file is left untouched"。所以只执行 `home-manager switch` 时，`flatpak override --user --show` 仍会显示已经删掉的键。
+
+从配置里删除 override 键时，先 reset 一次再让 nix-flatpak 重写：
+
+```bash
+flatpak override --user --reset APP_ID
+systemctl --user start flatpak-managed-install.service
+flatpak override --user --show APP_ID
+```
+
+`--reset` 只影响指定的应用（不带 APP_ID 时是 global），不触碰其他 override；reset 之后该服务或下一次 `switch` 都会按当前 Nix 配置重写同一个文件。
+
 ## xdg-desktop-portal-wlr 首帧后停止
 
 | 项目 | 当前值 |
@@ -328,6 +342,45 @@ systemctl --user show xdg-desktop-portal-wlr.service \
 ```
 
 最后执行一次截图和 RustDesk 屏幕捕获。只有 Niri 的 fresh login、D-Bus activation 和实际 portal 请求都通过后，才删除通用 unit 链接；Niri wants 链接可以单独验证和撤销。
+
+## DingTalk Flatpak 的 Wayland 屏幕共享
+
+| 项目 | 当前值 |
+| --- | --- |
+| 本地实现 | `modules/flatpak.nix` 中 `com.dingtalk.DingTalk` 的应用级 override，只保留 Qt 缩放两条 |
+| 依赖的上游组件 | Flatpak 包自带的 `/app/bin/dingtalk` 启动脚本和 `libdingtalk_wayland_screenshare.so` |
+| 需要保持 | 全局 override 的 `wayland` socket 可见；应用级 override 不写 `!wayland`，也不写 `XDG_SESSION_TYPE=x11` |
+
+### 原因
+
+Flatpak 包的启动脚本在 `WAYLAND_DISPLAY` 非空或 `XDG_SESSION_TYPE=wayland` 时把 `libdingtalk_wayland_screenshare.so` 加进 `LD_PRELOAD`。该 hook 就是钉钉在 Wayland 下的屏幕共享实现：它创建 `org.freedesktop.portal.ScreenCast` 会话，从 PipeWire 收帧，再把帧注入 `XGetImage`/`XShmGetImage` 的结果。
+
+钉钉没有 Qt Wayland 插件，界面始终走 Xwayland。只去掉 Wayland socket 时 hook 不会加载，共享退回直接截取 Xwayland root；在 xwayland-satellite 下该 root 只包含 X11 窗口，原生 Wayland 窗口不会出现在共享画面里。
+
+历史上（2026-09-20 起）这里曾用 `Context.sockets = [ "!wayland" ]` 加 `XDG_SESSION_TYPE=x11` 关掉 hook，理由是它在文件选择器缩略图、打开文件等非会议路径上触发过 `XGetImage` 的 portal 握手 panic 并 `abort()`。2026-11-03 在 8.3.1 上移除这两个键后，文件选择器和缩略图都复现不出该崩溃，因此不再保留。
+
+### 重新加回的条件
+
+只有 hook 在本机再次稳定复现 `abort`、且能定位到具体非会议调用路径时才考虑加回；加回等于放弃 Wayland 屏幕共享。只看到共享画面异常时不要加回这两个键，先按下面的检查方法看 portal 侧。
+
+### 检查方法
+
+确认运行中的钉钉已经加载 hook：
+
+```bash
+tr '\0' '\n' < /proc/$(pgrep -f 'com.alibabainc.dingtalk' | head -1)/environ \
+  | grep -E 'LD_PRELOAD|WAYLAND_DISPLAY'
+```
+
+预期 `LD_PRELOAD` 含 `libdingtalk_wayland_screenshare.so`，且 `WAYLAND_DISPLAY` 非空。
+
+共享异常时按顺序看 portal 侧，不要先改 Flatpak 权限：
+
+```bash
+systemctl --user status xdg-desktop-portal-wlr.service --no-pager
+journalctl --user -b --no-pager | grep -E 'screenshare-hook|xdg-desktop-portal-wlr'
+flatpak override --user --show com.dingtalk.DingTalk
+```
 
 ## gearlever 的 makeWrapperArgs 分词
 

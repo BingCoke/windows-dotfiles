@@ -117,15 +117,14 @@ in
     X-Flatpak=com.dingtalk.DingTalk
   '';
 
-  # Flathub preloads libdingtalk_wayland_screenshare.so whenever
-  # WAYLAND_DISPLAY is set or XDG_SESSION_TYPE=wayland. That hook intercepts
-  # XGetImage (file-dialog thumbnails, open file) and abort()s on a portal
-  # handshake panic. DingTalk is X11-only; keep the Wayland socket off this
-  # app so the hook never loads. This is not a DISPLAY/QT_QPA_PLATFORM override.
+  # Flathub preloads libdingtalk_wayland_screenshare.so whenever WAYLAND_DISPLAY
+  # is set or XDG_SESSION_TYPE=wayland. That hook is DingTalk's screen-share
+  # path: it opens an org.freedesktop.portal.ScreenCast session and injects the
+  # PipeWire frames into XGetImage/XShm. Without the Wayland socket DingTalk
+  # falls back to capturing the Xwayland root, which under xwayland-satellite
+  # only contains X11 windows.
   services.flatpak.overrides.settings."com.dingtalk.DingTalk" = {
-    Context.sockets = [ "!wayland" ];
     Environment = {
-      XDG_SESSION_TYPE = "x11";
       # Preserve fractional X11 DPI values reported by xwayland-satellite while
       # adapting automatically to 1x and differently scaled displays.
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";
