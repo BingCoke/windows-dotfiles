@@ -160,6 +160,15 @@ binds {
   Mod+Ctrl+K { spawn "~/.config/niri/move-focused-window.sh" "up"; }
   Mod+Ctrl+L { spawn "~/.config/niri/move-focused-window.sh" "right"; }
 
+  // I/O = 相邻显示器，B = 循环下一块显示器
+  Mod+Alt+I { focus-monitor-left; }
+  Mod+Alt+O { focus-monitor-right; }
+  Mod+B { focus-monitor-next; }
+
+  Mod+Ctrl+I { move-window-to-monitor-left; }
+  Mod+Ctrl+O { move-window-to-monitor-right; }
+  Mod+Shift+B { move-window-to-monitor-next; }
+
   Mod+Alt+H { spawn "~/.config/niri/resize-focused-window.sh" "left"; }
   Mod+Alt+J { spawn "~/.config/niri/resize-focused-window.sh" "down"; }
   Mod+Alt+K { spawn "~/.config/niri/resize-focused-window.sh" "up"; }
