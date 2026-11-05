@@ -64,6 +64,7 @@ window-rule {
     match app-id=r#"(org\.fcitx\.fcitx5-config-qt|fcitx5-configtool|fcitx5-config-qt|lxqt-policykit-agent|polkit-gnome-authentication-agent-1|polkit-kde-authentication-agent-1|org\.kde\.polkit-kde-authentication-agent-1|xfce-polkit)"#
     match app-id=r#"(pinentry-gtk-2|pinentry-gnome3|pinentry-qt|ksshaskpass|ssh-askpass|xdg-desktop-portal-(gtk|kde|lxqt)|org\.freedesktop\.impl\.portal\.desktop\.(gtk|kde|lxqt)|thunar-settings)"#
     match app-id=r#"(org\.telegram\.desktop|discord|vesktop|QQ|linuxqq|dingtalk|bytedance-feishu|lark|Slack|wemeetapp|Wemeetapp|zoom|Zoom|signal)"#
+    match app-id=r#"^tblive$"#
     match app-id=r#"(Spotify|netease-cloud-music|listen1|baidunetdisk|Baidunetdisk|localsend)"#
     match app-id=r#"(blueman-manager|nm-connection-editor|gpartedbin|GParted|org\.gnome\.DiskUtility|nwg-displays|org\.gnome\.Settings|gnome-control-center|gnome-system-monitor)"#
     match app-id=r#"(qalculate-gtk|galculator|imv|nsxiv|sxiv|feh|org\.gnome\.eog|file-roller|org\.gnome\.FileRoller|xarchiver|ark)"#
