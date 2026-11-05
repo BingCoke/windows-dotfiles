@@ -41,9 +41,9 @@ return {
       vim.keymap.set("n", "!", ":Compile ", { desc = "Compile command" })
       vim.keymap.set("n", "<leader>!", "<cmd>Compile<CR>", { desc = "Repeat compile command" })
 
-      vim.keymap.set("n", "<leader>ot", "<cmd>OverseerToggle<CR>", { desc = "Overseer toggle" })
-      vim.keymap.set("n", "<leader>or", "<cmd>OverseerRun<CR>", { desc = "Overseer run" })
-      vim.keymap.set("n", "<leader>oa", "<cmd>OverseerTaskAction<CR>", { desc = "Overseer action" })
+      vim.keymap.set("n", "<leader>rt", "<cmd>OverseerToggle<CR>", { desc = "Overseer toggle" })
+      vim.keymap.set("n", "<leader>rr", "<cmd>OverseerRun<CR>", { desc = "Overseer run" })
+      vim.keymap.set("n", "<leader>ra", "<cmd>OverseerTaskAction<CR>", { desc = "Overseer action" })
 
       require("overseer").setup({
         task_list = {
