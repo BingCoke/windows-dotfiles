@@ -5,6 +5,8 @@ vim.lsp.config("*", {
 	capabilities = blink.get_lsp_capabilities(),
 })
 
+require("luasnip.loaders.from_vscode").lazy_load()
+
 require("blink.cmp").setup({
 	snippets = { preset = "luasnip" },
 	keymap = {

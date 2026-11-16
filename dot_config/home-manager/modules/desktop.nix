@@ -23,6 +23,8 @@ let
     "application/x-ruby"
     "application/x-php"
     "text/css"
+    "text/markdown"
+    "text/x-markdown"
   ];
 
   xsettingsConfig = pkgs.writeText "xsettingsd.conf" ''
