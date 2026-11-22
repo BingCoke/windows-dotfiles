@@ -37,10 +37,11 @@ keybinds clear-defaults=true {
         bind "9" { GoToTab 9; SwitchToMode "normal"; }
 
         // ---- Pane 焦点切换（方向键 + hjkl）----
-        bind "h" { MoveFocus "left"; SwitchToMode "normal"; }
-        bind "j" { MoveFocus "down"; SwitchToMode "normal"; }
-        bind "k" { MoveFocus "up"; SwitchToMode "normal"; }
-        bind "l" { MoveFocus "right"; SwitchToMode "normal"; }
+        // 连续导航：保持在 tmux 模式，只有 esc / Alt a 才回 normal
+        bind "h" { MoveFocus "left"; }
+        bind "j" { MoveFocus "down"; }
+        bind "k" { MoveFocus "up"; }
+        bind "l" { MoveFocus "right"; }
 
         bind "Alt j" { MoveTab "right"; }                     // 移动 tab 位置
         bind "Alt k" { MoveTab "left"; }
@@ -268,40 +269,10 @@ keybinds clear-defaults=true {
         bind "Alt 8" { GoToTab 8; SwitchToMode "normal"; }
         bind "Alt 9" { GoToTab 9; SwitchToMode "normal"; }
         // ---- Pane 焦点切换（方向键 + hjkl）----
-        //bind "Alt h" { MoveFocus "left"; SwitchToMode "normal"; }
-        //bind "Alt j" { MoveFocus "down"; SwitchToMode "normal"; }
-        //bind "Alt k" { MoveFocus "up"; SwitchToMode "normal"; }
-        //bind "Alt l" { MoveFocus "right"; SwitchToMode "normal"; }
-
-        // 替换原来的 Alt h/j/k/l 直接 MoveFocus，改为通过 navigator 插件
-        bind "Alt h" {
-            MessagePlugin "navigator" {
-                name "move_focus"
-                payload "left"
-            };
-            SwitchToMode "normal";
-        }
-        bind "Alt j" {
-            MessagePlugin "navigator" {
-                name "move_focus"
-                payload "down"
-            };
-            SwitchToMode "normal";
-        }
-        bind "Alt k" {
-            MessagePlugin "navigator" {
-                name "move_focus"
-                payload "up"
-            };
-            SwitchToMode "normal";
-        }
-        bind "Alt l" {
-            MessagePlugin "navigator" {
-                name "move_focus"
-                payload "right"
-            };
-            SwitchToMode "normal";
-        }
+        bind "Alt h" { MoveFocus "left"; SwitchToMode "normal"; }
+        bind "Alt j" { MoveFocus "down"; SwitchToMode "normal"; }
+        bind "Alt k" { MoveFocus "up"; SwitchToMode "normal"; }
+        bind "Alt l" { MoveFocus "right"; SwitchToMode "normal"; }
 
     }
 
@@ -358,12 +329,6 @@ plugins {
     }
 
     configuration location="zellij:configuration"
-
-    navigator location="file:{{ .chezmoi.homeDir | replace "\\" "/" }}/.config/zellij/plugins/navigator/release/navigator.wasm" {
-
-        editor_commands "nvim,vim,hx,microc"
-        move_mod "Alt"
-    }
 
     filepicker location="zellij:strider" {
         cwd "/"
