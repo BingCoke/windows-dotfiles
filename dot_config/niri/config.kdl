@@ -13,9 +13,9 @@ input {
         drag-lock
         dwt
         // dwtp
-         natural-scroll
+        natural-scroll
         accel-profile "adaptive"
-        // accel-speed 0.0
+        accel-speed 0.2
     }
 
     focus-follows-mouse max-scroll-amount="0%"

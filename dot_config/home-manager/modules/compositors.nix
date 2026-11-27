@@ -60,15 +60,19 @@ let
     esac
   '';
 
+  noctaliaPamHelper = "${config.home.homeDirectory}/.local/libexec/noctalia/${pkgs.noctalia.version}/noctalia-pam-helper";
+
   # Host authentication crosses the root boundary and stays explicit.
   noctaliaHostAuth = pkgs.writeShellScriptBin "noctalia-host-auth" ''
     if [ "$(id -u)" -ne 0 ]; then
-      case "$1" in
+      case "''${1:-}" in
         install|remove)
           exec /usr/bin/sudo -- ${pkgs.bash}/bin/bash ${../scripts/noctalia-host-auth.sh} "$@"
           ;;
       esac
     fi
+    export NOCTALIA_PAM_SOURCE=${pkgs.noctalia.src}
+    export NOCTALIA_PAM_HELPER_PATH=${noctaliaPamHelper}
     exec ${pkgs.bash}/bin/bash ${../scripts/noctalia-host-auth.sh} "$@"
   '';
 in {
@@ -84,6 +88,8 @@ in {
   };
 
   xdg.portal.extraPortals = [ xdgDesktopPortalWlr ];
+
+  home.sessionVariables.NOCTALIA_PAM_HELPER_PATH = noctaliaPamHelper;
 
   home.packages = [
     niriSession

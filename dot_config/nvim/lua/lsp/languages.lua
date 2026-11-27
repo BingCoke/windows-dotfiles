@@ -31,7 +31,8 @@ local code_lsps = {
   "rust",
   "php",
   "json",
-  "markdown_oxide",
+  --"markdown_oxide",
+  "markdown",
 }
 
 local loaded_code_lsps = {}

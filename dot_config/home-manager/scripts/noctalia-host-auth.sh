@@ -12,12 +12,13 @@ socket_unit=polkit-agent-helper.socket
 
 usage() {
   cat <<EOF
-Usage: $program <check|install|test|remove>
+Usage: $program <build-pam|check|install|test|remove>
 
-  check    Show whether host authentication is ready
-  install  Configure the host bridge (asks for sudo)
-  test     Open one harmless authentication prompt
-  remove   Remove links managed by this tool (asks for sudo)
+  build-pam  Build the lock-screen helper with the host compiler and PAM
+  check      Show PAM helper and host bridge readiness
+  install    Configure the host bridge (asks for sudo)
+  test       Open one harmless polkit authentication prompt
+  remove     Remove links managed by this tool (asks for sudo)
 EOF
 }
 
@@ -140,8 +141,35 @@ bridge_ready() {
   link_matches "$polkit_link" "$polkit_helper"
 }
 
+build_pam_command() {
+  [[ $EUID -ne 0 ]] || die 'run build-pam as the desktop user, without sudo'
+
+  local profile build_dir
+  profile=$(system_profile)
+  [[ $profile != nixos ]] || die 'use the native NixOS polkit/PAM configuration'
+  [[ $profile != unsupported ]] || die 'only Fedora, Arch, and Ubuntu/Debian are supported'
+  [[ -n ${NOCTALIA_PAM_SOURCE:-} && -n ${NOCTALIA_PAM_HELPER_PATH:-} ]] ||
+    die 'run the noctalia-host-auth command from the Home Manager profile'
+  command -v c++ >/dev/null 2>&1 || die 'install the host C++ compiler; see docs/noctalia-host-auth.md'
+  printf '#include <security/pam_appl.h>\n' | c++ -x c++ -E - >/dev/null 2>&1 ||
+    die 'install the host PAM development package (Fedora: pam-devel; Ubuntu/Debian: libpam0g-dev)'
+
+  build_dir=$(mktemp -d)
+  trap 'rm -rf "${build_dir:-}"' EXIT
+  c++ -std=c++23 -O2 -Wall -Wextra -Wpedantic \
+    '-DNOCTALIA_PAM_SERVICE="login"' \
+    -I "$NOCTALIA_PAM_SOURCE/src" \
+    "$NOCTALIA_PAM_SOURCE/src/auth/pam_helper_main.cpp" \
+    -lpam -o "$build_dir/noctalia-pam-helper"
+  install -Dm755 "$build_dir/noctalia-pam-helper" "$NOCTALIA_PAM_HELPER_PATH"
+  rm -rf "$build_dir"
+  trap - EXIT
+  printf 'Host PAM helper built: %s\nRestart Noctalia with NOCTALIA_PAM_HELPER_PATH set to this path.\n' \
+    "$NOCTALIA_PAM_HELPER_PATH"
+}
+
 check_command() {
-  local profile
+  local profile ready=true
   profile=$(system_profile)
   printf 'System: %s\n' "$profile"
 
@@ -155,17 +183,25 @@ check_command() {
     return 1
   fi
 
-  if bridge_ready; then
-    if socket_ready; then
-      printf 'Status: ready (systemd polkit socket)\n'
-    else
-      printf 'Status: ready (host helper bridge)\n'
-    fi
-    return 0
+  if [[ -n ${NOCTALIA_PAM_HELPER_PATH:-} && -x $NOCTALIA_PAM_HELPER_PATH ]]; then
+    printf 'Lock-screen PAM: ready (%s)\n' "$NOCTALIA_PAM_HELPER_PATH"
+  else
+    printf 'Lock-screen PAM: helper missing\nNext: %s build-pam\n' "$program"
+    ready=false
   fi
 
-  printf "Status: not ready\nNext: %s install\n" "$program"
-  return 1
+  if bridge_ready; then
+    if socket_ready; then
+      printf 'Host bridge: ready (systemd polkit socket)\n'
+    else
+      printf 'Host bridge: ready (host helper bridge)\n'
+    fi
+  else
+    printf 'Host bridge: not ready\nNext: %s install\n' "$program"
+    ready=false
+  fi
+
+  "$ready"
 }
 
 ensure_link_available() {
@@ -259,7 +295,7 @@ selinux_blocked_auth() {
 }
 
 test_command() {
-  check_command >/dev/null || die "run '$program install' first"
+  bridge_ready || die "run '$program install' first"
   command -v pkexec >/dev/null 2>&1 || die 'pkexec was not found'
 
   local before='' after=''
@@ -276,7 +312,7 @@ test_command() {
 
   after=$(noctalia_pid || true)
   [[ $after == "$before" ]] || die 'authentication finished, but Noctalia exited or restarted'
-  printf 'Authentication test passed.\n'
+  printf 'Polkit authentication test passed. Test lock-screen unlocking separately.\n'
 }
 
 remove_command() {
@@ -300,6 +336,7 @@ remove_command() {
 }
 
 case ${1:-} in
+  build-pam) build_pam_command ;;
   check) check_command ;;
   install) install_command ;;
   test) test_command ;;

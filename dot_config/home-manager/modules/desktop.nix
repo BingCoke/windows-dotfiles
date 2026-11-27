@@ -41,20 +41,6 @@ let
     ];
   };
 
-  # nixos-unstable does not yet have nixpkgs 6b01148: with __structuredAttrs,
-  # makeWrapperArgs elements are passed unsplit, so the `--prefix PATH : ...`
-  # element must be re-tokenized and gappsWrapperArgs expanded in preFixup.
-  gearlever = pkgs.gearlever.overrideAttrs (old: {
-    makeWrapperArgs = builtins.concatMap (
-      arg:
-      if arg == "\${gappsWrapperArgs[@]}" then [ ]
-      else builtins.filter (t: builtins.isString t && t != "") (builtins.split " " arg)
-    ) old.makeWrapperArgs;
-    preFixup = (old.preFixup or "") + ''
-      makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-    '';
-  });
-
   gioModules = "${pkgs.gvfs}/lib/gio/modules";
 
   gpuSetup = pkgs.writeShellScriptBin "nix-gpu-setup" ''
@@ -110,6 +96,7 @@ in
     warnEcho "  nix-gpu-setup"
     warnEcho "  clash-tun-setup"
     warnEcho "  niri-desktop install"
+    warnEcho "  noctalia-host-auth build-pam"
     warnEcho "  noctalia-host-auth check"
     warnEcho "  noctalia-host-auth install"
     warnEcho "  noctalia-host-auth test"
@@ -299,7 +286,7 @@ in
     pkgs.xdg-user-dirs
     pkgs.clash-verge-rev
     clashTunSetup
-    gearlever
+    pkgs.gearlever
 
     # Qt5 and Qt6 theme selectors for Noctalia-generated color schemes.
     pkgs.libsForQt5.qt5ct

@@ -16,6 +16,7 @@
     satty
     wdisplays
     wlr-randr
+    wl-mirror
     kanshi
     brightnessctl
     ddcutil

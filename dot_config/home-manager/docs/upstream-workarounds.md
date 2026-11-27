@@ -280,14 +280,18 @@ nix eval --raw github:NixOS/nixpkgs/nixos-unstable#xwayland-satellite.src.rev
 
 | 项目 | 当前值 |
 | --- | --- |
-| 本地实现 | `scripts/noctalia-host-auth.sh` 和 `modules/compositors.nix` 中的包装命令 |
-| 宿主文件 | `/etc/tmpfiles.d/noctalia-host-auth.conf`、`/run/wrappers/bin/*` |
-| 上游跟踪 | [Home Manager #7027](https://github.com/nix-community/home-manager/issues/7027) |
-| 当前状态 | issue 未关闭，尚无已确认 release 修复 |
+| 本地实现 | `scripts/noctalia-host-auth.sh` 和 `modules/compositors.nix` 中的包装命令、版本化 PAM helper 路径 |
+| 宿主文件 | `/etc/tmpfiles.d/noctalia-host-auth.conf`、`/run/wrappers/bin/*`；用户目录下的 `~/.local/libexec/noctalia/<版本>/noctalia-pam-helper` |
+| 上游跟踪 | [Home Manager #7027](https://github.com/nix-community/home-manager/issues/7027)、[Noctalia 5.6.0](https://noctalia.dev/changelogs/v5.6.0) |
+| 当前状态 | Noctalia 5.6.0 提供宿主 PAM helper 接口；polkit 仍保留现有桥。Fedora 现有桥脚本已由用户确认可用，新锁屏 helper 待分别运行验证 |
 
 ### 原因
 
-Nix 构建的 PAM/polkit 组件可能引用 NixOS 提供的 `/run/wrappers/bin/unix_chkpwd` 或 `polkit-agent-helper-1`，generic Linux 宿主不会自动创建这些路径。脚本只链接经过所有权、权限和宿主包归属检查的 helper，或使用宿主提供的 polkit socket。
+Nix 构建的 PAM/polkit 组件可能引用 NixOS 提供的 `/run/wrappers/bin/unix_chkpwd` 或 `polkit-agent-helper-1`，generic Linux 宿主不会自动创建这些路径。PAM 还存在 Nix 库与宿主配置、模块不兼容的问题，仅创建 helper 链接不能完整解决。
+
+Noctalia 5.6.0 将锁屏认证放进独立的 `noctalia-pam-helper`，并允许 `NOCTALIA_PAM_HELPER_PATH` 指向宿主构建。`noctalia-host-auth build-pam` 用当前 `pkgs.noctalia.src` 和宿主编译器、PAM 构建同版本 helper；Home Manager 声明版本化路径。polkit 沿用现有脚本的 socket/helper 选择和校验逻辑。Ubuntu、Fedora 分别本地构建，不共享二进制。
+
+旧 `unix_chkpwd` 桥暂时保留，直到各机器完成新 helper 的锁屏、polkit 和重启验证；之后应连同旧桥创建逻辑一起清理。操作细节见 [Noctalia 宿主认证](noctalia-host-auth.md)。
 
 ### 撤销条件
 
@@ -300,13 +304,12 @@ Nix 构建的 PAM/polkit 组件可能引用 NixOS 提供的 `/run/wrappers/bin/u
 ### 检查方法
 
 ```bash
-curl -fsSL https://api.github.com/repos/nix-community/home-manager/issues/7027 \
-  | jq -r '.state, .html_url, .closed_at'
+noctalia-host-auth build-pam
 noctalia-host-auth check
 noctalia-host-auth test
 ```
 
-准备撤销时，先记录现状；移除后重启并重复锁屏和 polkit 测试。如果失败，重新执行 `noctalia-host-auth install`。
+`test` 仅验证 polkit 弹窗。重新登录后单独验证锁屏密码，并在重启后重复验证。准备撤销桥时，先记录现状；移除后重启并重复锁屏和 polkit 测试。如果失败，重新执行 `noctalia-host-auth install`。
 
 ## 当前用户的 portal service 链接
 
@@ -381,31 +384,6 @@ systemctl --user status xdg-desktop-portal-wlr.service --no-pager
 journalctl --user -b --no-pager | grep -E 'screenshare-hook|xdg-desktop-portal-wlr'
 flatpak override --user --show com.dingtalk.DingTalk
 ```
-
-## gearlever 的 makeWrapperArgs 分词
-
-| 项目 | 当前值 |
-| --- | --- |
-| 本地实现 | `modules/desktop.nix` 中的 `gearlever` override |
-| 上游修复 | [`6b01148e2e97`](https://github.com/NixOS/nixpkgs/commit/6b01148e2e97)，`treewide: fix python makeWrapperArgs with __structuredAttrs` |
-| 当前锁定 nixpkgs | `31ecbaca`，不含该修复 |
-
-### 原因
-
-`31ecbaca` 的 `gearlever` 把 `--prefix PATH : ...` 和 `${gappsWrapperArgs[@]}` 各作为一个 `makeWrapperArgs` 元素。Python 包启用 `__structuredAttrs` 后，这些元素不再经过 shell 分词，`makeCWrapper` 收到整段字符串并以 `Unknown argument` 失败，桌面 profile 构建中断。本地覆盖把这些元素重新分词，并在 `preFixup` 中展开 `gappsWrapperArgs`，语义与上游修复一致。
-
-### 撤销条件
-
-`nixos-unstable` 的 `gearlever` 已经包含 `6b01148`（`makeWrapperArgs` 的元素不再含空格分隔的多参数），且删除覆盖后桌面 profile 仍能构建。
-
-### 检查方法
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/NixOS/nixpkgs/nixos-unstable/pkgs/by-name/ge/gearlever/package.nix \
-  | grep -n -B2 -A6 'makeWrapperArgs'
-```
-
-已修复的版本会用独立的 `"--prefix" "PATH" ":"` 元素，并在 `preFixup` 中追加 `gappsWrapperArgs`。
 
 ## 不属于待撤销绕过的配置
 
